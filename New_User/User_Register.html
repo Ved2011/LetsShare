@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration - LetsShare</title>
+    <style>
+        :root {
+            --bg-color-start: #1a2a6c;
+            --bg-color-mid: #b21f1f;
+            --bg-color-end: #fdbb2d;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --accent: #2f80ed;
+            --accent-dark: #1b62bc;
+            --text: #1f2c3d;
+            --muted: #5a657a;
+            --border: #d7dce6;
+        }
+
+        html[data-theme="light"] {
+            --bg-main: #b1b3b9;
+            --card-bg: #fafbfd;
+            --text: #2d3748;
+            --muted: #718096;
+            --border: #e2e8f0;
+            --accent: #4f7cde;
+            --button-hover-shadow: rgba(79, 124, 222, 0.25);
+        }
+
+        html[data-theme="dark"] {
+            --bg-main: #1a202c;
+            --card-bg: #2d3748;
+            --text: #e2e8f0;
+            --muted: #a0aec0;
+            --border: #4a5568;
+            --accent: #63b3ed;
+            --button-hover-shadow: rgba(99, 179, 237, 0.25);
+        }
+
+        html {
+            color-scheme: light;
+        }
+
+        html[data-theme="dark"] {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            background: var(--bg-main);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 3rem 1rem 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+            margin: 0;
+            color: var(--text);
+        }
+
+        #themeToggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        #themeToggle:hover {
+            transform: scale(1.1);
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            backdrop-filter: blur(8px);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.4rem;
+            margin-bottom: 0.95rem;
+            align-items: start;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="date"] {
+            width: 100%;
+            padding: 0.65rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--button-hover-shadow);
+        }
+
+        .form-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button[type="submit"],
+        button[type="reset"] {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button[type="submit"] {
+            background: var(--accent);
+            color: white;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--accent-dark);
+            box-shadow: 0 4px 12px var(--button-hover-shadow);
+        }
+
+        button[type="reset"] {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        button[type="reset"]:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            font-weight: 500;
+        }
+
+        #confirmationMessage {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        #errorMessage {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        html[data-theme="dark"] #confirmationMessage {
+            background: rgba(76, 175, 80, 0.2);
+            color: #90ee90;
+            border: 1px solid rgba(76, 175, 80, 0.4);
+        }
+
+        html[data-theme="dark"] #errorMessage {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(220, 53, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+            <h1>User Registration</h1>
+            <button id="themeToggle">🌙</button>
+        </div>
+        
+        <div class="form-card">
+            <form>
+                <div class="form-group">
+                    <label>Username:</label>
+                    <input type="text" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email:</label>
+                    <input type="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password:</label>
+                    <input type="password" name="confirm_password" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number:</label>
+                    <input type="tel" name="phone">
+                </div>
+
+                <div class="form-group">
+                    <label>Date of Birth:</label>
+                    <input type="date" name="dob">
+                </div>
+
+                <div class="form-group">
+                    <label>Address:</label>
+                    <input type="text" name="address" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Register</button>
+                    <button type="reset" id="clearButton">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="User_Register.js"></script>
+</body>
+</html>

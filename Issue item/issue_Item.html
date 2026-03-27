@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Request - Item -> LetsShare</title>
+    <style>
+        :root {
+            --bg-main: #b1b3b9;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #d1d5db;
+            --accent: #4338ca;
+            --accent-dark: #3730a3;
+            --shadow: rgba(15, 23, 42, 0.12);
+        }
+
+        html[data-theme="dark"] {
+            --bg-main: #0f172a;
+            --card-bg: #111827;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --border: #334155;
+            --accent: #818cf8;
+            --accent-dark: #6366f1;
+            --shadow: rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-main);
+            color: var(--text);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+        }
+
+        #themeToggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            box-shadow: 0 20px 50px var(--shadow);
+            padding: 2rem;
+        }
+
+        .form-subtitle {
+            color: var(--muted);
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 0.35rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.95rem 1rem;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: none;
+            border-radius: 14px;
+            padding: 0.95rem 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 12px 25px rgba(67, 56, 202, 0.18);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .btn-primary:hover,
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+        }
+
+        .message {
+            display: none;
+            border-radius: 14px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        #confirmationMessage {
+            background: rgba(52, 211, 153, 0.16);
+            color: #0f5132;
+            border: 1px solid rgba(52, 211, 153, 0.35);
+        }
+
+        #errorMessage {
+            background: rgba(239, 68, 68, 0.14);
+            color: #88141d;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+            <div>
+                <h1>Request Item</h1>
+                <p class="form-subtitle">Request an item for use and set the expected return date.</p>
+            </div>
+            <button id="themeToggle">🌙</button>
+        </div>
+
+        <div class="form-card">
+            <div id="confirmationMessage" class="message"></div>
+            <div id="errorMessage" class="message"></div>
+
+            <form id="issueItemForm">
+                <div class="form-group">
+                    <label for="itemId">Item ID</label>
+                    <input type="text" id="itemId" name="itemId" placeholder="e.g. ITEM-001" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="borrowerName">Borrower Name</label>
+                    <input type="text" id="borrowerName" name="borrowerName" placeholder="Person receiving the item" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="borrowerEmail">Borrower Email</label>
+                    <input type="email" id="borrowerEmail" name="borrowerEmail" placeholder="borrower@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="issueDate">Issue Date</label>
+                    <input type="date" id="issueDate" name="issueDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="dueDate">Due Date</label>
+                    <input type="date" id="dueDate" name="dueDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="Duration">Duration (days)</label>
+                    <input type="number" id="duration" name="duration" placeholder="e.g. 14" required>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-primary">Request Item</button>
+                    <button type="reset" class="btn-secondary">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="issue_Item.js"></script>
+</body>
+</html>

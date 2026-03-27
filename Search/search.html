@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Items - LetsShare</title>
+    <style>
+        :root {
+            --bg-color-start: #1a2a6c;
+            --bg-color-mid: #b21f1f;
+            --bg-color-end: #fdbb2d;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --accent: #2f80ed;
+            --accent-dark: #1b62bc;
+            --text: #1f2c3d;
+            --muted: #5a657a;
+            --border: #d7dce6;
+        }
+
+        html[data-theme="light"] {
+            --bg-main: #b1b3b9;
+            --card-bg: #fafbfd;
+            --text: #2d3748;
+            --muted: #718096;
+            --border: #e2e8f0;
+            --accent: #4f7cde;
+            --button-hover-shadow: rgba(79, 124, 222, 0.25);
+        }
+
+        html[data-theme="dark"] {
+            --bg-main: #1a202c;
+            --card-bg: #2d3748;
+            --text: #e2e8f0;
+            --muted: #a0aec0;
+            --border: #4a5568;
+            --accent: #63b3ed;
+            --button-hover-shadow: rgba(99, 179, 237, 0.25);
+        }
+
+        html {
+            color-scheme: light;
+        }
+
+        html[data-theme="dark"] {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            background: var(--bg-main);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 1rem 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+            margin: 0;
+            color: var(--text);
+        }
+
+        #themeToggle {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        #themeToggle:hover {
+            transform: scale(1.1);
+        }
+
+        .search-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--button-hover-shadow);
+        }
+
+        button[type="submit"] {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--accent-dark);
+            box-shadow: 0 4px 12px var(--button-hover-shadow);
+        }
+
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        select {
+            padding: 0.65rem 0.9rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--button-hover-shadow);
+        }
+
+        .results-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: var(--accent);
+        }
+
+        .result-image {
+            width: 100%;
+            height: 150px;
+            background: var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 3rem;
+        }
+
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .result-meta {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            font-weight: 500;
+        }
+
+        #errorMessage {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        html[data-theme="dark"] #errorMessage {
+            background: rgba(220, 53, 69, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(220, 53, 69, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+            <h1>Search Items</h1>
+            <button id="themeToggle">🌙</button>
+        </div>
+
+        <div class="search-container">
+            <div class="search-bar">
+                <div class="search-input-wrapper">
+                    <input type="text" id="searchInput" placeholder="Search for items...">
+                </div>
+                <button type="submit" id="searchButton">Search</button>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="category">Category:</label>
+                    <select id="category">
+                        <option value="">All Categories</option>
+                        <option value="toys">Toys</option>
+                        <option value="books">Books</option>
+                        <option value="games">Games</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="condition">Condition:</label>
+                    <select id="condition">
+                        <option value="">All Conditions</option>
+                        <option value="excellent">Excellent</option>
+                        <option value="good">Good</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="poor">Poor</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="sortBy">Sort By:</label>
+                    <select id="sortBy">
+                        <option value="recent">Most Recent</option>
+                        <option value="relevant">Most Relevant</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-container">
+            <div id="errorMessage" class="message"></div>
+            <div id="results" class="results-grid">
+                <div class="no-results">
+                    <p>Enter a search term to find items</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="search.js"></script>
+</body>
+</html>

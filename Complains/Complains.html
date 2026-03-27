@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Issue - LetsShare</title>
+    <style>
+        :root {
+            --bg-main: #b1b3b9;
+            --card-bg: #fafbfd;
+            --text: #2d3748;
+            --muted: #718096;
+            --border: #e2e8f0;
+            --accent: #4f7cde;
+            --accent-dark: #375bb1;
+            --shadow: rgba(0, 0, 0, 0.08);
+        }
+
+        html[data-theme="dark"] {
+            --bg-main: #1a202c;
+            --card-bg: #2d3748;
+            --text: #e2e8f0;
+            --muted: #a0aec0;
+            --border: #4a5568;
+            --accent: #63b3ed;
+            --accent-dark: #3f8fd7;
+            --shadow: rgba(0, 0, 0, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg-main);
+            color: var(--text);
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+        }
+
+        #themeToggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            box-shadow: 0 18px 40px var(--shadow);
+            padding: 2rem;
+        }
+
+        .form-group {
+            display: grid;
+            gap: 0.45rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 124, 222, 0.15);
+        }
+
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 0.95rem 1.5rem;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 10px 20px rgba(79, 124, 222, 0.2);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .message {
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 1.25rem;
+            display: none;
+        }
+
+        #confirmationMessage {
+            background: rgba(72, 187, 120, 0.12);
+            color: #1f5132;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+
+        #errorMessage {
+            background: rgba(220, 53, 69, 0.12);
+            color: #7f1d1d;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+            <div>
+                <h1>Report an Issue</h1>
+                <p style="color: var(--muted); margin: 0.5rem 0 0;">Tell us what went wrong so we can fix it.</p>
+            </div>
+            <button id="themeToggle">🌙</button>
+        </div>
+
+        <div class="form-card">
+            <div id="confirmationMessage" class="message"></div>
+            <div id="errorMessage" class="message"></div>
+
+            <form id="issueForm">
+                <div class="form-group">
+                    <label for="issueTitle">Issue Title</label>
+                    <input type="text" id="issueTitle" name="issueTitle" placeholder="Brief issue summary" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="issueItemId">Related Item ID</label>
+                    <input type="text" id="issueItemId" name="issueItemId" placeholder="e.g. LS-12345" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="issueType">Issue Type</label>
+                    <select id="issueType" name="issueType" required>
+                        <option value="">Select issue type</option>
+                        <option value="payment">Payment problem</option>
+                        <option value="delivery">Delivery issue</option>
+                        <option value="listing">Listing error</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="issueDescription">Description</label>
+                    <textarea id="issueDescription" name="issueDescription" placeholder="Describe the problem in detail." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="contactEmail">Contact Email</label>
+                    <input type="email" id="contactEmail" name="contactEmail" placeholder="you@example.com" required>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-primary">Submit Issue</button>
+                    <button type="reset" class="btn-secondary">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="Complains.js"></script>
+</body>
+</html>
