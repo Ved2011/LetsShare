@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Issue Request - Item -> LetsShare</title>
+    <title>Logo3 - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
     <style>
         :root {
             --bg-main: #b1b3b9;
@@ -29,6 +30,14 @@
 
         * {
             box-sizing: border-box;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
         }
 
         body {
@@ -66,6 +75,14 @@
             font-size: 1.5rem;
             cursor: pointer;
             padding: 0.5rem;
+            border-radius: 12px;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #themeToggle:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.18);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
         }
 
         .form-card {
@@ -176,11 +193,18 @@
 <body>
     <div class="page-wrapper">
         <div class="header">
-            <div>
-                <h1>Request Item</h1>
-                <p class="form-subtitle">Request an item for use and set the expected return date.</p>
+
+            <div class="header-left">
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo3.jpeg" class="logo">
+                    <h1>LetsShare</h1>
+                </a>
+
+                <p class="page-subtitle">Log Return</p>
             </div>
+
             <button id="themeToggle">🌙</button>
+
         </div>
 
         <div class="form-card">

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Return Item - LetsShare</title>
+    <title>Logo3 - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
     <style>
         :root {
             --bg-main: #b1b3b9;
@@ -29,6 +30,14 @@
 
         * {
             box-sizing: border-box;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
         }
 
         body {
@@ -169,11 +178,18 @@
 <body>
     <div class="page-wrapper">
         <div class="header">
-            <div>
-                <h1>Return Item</h1>
-                <p style="color: var(--muted); margin: 0.5rem 0 0;">Submit a return request for an item.</p>
+
+            <div class="header-left">
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo3.jpeg" class="logo">
+                    <h1>LetsShare</h1>
+                </a>
+z
+                <p class="page-subtitle">Log Return</p>
             </div>
+
             <button id="themeToggle">🌙</button>
+
         </div>
 
         <div class="form-card">
@@ -181,35 +197,47 @@
             <div id="errorMessage" class="message"></div>
 
             <form id="returnForm">
+
                 <div class="form-group">
-                    <label for="orderId">Order / Item ID</label>
-                    <input type="text" id="orderId" name="orderId" placeholder="e.g. LS-12345" required>
+                    <label for="borrowId">Borrow ID</label>
+                    <input type="text" id="borrowId" name="borrowId" placeholder="e.g. LS-12345" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="returnReason">Return Reason</label>
-                    <input type="text" id="ItemId" name=">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" name="itemName" placeholder="e.g. Monopoly Board Game" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="returnCondition">Return Condition</label>
-                    <select id="returnCondition" name="returnCondition" required>
+                    <label for="borrowerName">Borrower Name</label>
+                    <input type="text" id="borrowerName" name="borrowerName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ownerName">Owner Name</label>
+                    <input type="text" id="ownerName" name="ownerName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="returnCondition">Condition on Return</label>
+                    <select id="returnCondition" required>
                         <option value="">Select condition</option>
-                        <option value="unopened">Unopened</option>
-                        <option value="opened">Opened</option>
-                        <option value="used">Used</option>
+                        <option value="good">Good</option>
+                        <option value="slight">Slightly Damaged</option>
+                        <option value="heavy">Heavily Damaged</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="returnNotes">Notes</label>
-                    <textarea id="returnNotes" name="returnNotes" placeholder="Add any details that help process the return."></textarea>
+                    <textarea id="returnNotes" placeholder="Optional notes..."></textarea>
                 </div>
 
                 <div class="actions">
-                    <button type="submit" class="btn-primary">Submit Return</button>
+                    <button type="submit" class="btn-primary">Log Return</button>
                     <button type="reset" class="btn-secondary">Clear</button>
                 </div>
+
             </form>
         </div>
     </div>

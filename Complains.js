@@ -3,11 +3,13 @@
 const themeToggleIssue = document.getElementById('themeToggle');
 const htmlIssue = document.documentElement;
 const issueForm = document.getElementById('issueForm');
-const issueTitleInput = document.getElementById('issueTitle');
-const issueItemIdInput = document.getElementById('issueItemId');
-const issueTypeSelect = document.getElementById('issueType');
-const issueDescriptionInput = document.getElementById('issueDescription');
-const contactEmailInput = document.getElementById('contactEmail');
+
+const borrowId = document.getElementById('borrowId');
+const itemName = document.getElementById('itemName');
+const borrowerName = document.getElementById('borrowerName');
+const issueType = document.getElementById('issueType');
+const severity = document.getElementById('severity');
+const description = document.getElementById('issueDescription');
 
 const confirmationMessageIssue = document.getElementById('confirmationMessage');
 const errorMessageIssue = document.getElementById('errorMessage');

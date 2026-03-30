@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Issue - LetsShare</title>
+    <title>Logo3 - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
     <style>
         :root {
             --bg-main: #b1b3b9;
@@ -29,6 +30,14 @@
 
         * {
             box-sizing: border-box;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
         }
 
         body {
@@ -65,6 +74,14 @@
             cursor: pointer;
             font-size: 1.5rem;
             padding: 0.5rem;
+            border-radius: 12px;
+            transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #themeToggle:hover {
+            transform: scale(1.05);
+            background: rgba(255,255,255,0.18);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.12);
         }
 
         .form-card {
@@ -169,11 +186,18 @@
 <body>
     <div class="page-wrapper">
         <div class="header">
-            <div>
-                <h1>Report an Issue</h1>
-                <p style="color: var(--muted); margin: 0.5rem 0 0;">Tell us what went wrong so we can fix it.</p>
+
+            <div class="header-left">
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo3.jpeg" class="logo">
+                    <h1>LetsShare</h1>
+                </a>
+
+                <p class="page-subtitle">Log Return</p>
             </div>
+
             <button id="themeToggle">🌙</button>
+
         </div>
 
         <div class="form-card">
@@ -181,41 +205,63 @@
             <div id="errorMessage" class="message"></div>
 
             <form id="issueForm">
+
                 <div class="form-group">
-                    <label for="issueTitle">Issue Title</label>
-                    <input type="text" id="issueTitle" name="issueTitle" placeholder="Brief issue summary" required>
+                    <label for="borrowId">Borrow ID</label>
+                    <input type="text" id="borrowId" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="issueItemId">Related Item ID</label>
-                    <input type="text" id="issueItemId" name="issueItemId" placeholder="e.g. LS-12345" required>
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="borrowerName">Borrower Name</label>
+                    <input type="text" id="borrowerName" required>
                 </div>
 
                 <div class="form-group">
                     <label for="issueType">Issue Type</label>
-                    <select id="issueType" name="issueType" required>
-                        <option value="">Select issue type</option>
-                        <option value="payment">Payment problem</option>
-                        <option value="delivery">Delivery issue</option>
-                        <option value="listing">Listing error</option>
-                        <option value="other">Other</option>
+                    <select id="issueType" required>
+                        <option value="">Select issue</option>
+                        <option value="damage">Damage</option>
+                        <option value="lost">Lost Item</option>
+                        <option value="late">Late Return</option>
+                        <option value="misuse">Misuse</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="severity">Severity</label>
+                    <select id="severity" required>
+                        <option value="">Select severity</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="issueDescription">Description</label>
-                    <textarea id="issueDescription" name="issueDescription" placeholder="Describe the problem in detail." required></textarea>
+                    <textarea id="issueDescription" required></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="contactEmail">Contact Email</label>
-                    <input type="email" id="contactEmail" name="contactEmail" placeholder="you@example.com" required>
+                    <label for="beforeImage">Before (when given)</label>
+                    <input type="file" id="beforeImage" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label for="afterImage">After (current condition)</label>
+                    <input type="file" id="afterImage" accept="image/*" required>
                 </div>
 
                 <div class="actions">
-                    <button type="submit" class="btn-primary">Submit Issue</button>
+                    <button type="submit" class="btn-primary">Submit Report</button>
                     <button type="reset" class="btn-secondary">Clear</button>
                 </div>
+
             </form>
         </div>
     </div>

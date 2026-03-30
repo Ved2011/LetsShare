@@ -1,7 +1,8 @@
 // issue_Item.js
 
-const themeToggleIssueItem = document.getElementById('themeToggle');
-const htmlIssueItem = document.documentElement;
+const themeToggle = document.getElementById('themeToggle');
+const html = document.documentElement;
+
 const issueItemForm = document.getElementById('issueItemForm');
 const itemIdInput = document.getElementById('itemId');
 const borrowerNameInput = document.getElementById('borrowerName');
@@ -9,28 +10,38 @@ const borrowerEmailInput = document.getElementById('borrowerEmail');
 const issueDateInput = document.getElementById('issueDate');
 const dueDateInput = document.getElementById('dueDate');
 const purposeInput = document.getElementById('purpose');
+
 const confirmationMessageIssueItem = document.getElementById('confirmationMessage');
 const errorMessageIssueItem = document.getElementById('errorMessage');
 
-function initializeThemeIssueItem() {
+// ============= DARK MODE THEME TOGGLE =============
+
+
+// Load theme from localStorage or system preference
+function initializeTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
-  htmlIssueItem.setAttribute('data-theme', savedTheme);
-  updateThemeToggleIconIssueItem(savedTheme);
+  html.setAttribute('data-theme', savedTheme);
+  updateThemeToggleIcon(savedTheme);
 }
 
-function updateThemeToggleIconIssueItem(theme) {
-  if (themeToggleIssueItem) {
-    themeToggleIssueItem.textContent = theme === 'dark' ? '☀️' : '🌙';
+function updateThemeToggleIcon(theme) {
+  if (themeToggle) {
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
   }
 }
 
-function toggleThemeIssueItem() {
-  const currentTheme = htmlIssueItem.getAttribute('data-theme');
-  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  htmlIssueItem.setAttribute('data-theme', nextTheme);
-  localStorage.setItem('theme', nextTheme);
-  updateThemeToggleIconIssueItem(nextTheme);
+if (themeToggle) {
+  themeToggle.addEventListener('click', function () {
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeToggleIcon(newTheme);
+  });
 }
+
+// Initialize theme on load
+initializeTheme();
 
 function clearMessagesIssueItem() {
   if (confirmationMessageIssueItem) confirmationMessageIssueItem.style.display = 'none';
@@ -98,10 +109,6 @@ function validateIssueItemForm() {
   return true;
 }
 
-if (themeToggleIssueItem) {
-  themeToggleIssueItem.addEventListener('click', toggleThemeIssueItem);
-}
-
 if (issueItemForm) {
   issueItemForm.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -113,6 +120,6 @@ if (issueItemForm) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  initializeThemeIssueItem();
+  initializeTheme();
   clearMessagesIssueItem();
 });
