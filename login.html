@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logo3 - LetsShare</title>
+    <title>Login - LetsShare</title>
     <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
     <style>
         :root {
@@ -20,7 +20,7 @@
         }
 
         html[data-theme="light"] {
-            --bg-main: #f2f5fa;
+            --bg-main: #e7eef9;
             --card-bg: #ffffff;
             --text: #1f2c3d;
             --muted: #6b7280;
@@ -259,13 +259,13 @@
     </style>
 </head>
 <body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
     <div class="page-wrapper">
         <div class="header">
             <a href="login.html" class="brand">
                 <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
                 <h1>LetsShare</h1>
             </a>
-            <button id="themeToggle" title="Toggle dark mode">🌙</button>`
         </div>
 
         <div class="form-card">
@@ -273,7 +273,7 @@
             <div id="errorMessage" class="message error"></div>
 
             <h2>Welcome back</h2>
-            <p style="color: var(--muted); margin-top: -0.5rem; margin-bottom: 1.5rem;">Login to your LetsShare account and continue.</p>
+            <h4 style="color: var(--muted); margin-top: -0.5rem; margin-bottom: 1.5rem;">Login to your LetsShare account and continue.</h4>
             <form id="loginForm">
                 <div class="form-group">
                     <label for="email">Email</label>
