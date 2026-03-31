@@ -106,20 +106,32 @@
             margin: 0;
         }
 
-        #themeToggle {
-            background: none;
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--accent);
             border: none;
-            font-size: 1.7rem;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
             cursor: pointer;
-            color: var(--text);
-            padding: 0.5rem;
-            border-radius: 12px;
-            transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+            font-size: 1.5rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        #themeToggle:hover {
-            transform: scale(1.05);
-            background: rgba(255,255,255,0.14);
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        html[data-theme="dark"] .theme-toggle {
+            box-shadow: 0 4px 12px rgba(99, 179, 237, 0.3);
         }
 
         .form-card {
@@ -253,7 +265,7 @@
                 <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
                 <h1>LetsShare</h1>
             </a>
-            <button id="themeToggle" title="Toggle dark mode">🌙</button>
+            <button id="themeToggle" title="Toggle dark mode">🌙</button>`
         </div>
 
         <div class="form-card">
