@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <div class="page-wrapper">
+        <header class="header">
+            <a href="user_Profile.html" class="brand">
+                <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
+                <h1>LetsShare</h1>
+            </a>
+            <div class="auth-buttons">
+                <a href="user_Profile.html" class="btn">Profile</a>
+                <a href="index.html" class="btn outline">Home</a>
+            </div>
+        </header>
+
+        <section class="card">
+            <div class="section-heading">
+                <div>
+                    <h2>Your Dashboard</h2>
+                    <p>Live counts from the database and quick access to your items.</p>
+                </div>
+            </div>
+            <div class="dashboard-grid">
+                <div class="hero-stat-card">
+                    <strong id="dashboardItems">0</strong>
+                    <span>Total Items</span>
+                </div>
+                <div class="hero-stat-card">
+                    <strong id="dashboardMyItems">0</strong>
+                    <span>My Items</span>
+                </div>
+                <div class="hero-stat-card">
+                    <strong id="dashboardBorrows">0</strong>
+                    <span>My Borrows</span>
+                </div>
+                <div class="hero-stat-card">
+                    <strong id="dashboardUsers">0</strong>
+                    <span>Community Members</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>My Uploaded Items</h3>
+            <div id="dashboardMyItemsList" class="items-grid"></div>
+        </section>
+
+        <section class="card">
+            <h3>My Borrowed Items</h3>
+            <div id="dashboardBorrowedItemsList" class="items-grid"></div>
+        </section>
+
+        <section class="card">
+            <h3>Quick Actions</h3>
+            <div class="hero-actions">
+                <a href="ItemForm.html" class="btn primary">Add an Item</a>
+                <a href="issue_Item.html" class="btn">Borrow an Item</a>
+                <a href="user_Profile.html" class="btn outline">View Profile</a>
+            </div>
+        </section>
+    </div>
+    <script src="user_Dashboard.js"></script>
+</body>
+</html>

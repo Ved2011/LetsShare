@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Return - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <style>
+        :root {
+            --bg-color-start: #1a2a6c;
+            --bg-color-mid: #b21f1f;
+            --bg-color-end: #fdbb2d;
+            --card-bg: rgba(255, 255, 255, 0.92);
+            --accent: #2f80ed;
+            --accent-dark: #1b62bc;
+            --text: #1f2c3d;
+            --muted: #5a657a;
+            --border: #d7dce6;
+            --button-hover-shadow: rgba(79, 124, 222, 0.25);
+        }
+
+        html[data-theme="light"] {
+            --bg-main: #e7eef9;
+            --card-bg: #ffffff;
+            --text: #1f2c3d;
+            --muted: #6b7280;
+            --border: #d1d5db;
+            --accent: #4f7cde;
+            --accent-dark: #1e4db7;
+            --button-hover-shadow: rgba(79, 124, 222, 0.25);
+        }
+
+        html[data-theme="dark"] {
+            --bg-main: #0f172a;
+            --card-bg: #1e293b;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --border: #334155;
+            --accent: #63b3ed;
+            --accent-dark: #3b82f6;
+            --button-hover-shadow: rgba(99, 179, 237, 0.25);
+        }
+
+        html {
+            color-scheme: light;
+        }
+
+        html[data-theme="dark"] {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-main);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.35s ease, color 0.35s ease;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 2.5rem 1rem 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand .logo {
+            width: 58px;
+            height: 58px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .brand h1 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            margin: 0;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        html[data-theme="dark"] .theme-toggle {
+            box-shadow: 0 4px 12px rgba(99, 179, 237, 0.3);
+        }
+
+        .form-card {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.12);
+            backdrop-filter: blur(10px);
+            transition: background 0.35s ease, border-color 0.35s ease;
+        }
+
+        .form-card h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: clamp(1.4rem, 2vw, 1.8rem);
+        }
+
+        .form-group {
+            display: grid;
+            gap: 0.45rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99, 179, 237, 0.12);
+        }
+
+        .form-actions {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.25rem;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.95rem 1rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(120deg, var(--accent), var(--accent-dark));
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button[type="submit"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(47, 128, 237, 0.28);
+        }
+
+        button[type="reset"] {
+            align-self: center;
+            width: 100%;
+            height: 40px;
+            padding: 0.8rem 0.8rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(120deg, #f87171, #ef4444);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button[type="reset"]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(47, 128, 237, 0.28);
+        }
+
+        .bottom-note {
+            margin-top: 1.3rem;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .bottom-note a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .bottom-note a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            display: none;
+            border-radius: 12px;
+            padding: 1rem 1.05rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: rgba(52, 211, 153, 0.16);
+            color: #0f5132;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.16);
+            color: #7f1d1d;
+            border: 1px solid rgba(239, 68, 68, 0.35);
+        }
+
+        .already-registered {
+            margin-top: 1.3rem;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .login-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99, 179, 237, 0.12);
+        }
+
+        select:hover {
+            border-color: var(--accent);
+        }
+
+
+        @media (max-width: 640px) {
+            .header, .form-card {
+                padding: 0;
+            }
+
+            .page-wrapper {
+                padding: 1.5rem 1rem 1.5rem;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <div class="page-wrapper">
+        <div class="header">
+
+        <div class="header">
+            <a href="user_Profile.html" class="brand">
+                <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
+                <h1>LetsShare</h1>
+            </a>
+        </div>
+
+        </div>
+
+        <div class="form-card">
+            <div id="confirmationMessage" class="message"></div>
+            <div id="errorMessage" class="message"></div>
+            <h2 class="page-subtitle">Log Return</h2>
+            <form id="issueItemForm">
+                <div class="form-group">
+                    <label for="itemId">Item ID</label>
+                    <input type="text" id="itemId" name="itemId" placeholder="Enter the Item ID..." required>
+                </div> 
+                <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" name="itemName" placeholder="Enter the Item Name..." required>
+                </div>
+                <div class="form-group">
+                    <label for="ownerEmail">Owner's Email</label>
+                    <input type="email" id="ownerEmail" name="ownerEmail" placeholder="Enter the owner's email..." required>
+                </div>
+                <div class="form-group">
+                    <label for="
+                <div class="form-group">
+                    <label for="borrowerEmail">Borrower's Email</label>
+                    <input type="email" id="borrowerEmail" name="borrowerEmail" placeholder="Enter the borrower's email..." required>
+                </div> 
+                <div class="form-group">
+                    <label for="returnCondition">Return Condition</label>
+                    <select id="returnCondition" name="returnCondition" required>
+                        <option value="" disabled selected>Select condition...</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                        <option value="Poor">Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="returnDate">Return Date</label>
+                    <input type="date" id="returnDate" name="returnDate" required>
+                </div>
+                <button type="submit">Submit</button><br><br>
+                <button type="reset">Clear Form</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="issue_Item.js"></script>
+</body>
+</html>

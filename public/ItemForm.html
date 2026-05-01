@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Item - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <div class="page-wrapper">
+        <div class="header">
+            <a href="user_Profile.html" class="brand">
+                <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
+                <h1>LetsShare</h1>
+            </a>
+        </div>
+        <form class="form-card" id="itemForm">
+            <div id="confirmationMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+            <h2>Register an Item</h2>
+            <div class="form-group"
+                <label for="Name">Name</label>
+                <input type="text" id="Name" name="Name" placeholder="eg. John Abraham" required>
+            </div>
+            <div class="form-group">
+                <label for="itemName">Item Name</label>
+                <input type="text" id="itemName" name="itemName" placeholder="eg. Star Wars Starship" required>
+            </div>
+
+            <div class="form-group">
+                <label for="itemImage">Item Image (optional)</label>
+                <input type="file" id="itemImage" name="itemImage" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label for="Brand">Brand</label>
+                <input type="text" id="Brand" name="Brand" placeholder="eg. Lego" required>
+            </div>
+
+            <div class="form-group">
+                <label for="itemCategory">Category</label>
+                <select id="itemCategory" name="itemCategory" required>
+                    <option value="">Select a category</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Books">Books</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Toys">Toys</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="itemCondition">Condition</label>
+                <select id="itemCondition" name="itemCondition" required>
+                    <option value="">Select condition</option>
+                    <option value="excellent">Excellent</option>
+                    <option value="good">Good</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="poor">Poor</option>
+                </select>
+            </div>
+
+            <div class="form-group    ">
+                <label for="Age">Age</label>
+                <select id="Age" name="Age" required>
+                    <option value="">Select age</option>
+                    <option value="0-3 years">0-3 years</option>
+                    <option value="4-7 years">4-7 years</option>
+                    <option value="8-12 years">8-12 years</option>
+                    <option value="13-17 years">13-17 years</option>
+                    <option value="18+ years">18+ years</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="itemDescription">Description</label>
+                <textarea id="itemDescription" name="itemDescription" placeholder="Describe the item in a few sentences...." required></textarea>
+            </div>
+
+            <button type="submit">Submit</button><br><br>
+        
+
+            <button type="reset">Clear Form</button>
+
+
+        </form>
+        
+        <script src="itemForm.js"></script>
+</body>
+</html>

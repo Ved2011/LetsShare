@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Profile - LetsShare</title>
+        <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+        <link rel="stylesheet" href="style.css">
+    </head> 
+
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <div class="page-wrapper">
+        <div class="header">
+            <a href="user_Profile.html" class="brand">
+                <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
+                <h1>LetsShare</h1>
+            </a>
+        </div>
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+
+        <!-- PROFILE INFO -->
+        <div class="card profile-info">
+            <div class="profile-top">
+                <div class="avatar" id="avatar">VP</div>
+                <div>
+                    <h2 id="userName">Loading...</h2>
+                    <p class="muted" id="userEmail">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEWLY UPLOADED ITEMS -->
+        <div class="card">
+            <h3>Newly Uploaded Items</h3>
+            <div id="newItemsList" class="item-list">
+                <!-- New items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- MY ITEMS -->
+        <div class="card">
+            <h3>My Items</h3>
+            <div id="myItemsList" class="item-list">
+                <!-- My items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- BORROWED ITEMS -->
+        <div class="card">
+            <h3>Borrowed Items</h3>
+            <div id="borrowedItemsList" class="item-list">
+                <!-- Borrowed items will be loaded here -->
+            </div>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="card">
+            <h3>Actions</h3>
+            <button type="button" id="createItemBtn" class="btn">Create New Item</button>
+            <button type="button" id="borrowItemBtn" class="btn">Borrow an Item</button>
+            <button type="button" id="dashboardBtn" class="btn">Go to Dashboard</button>
+            <button type="button" id="logoutBtn" class="btn danger">Logout</button>
+        </div>
+
+    </div>
+
+    <script src="user_Profile.js"></script>
+</body>
+</html>

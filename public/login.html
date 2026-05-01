@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+    <div class="page-wrapper">
+        <div class="header">
+            <a href="user_Profile.html" class="brand">
+                <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
+                <h1>LetsShare</h1>
+            </a>
+        </div>
+
+        <div class="form-card">
+            <div id="confirmationMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+
+            <h2>Welcome back!</h2>
+            <h4 style="color: var(--muted); margin-top: -0.5rem; margin-bottom: 1.5rem;">Login to your LetsShare account and continue.</h4>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Sign in</button>
+                </div>
+
+                <div class="bottom-note">
+                    Don't have an account? <a href="User_Register.html">Register</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>
