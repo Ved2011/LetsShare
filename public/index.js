@@ -6,6 +6,8 @@ let itemsContainer;
 let statItems;
 let statUsers;
 let statBorrows;
+let searchInput;
+let allItems = [];
 
 function initializeTheme() {
   const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -36,13 +38,13 @@ function handleLogoClick(event) {
   }
 }
 
-async function loadNewItems() {
+async function loadAllItems() {
   if (!itemsContainer) return;
-
   try {
-    const response = await fetch('http://localhost:3000/api/items');
+    const response = await fetch('/api/items');
     if (response.ok) {
       const items = await response.json();
+      allItems = items; // store for search
       const newItems = items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
       displayItems(newItems);
     } else {
@@ -53,11 +55,27 @@ async function loadNewItems() {
   }
 }
 
+function filterAndDisplay() {
+  if (!searchInput) return;
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) {
+    // show newest when no query
+    const newItems = allItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
+    displayItems(newItems);
+    return;
+  }
+  const filtered = allItems.filter(item =>
+    (item.name && item.name.toLowerCase().includes(query)) ||
+    (item.description && item.description.toLowerCase().includes(query))
+  );
+  displayItems(filtered);
+}
+
 function displayItems(items) {
   if (!itemsContainer) return;
   itemsContainer.innerHTML = '';
   if (items.length === 0) {
-    itemsContainer.innerHTML = '<p>No items available yet.</p>';
+    itemsContainer.innerHTML = '<p>No items found.</p>';
     return;
   }
   items.forEach(item => {
@@ -73,14 +91,13 @@ function displayItems(items) {
       actions = `<button class="btn small" onclick="borrowItem(${item.id})">Borrow</button>`;
     } else if (isOwner) {
       actions = `<span class="status owner">Your Item</span>`;
-    } else if (item.status !== 'available') {
+    } else {
       actions = `<span class="status ${item.status}">${item.status}</span>`;
     }
 
     itemCard.innerHTML = `
       <h4>${item.name}</h4>
       <p>${item.description || 'No description'}</p>
-      <span class="status ${item.status}">${item.status}</span>
       <div class="item-actions">
         ${actions}
       </div>
@@ -109,7 +126,7 @@ async function borrowItem(itemId) {
 
     if (response.ok) {
       alert('Borrow request sent successfully!');
-      loadNewItems(); // Refresh the items list
+      loadAllItems(); // Refresh the items list
     } else {
       const error = await response.json();
       alert('Failed to send borrow request: ' + error.error);
@@ -122,7 +139,7 @@ async function borrowItem(itemId) {
 
 async function loadStats() {
   try {
-    const response = await fetch('http://localhost:3000/api/stats');
+    const response = await fetch('/api/stats');
     if (response.ok) {
       const stats = await response.json();
       if (statItems) statItems.textContent = stats.total_items || 0;
@@ -141,16 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
   statItems = document.getElementById('statItems');
   statUsers = document.getElementById('statUsers');
   statBorrows = document.getElementById('statBorrows');
+  searchInput = document.getElementById('searchInput');
 
-  if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
-  }
-
-  if (logoLink) {
-    logoLink.addEventListener('click', handleLogoClick);
-  }
+  if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+  if (logoLink) logoLink.addEventListener('click', handleLogoClick);
+  if (searchInput) searchInput.addEventListener('input', filterAndDisplay);
 
   initializeTheme();
   loadStats();
-  loadNewItems();
+  loadAllItems();
 });

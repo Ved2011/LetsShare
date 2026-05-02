@@ -60,6 +60,10 @@ async function loadUserProfile() {
       userName.textContent = user.name;
       userEmail.textContent = user.email;
       avatar.textContent = user.name.charAt(0).toUpperCase();
+    } else if (response.status === 401 || response.status === 403) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
     } else {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

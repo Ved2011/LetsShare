@@ -8,12 +8,14 @@ let recentItemsContainer;
 let myItemsContainer;
 let borrowedItemsContainer;
 let requestsContainer;
-let searchInput;
+let communitySearchInput;
+let dashboardSearchInput;
 let searchButton;
 let searchUsersContainer;
 let searchItemsContainer;
 let searchSection;
 let searchMessage;
+let allItems = [];
 
 function initializeTheme() {
   const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -103,15 +105,23 @@ async function loadDashboard() {
     const itemsResponse = await fetch('/api/items');
     if (itemsResponse.ok) {
       const items = await itemsResponse.json();
+      allItems = items; // store for searching
       const myItems = items.filter(item => item.owner_id === user.id);
       dashboardMyItems.textContent = myItems.length;
       displayMyItems(myItems);
-      displayRecentItems(items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6));
+      // initially show all community items
+      displayRecentItems(items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
     }
 
     const borrowsResponse = await fetch('/api/borrows', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    
+    if (borrowsResponse.status === 401 || borrowsResponse.status === 403) {
+      handleInvalidToken();
+      return;
+    }
+
     if (borrowsResponse.ok) {
       const borrows = await borrowsResponse.json();
       const myBorrows = borrows.filter(borrow => borrow.borrower_id === user.id);
@@ -127,10 +137,29 @@ async function loadDashboard() {
   }
 }
 
+function handleInvalidToken() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
+
+function filterAndDisplay() {
+  if (!communitySearchInput) return;
+  const query = communitySearchInput.value.trim().toLowerCase();
+  
+  // Filter community items
+  const filtered = allItems.filter(item =>
+    (item.name && item.name.toLowerCase().includes(query)) ||
+    (item.description && item.description.toLowerCase().includes(query))
+  );
+  displayRecentItems(filtered);
+}
+
 function displayRecentItems(items) {
+  if (!recentItemsContainer) return;
   recentItemsContainer.innerHTML = '';
   if (!items.length) {
-    recentItemsContainer.innerHTML = '<p>No items available yet.</p>';
+    recentItemsContainer.innerHTML = '<p>No items found matching your search.</p>';
     return;
   }
   items.forEach(item => {
@@ -146,6 +175,7 @@ function displayRecentItems(items) {
 }
 
 function displayMyItems(items) {
+  if (!myItemsContainer) return;
   myItemsContainer.innerHTML = '';
   if (!items.length) {
     myItemsContainer.innerHTML = '<p>You haven\'t uploaded any items yet.</p>';
@@ -168,6 +198,7 @@ function displayMyItems(items) {
 }
 
 function displayBorrowedItems(borrows) {
+  if (!borrowedItemsContainer) return;
   borrowedItemsContainer.innerHTML = '';
   if (!borrows.length) {
     borrowedItemsContainer.innerHTML = '<p>You haven\'t borrowed any items yet.</p>';
@@ -315,7 +346,7 @@ async function toggleFollow(userId, isFollowed) {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (response.ok) {
-      const query = searchInput?.value.trim();
+      const query = dashboardSearchInput?.value.trim();
       if (query) {
         searchDashboard(query);
       }
@@ -330,7 +361,7 @@ async function toggleFollow(userId, isFollowed) {
 }
 
 async function handleSearch() {
-  const query = searchInput?.value.trim();
+  const query = dashboardSearchInput?.value.trim();
   if (!query) {
     if (searchSection) {
       searchSection.classList.add('hidden');
@@ -389,10 +420,8 @@ async function deleteItem(itemId) {
 }
 
 async function returnItem(borrowId) {
-  // For simplicity, assume return without additional data
   const token = localStorage.getItem('token');
   try {
-    // Need to get borrow details to return
     const borrowsResponse = await fetch('/api/borrows', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -499,7 +528,8 @@ document.addEventListener('DOMContentLoaded', () => {
   myItemsContainer = document.getElementById('dashboardMyItemsList');
   borrowedItemsContainer = document.getElementById('dashboardBorrowedItemsList');
   requestsContainer = document.getElementById('dashboardRequestsList');
-  searchInput = document.getElementById('dashboardSearchInput');
+  communitySearchInput = document.getElementById('searchInput');
+  dashboardSearchInput = document.getElementById('dashboardSearchInput');
   searchButton = document.getElementById('dashboardSearchButton');
   searchUsersContainer = document.getElementById('dashboardUsersSearchResults');
   searchItemsContainer = document.getElementById('dashboardItemsSearchResults');
@@ -512,8 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchButton) {
     searchButton.addEventListener('click', handleSearch);
   }
-  if (searchInput) {
-    searchInput.addEventListener('keyup', (event) => {
+  if (dashboardSearchInput) {
+    dashboardSearchInput.addEventListener('keyup', (event) => {
       if (event.key === 'Enter') {
         handleSearch();
       }
@@ -524,6 +554,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (searchMessage) {
     searchMessage.classList.add('hidden');
+  }
+
+  if (communitySearchInput) {
+    communitySearchInput.addEventListener('input', filterAndDisplay);
   }
 
   initializeTheme();
