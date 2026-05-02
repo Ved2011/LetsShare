@@ -44,7 +44,9 @@ if (registerForm) {
       name: formData.get('username'),
       email: formData.get('email'),
       password: formData.get('password'),
-      phone: formData.get('phone')
+      phone: formData.get('phone'),
+      dob: formData.get('dob'),
+      address: formData.get('address')
     };
 
     // Validate password confirmation
@@ -54,7 +56,7 @@ if (registerForm) {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

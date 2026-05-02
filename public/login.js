@@ -25,6 +25,7 @@ function toggleTheme() {
 }
 
 function showMessage(element, message) {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
   element.textContent = message;
   element.style.display = 'block';
 }
@@ -34,14 +35,45 @@ function clearMessages() {
   errorMessage.style.display = 'none';
 }
 
+function getCachedAuth() {
+  return {
+    token: localStorage.getItem('token'),
+    user: JSON.parse(localStorage.getItem('user') || 'null')
+  };
+}
+
+async function checkExistingSession() {
+  const { token, user } = getCachedAuth();
+  if (!token) return;
+
+  try {
+    const response = await fetch('/api/auth/me', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const userData = await response.json();
+      if (!user) {
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+      window.location.href = 'user_Profile.html';
+      return;
+    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+  } catch (err) {
+    console.warn('Session verification failed:', err);
+  }
+}
+
+
 function validateLoginForm() {
   clearMessages();
 
-  const email = document.getElementById('email').value.trim();
+  const identifier = document.getElementById('identifier').value.trim();
   const password = document.getElementById('password').value;
 
-  if (!email) {
-    showMessage(errorMessage, 'Please enter your email.');
+  if (!identifier) {
+    showMessage(errorMessage, 'Please enter your email or username.');
     return false;
   }
 
@@ -57,13 +89,15 @@ if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
 }
 
+checkExistingSession();
+
 if (loginForm) {
   loginForm.addEventListener('submit', async function (event) {
     event.preventDefault();
 
     if (!validateLoginForm()) return;
 
-    const email = document.getElementById('email').value.trim();
+    const identifier = document.getElementById('identifier').value.trim();
     const password = document.getElementById('password').value;
 
     try {
@@ -72,7 +106,7 @@ if (loginForm) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const data = await response.json();
@@ -80,6 +114,7 @@ if (loginForm) {
       if (response.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('loginTime', new Date().toISOString());
         showMessage(confirmationMessage, 'Login successful. Redirecting...');
         setTimeout(() => {
           window.location.href = 'user_Profile.html';

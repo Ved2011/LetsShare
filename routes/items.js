@@ -11,17 +11,18 @@ const upload = multer({ storage });
 
 // Create item
 router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
-  const { name, description, category } = req.body;
+  const { owner_name, name, brand, category, age, condition, description } = req.body;
   const image = req.file ? req.file.buffer : null;
   const ownerId = req.user.id;
 
   try {
     const result = await pool.query(
-      'INSERT INTO items (owner_id, name, description, category, image) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-      [ownerId, name, description, category, image]
+      'INSERT INTO items (owner_id, owner_name, name, brand, category, age, condition, description, image) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
+      [ownerId, owner_name || null, name, brand || null, category || null, age || null, condition || null, description || null, image]
     );
     res.status(201).json({ message: 'Item created successfully', itemId: result.rows[0].id });
   } catch (err) {
+    console.error('Create item error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -53,7 +54,7 @@ router.get('/:id', async (req, res) => {
 // Update item
 router.put('/:id', authenticateToken, upload.single('image'), async (req, res) => {
   const { id } = req.params;
-  const { name, description, category } = req.body;
+  const { name, description, category, brand, age, condition } = req.body;
   const image = req.file ? req.file.buffer : null;
   const ownerId = req.user.id;
 
@@ -82,6 +83,18 @@ router.put('/:id', authenticateToken, upload.single('image'), async (req, res) =
     if (category !== undefined) {
       updateFields.push(`category = $${paramIndex++}`);
       values.push(category);
+    }
+    if (brand !== undefined) {
+      updateFields.push(`brand = $${paramIndex++}`);
+      values.push(brand);
+    }
+    if (age !== undefined) {
+      updateFields.push(`age = $${paramIndex++}`);
+      values.push(age);
+    }
+    if (condition !== undefined) {
+      updateFields.push(`condition = $${paramIndex++}`);
+      values.push(condition);
     }
     if (image !== null) {
       updateFields.push(`image = $${paramIndex++}`);

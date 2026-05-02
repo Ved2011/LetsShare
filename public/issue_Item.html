@@ -10,59 +10,25 @@
 <body>
     <div class="page-wrapper">
         <div class="header">
-
             <div class="header-left">
                 <a href="user_Profile.html" class="brand">
                     <img src="assets/Logo3.jpeg" class="logo">
                     <h1>LetsShare</h1>
                 </a>
             </div>
-
             <button id="themeToggle" class="theme-toggle" title="Toggle dark mode">🌙</button>
-
         </div>
 
         <div class="form-card">
             <div id="confirmationMessage" class="message"></div>
             <div id="errorMessage" class="message"></div>
 
-            <form id="issueItemForm">
-                <h2>Issue an Item</h2>
-                <div class="form-group">
-                    <label for="itemId">Item ID</label>
-                    <input type="text" id="itemId" name="itemId" placeholder="e.g. ITEM-001" required>
-                </div>
+            <h2>Browse & Request Items</h2>
+            <p>Select an item below to send a borrow request to the owner.</p>
 
-                <div class="form-group">
-                    <label for="borrowerName">Borrower Name</label>
-                    <input type="text" id="borrowerName" name="borrowerName" placeholder="Person receiving the item" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="borrowerEmail">Borrower Email</label>
-                    <input type="email" id="borrowerEmail" name="borrowerEmail" placeholder="borrower@example.com" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="issueDate">Issue Date</label>
-                    <input type="date" id="issueDate" name="issueDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="dueDate">Due Date</label>
-                    <input type="date" id="dueDate" name="dueDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="Duration">Duration (days)</label>
-                    <input type="number" id="duration" name="duration" placeholder="e.g. 14" required>
-                </div>
-
-                <div class="actions">
-                    <button type="submit" class="btn-primary">Request Item</button><br><br>
-                    <button type="reset" class="btn-secondary">Clear Form</button>
-                </div>
-            </form>
+            <div id="itemsList" class="items-grid">
+                <p>Loading items...</p>
+            </div>
         </div>
     </div>
 

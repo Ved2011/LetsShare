@@ -8,7 +8,7 @@ const router = express.Router();
 
 // Create complaint
 router.post('/', authenticateToken, upload.fields([{ name: 'beforeImage' }, { name: 'afterImage' }]), async (req, res) => {
-  const { borrowId, issue, description } = req.body;
+  const { borrowId, itemName, borrowerName, issueType, severity, issueDescription } = req.body;
   const complainantId = req.user.id;
 
   try {
@@ -20,8 +20,8 @@ router.post('/', authenticateToken, upload.fields([{ name: 'beforeImage' }, { na
     const borrow = borrowResult.rows[0];
 
     const result = await pool.query(
-      'INSERT INTO complaints (borrow_id, complainant_id, accused_id, issue, description, before_image, after_image) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-      [borrowId, complainantId, borrow.borrower_id, issue, description, req.files.beforeImage ? req.files.beforeImage[0].buffer : null, req.files.afterImage ? req.files.afterImage[0].buffer : null]
+      'INSERT INTO complaints (borrow_id, complainant_id, accused_id, item_name, borrower_name, issue_type, severity, description, before_image, after_image) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
+      [borrowId, complainantId, borrow.borrower_id, itemName || null, borrowerName || null, issueType || null, severity || null, issueDescription || null, req.files.beforeImage ? req.files.beforeImage[0].buffer : null, req.files.afterImage ? req.files.afterImage[0].buffer : null]
     );
     res.status(201).json({ message: 'Complaint submitted successfully', complaintId: result.rows[0].id });
   } catch (err) {

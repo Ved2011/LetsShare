@@ -56,6 +56,7 @@ async function loadUserProfile() {
     });
     if (response.ok) {
       const user = await response.json();
+      localStorage.setItem('user', JSON.stringify(user));
       userName.textContent = user.name;
       userEmail.textContent = user.email;
       avatar.textContent = user.name.charAt(0).toUpperCase();
@@ -136,6 +137,24 @@ function displayItems(container, items, isMyItems = false) {
           <button class="btn small danger" onclick="deleteItem(${item.id})">Delete</button>
         </div>
       `;
+    } else {
+      // Check if user can borrow this item
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      const isOwner = user && user.id === item.owner_id;
+      const canBorrow = token && !isOwner && item.status === 'available';
+
+      if (canBorrow) {
+        buttons = `
+          <div class="item-actions">
+            <button class="btn small" onclick="borrowItem(${item.id})">Borrow</button>
+          </div>
+        `;
+      } else if (isOwner) {
+        buttons = `<span class="status owner">Your Item</span>`;
+      } else if (item.status !== 'available') {
+        buttons = `<span class="status ${item.status}">${item.status}</span>`;
+      }
     }
     itemCard.innerHTML = `
       <p><strong>${item.name}</strong></p>
@@ -228,6 +247,37 @@ async function deleteItem(itemId) {
     }
   } catch (error) {
     console.error('Error deleting item:', error);
+  }
+}
+
+async function borrowItem(itemId) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to borrow items');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/borrows', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ itemId })
+    });
+
+    if (response.ok) {
+      alert('Borrow request sent successfully!');
+      loadNewItems(); // Refresh the items list
+    } else {
+      const error = await response.json();
+      alert('Failed to send borrow request: ' + error.error);
+    }
+  } catch (error) {
+    console.error('Error sending borrow request:', error);
+    alert('Failed to send borrow request');
   }
 }
 

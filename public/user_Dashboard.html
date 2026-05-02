@@ -28,6 +28,11 @@
                     <p>Live counts from the database and quick access to your items.</p>
                 </div>
             </div>
+            <div class="dashboard-search">
+                <input type="text" id="dashboardSearchInput" placeholder="Search users or items...">
+                <button id="dashboardSearchButton" class="btn">Search</button>
+            </div>
+            <div id="dashboardSearchMessage" class="search-message hidden"></div>
             <div class="dashboard-grid">
                 <div class="hero-stat-card">
                     <strong id="dashboardItems">0</strong>
@@ -44,6 +49,25 @@
                 <div class="hero-stat-card">
                     <strong id="dashboardUsers">0</strong>
                     <span>Community Members</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>Borrow Requests</h3>
+            <div id="dashboardRequestsList" class="items-grid"></div>
+        </section>
+
+        <section class="card hidden" id="dashboardSearchSection">
+            <h3>Search Results</h3>
+            <div class="search-results">
+                <div>
+                    <h4>Users</h4>
+                    <div id="dashboardUsersSearchResults" class="items-grid"></div>
+                </div>
+                <div>
+                    <h4>Items</h4>
+                    <div id="dashboardItemsSearchResults" class="items-grid"></div>
                 </div>
             </div>
         </section>

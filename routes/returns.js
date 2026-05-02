@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Create return
 router.post('/', authenticateToken, async (req, res) => {
-  const { itemId, borrowerEmail, condition, notes } = req.body;
+  const { itemId, itemName, ownerEmail, borrowerEmail, condition, notes, returnDate } = req.body;
 
   try {
     // Find borrow by item_id and borrower email
@@ -23,8 +23,8 @@ router.post('/', authenticateToken, async (req, res) => {
     const borrowId = borrowResult.rows[0].id;
 
     const result = await pool.query(
-      'INSERT INTO returns (borrow_id, condition, notes) VALUES ($1, $2, $3) RETURNING id',
-      [borrowId, condition, notes]
+      'INSERT INTO returns (borrow_id, item_name, owner_email, borrower_email, condition, notes, return_date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+      [borrowId, itemName || null, ownerEmail || null, borrowerEmail || null, condition || null, notes || null, returnDate || null]
     );
 
     // Update borrow status
@@ -35,6 +35,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
     res.status(201).json({ message: 'Return logged successfully' });
   } catch (err) {
+    console.error('Return create error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

@@ -8,12 +8,15 @@ const itemNameInput = document.getElementById('itemName');
 const ownerEmailInput = document.getElementById('ownerEmail');
 const borrowerEmailInput = document.getElementById('borrowerEmail');
 const returnConditionSelect = document.getElementById('returnCondition');
+const notesInput = document.getElementById('notes');
 const returnDateInput = document.getElementById('returnDate');
 const confirmationMessage = document.getElementById('confirmationMessage');
 const errorMessage = document.getElementById('errorMessage');
 
 function updateThemeToggleIcon(theme) {
-  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (themeToggle) {
+    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
 }
 
 function toggleTheme() {
@@ -30,46 +33,54 @@ function clearMessages() {
 }
 
 function showError(message) {
-  errorMessage.textContent = message;
-  errorMessage.style.display = 'block';
-  confirmationMessage.style.display = 'none';
+  if (errorMessage) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+  }
+  if (confirmationMessage) {
+    confirmationMessage.style.display = 'none';
+  }
 }
 
 function showSuccess(message) {
-  confirmationMessage.textContent = message;
-  confirmationMessage.style.display = 'block';
-  errorMessage.style.display = 'none';
+  if (confirmationMessage) {
+    confirmationMessage.textContent = message;
+    confirmationMessage.style.display = 'block';
+  }
+  if (errorMessage) {
+    errorMessage.style.display = 'none';
+  }
 }
 
 function validateReturnForm() {
   clearMessages();
 
-  if (!itemIdInput.value.trim()) {
+  if (!itemIdInput?.value.trim()) {
     showError('Item ID is required.');
     return false;
   }
 
-  if (!itemNameInput.value.trim()) {
+  if (!itemNameInput?.value.trim()) {
     showError('Item name is required.');
     return false;
   }
 
-  if (!ownerEmailInput.value.trim()) {
+  if (!ownerEmailInput?.value.trim()) {
     showError('Owner email is required.');
     return false;
   }
 
-  if (!borrowerEmailInput.value.trim()) {
+  if (!borrowerEmailInput?.value.trim()) {
     showError('Borrower email is required.');
     return false;
   }
 
-  if (!returnConditionSelect.value) {
+  if (!returnConditionSelect?.value) {
     showError('Return condition is required.');
     return false;
   }
 
-  if (!returnDateInput.value) {
+  if (!returnDateInput?.value) {
     showError('Return date is required.');
     return false;
   }
@@ -94,13 +105,16 @@ if (returnForm) {
 
     const data = {
       itemId: itemIdInput.value.trim(),
+      itemName: itemNameInput.value.trim(),
+      ownerEmail: ownerEmailInput.value.trim(),
       borrowerEmail: borrowerEmailInput.value.trim(),
       condition: returnConditionSelect.value,
-      notes: '', // optional
+      notes: notesInput?.value.trim() || null,
+      returnDate: returnDateInput.value,
     };
 
     try {
-      const response = await fetch('http://localhost:3000/api/returns', {
+      const response = await fetch('/api/returns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,6 +132,7 @@ if (returnForm) {
         showError(result.error || 'Failed to log return');
       }
     } catch (error) {
+      console.error('Return log error:', error);
       showError('Network error. Please try again.');
     }
   });
@@ -132,55 +147,4 @@ function initializeTheme() {
 document.addEventListener('DOMContentLoaded', function () {
   initializeTheme();
   clearMessages();
-});
-
-  if (!itemName.value.trim()) {
-    showErrorReturn('Item name is required.');
-    return false;
-  }
-  if (!name.value.trim()) {
-    showErrorReturn('Your name is required.');
-    return false;
-  }
-
-  if (!ownerEmail.value.trim() || !/\S+@\S+\.\S+/.test(ownerEmail.value)) {
-    showErrorReturn('A valid owner email is required.');
-    return false;
-  }
-
-  if (!borrowerEmail.value.trim() || !/\S+@\S+\.\S+/.test(borrowerEmail.value)) {
-    showErrorReturn('A valid borrower email is required.');
-    return false;
-  }
-
-  if (!returnDate.value) {
-    showErrorReturn('Return date is required.');
-    return false;
-  } 
-  
-  if (!returnCondition.value) {
-    showErrorReturn('Please select the item condition.');
-    return false;
-  }
-
-  return true;
-}
-
-if (themeToggleReturn) {
-  themeToggleReturn.addEventListener('click', toggleThemeReturn);
-}
-
-if (returnForm) {
-  returnForm.addEventListener('submit', function (event) {
-    event.preventDefault();
-    if (validateReturnForm()) {
-      showSuccessReturn('Return request submitted successfully.');
-      returnForm.reset();
-    }
-  });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-  initializeThemeReturn();
-  clearMessagesReturn();
 });

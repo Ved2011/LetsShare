@@ -63,13 +63,61 @@ function displayItems(items) {
   items.forEach(item => {
     const itemCard = document.createElement('div');
     itemCard.className = 'item-card';
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    const isOwner = user && user.id === item.owner_id;
+    const canBorrow = token && !isOwner && item.status === 'available';
+
+    let actions = '';
+    if (canBorrow) {
+      actions = `<button class="btn small" onclick="borrowItem(${item.id})">Borrow</button>`;
+    } else if (isOwner) {
+      actions = `<span class="status owner">Your Item</span>`;
+    } else if (item.status !== 'available') {
+      actions = `<span class="status ${item.status}">${item.status}</span>`;
+    }
+
     itemCard.innerHTML = `
       <h4>${item.name}</h4>
       <p>${item.description || 'No description'}</p>
       <span class="status ${item.status}">${item.status}</span>
+      <div class="item-actions">
+        ${actions}
+      </div>
     `;
     itemsContainer.appendChild(itemCard);
   });
+}
+
+async function borrowItem(itemId) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to borrow items');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/borrows', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ itemId })
+    });
+
+    if (response.ok) {
+      alert('Borrow request sent successfully!');
+      loadNewItems(); // Refresh the items list
+    } else {
+      const error = await response.json();
+      alert('Failed to send borrow request: ' + error.error);
+    }
+  } catch (error) {
+    console.error('Error sending borrow request:', error);
+    alert('Failed to send borrow request');
+  }
 }
 
 async function loadStats() {

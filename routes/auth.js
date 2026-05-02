@@ -7,13 +7,13 @@ const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
-  const { name, email, password, phone } = req.body;
+  const { name, email, password, phone, dob, address } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      'INSERT INTO users (name, email, password, phone) VALUES ($1, $2, $3, $4) RETURNING id',
-      [name, email, hashedPassword, phone]
+      'INSERT INTO users (name, email, password, phone, dob, address) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [name, email, hashedPassword, phone, dob || null, address || null]
     );
     res.status(201).json({ message: 'User registered successfully', userId: result.rows[0].id });
   } catch (err) {
@@ -24,10 +24,13 @@ router.post('/register', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, password } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1 OR name = $1',
+      [identifier]
+    );
     if (result.rows.length === 0) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
@@ -55,7 +58,7 @@ router.get('/me', async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const result = await pool.query('SELECT id, name, email, phone FROM users WHERE id = $1', [decoded.id]);
+    const result = await pool.query('SELECT id, name, email, phone, dob, address FROM users WHERE id = $1', [decoded.id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }

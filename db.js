@@ -19,15 +19,21 @@ const createTables = async () => {
         email TEXT UNIQUE NOT NULL,
         password TEXT,
         phone TEXT,
+        dob DATE,
+        address TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS items (
         id SERIAL PRIMARY KEY,
         owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        owner_name TEXT,
         name TEXT NOT NULL,
-        description TEXT,
+        brand TEXT,
         category TEXT,
+        age TEXT,
+        condition TEXT DEFAULT 'available',
+        description TEXT,
         image BYTEA,
         status TEXT DEFAULT 'available',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -38,16 +44,32 @@ const createTables = async () => {
         borrow_id VARCHAR(20) UNIQUE,
         item_id INTEGER REFERENCES items(id) ON DELETE CASCADE,
         borrower_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        due_date TIMESTAMP,
-        status TEXT DEFAULT 'active',
+        borrower_name TEXT,
+        borrower_email TEXT,
+        issue_date DATE,
+        due_date DATE,
+        duration_days INTEGER,
+        status TEXT DEFAULT 'requested',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS follows (
+        id SERIAL PRIMARY KEY,
+        follower_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        followed_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(follower_id, followed_user_id)
       );
 
       CREATE TABLE IF NOT EXISTS returns (
         id SERIAL PRIMARY KEY,
         borrow_id INTEGER REFERENCES borrows(id) ON DELETE CASCADE,
+        item_name TEXT,
+        owner_email TEXT,
+        borrower_email TEXT,
         condition TEXT,
         notes TEXT,
+        return_date DATE,
         returned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -56,7 +78,10 @@ const createTables = async () => {
         borrow_id INTEGER REFERENCES borrows(id) ON DELETE CASCADE,
         complainant_id INTEGER REFERENCES users(id),
         accused_id INTEGER REFERENCES users(id),
-        issue TEXT NOT NULL,
+        item_name TEXT,
+        borrower_name TEXT,
+        issue_type TEXT NOT NULL,
+        severity TEXT,
         description TEXT,
         before_image BYTEA,
         after_image BYTEA,
@@ -68,14 +93,31 @@ const createTables = async () => {
     await client.query(`
       ALTER TABLE users ADD COLUMN IF NOT EXISTS password TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS dob DATE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS image BYTEA;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'available';
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS owner_name TEXT;
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS brand TEXT;
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS age TEXT;
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS condition TEXT DEFAULT 'available';
       ALTER TABLE borrows ADD COLUMN IF NOT EXISTS borrow_id VARCHAR(20) UNIQUE;
       ALTER TABLE borrows ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'active';
+      ALTER TABLE borrows ADD COLUMN IF NOT EXISTS borrower_name TEXT;
+      ALTER TABLE borrows ADD COLUMN IF NOT EXISTS borrower_email TEXT;
+      ALTER TABLE borrows ADD COLUMN IF NOT EXISTS issue_date DATE;
+      ALTER TABLE borrows ADD COLUMN IF NOT EXISTS due_date DATE;
+      ALTER TABLE borrows ADD COLUMN IF NOT EXISTS duration_days INTEGER;
       ALTER TABLE returns ADD COLUMN IF NOT EXISTS condition TEXT;
       ALTER TABLE returns ADD COLUMN IF NOT EXISTS notes TEXT;
-      ALTER TABLE complaints ADD COLUMN IF NOT EXISTS issue TEXT;
-      ALTER TABLE complaints ADD COLUMN IF NOT EXISTS description TEXT;
+      ALTER TABLE returns ADD COLUMN IF NOT EXISTS item_name TEXT;
+      ALTER TABLE returns ADD COLUMN IF NOT EXISTS owner_email TEXT;
+      ALTER TABLE returns ADD COLUMN IF NOT EXISTS borrower_email TEXT;
+      ALTER TABLE returns ADD COLUMN IF NOT EXISTS return_date DATE;
+      ALTER TABLE complaints ADD COLUMN IF NOT EXISTS issue_type TEXT;
+      ALTER TABLE complaints ADD COLUMN IF NOT EXISTS severity TEXT;
+      ALTER TABLE complaints ADD COLUMN IF NOT EXISTS item_name TEXT;
+      ALTER TABLE complaints ADD COLUMN IF NOT EXISTS borrower_name TEXT;
       ALTER TABLE complaints ADD COLUMN IF NOT EXISTS before_image BYTEA;
       ALTER TABLE complaints ADD COLUMN IF NOT EXISTS after_image BYTEA;
       ALTER TABLE complaints ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'open';
