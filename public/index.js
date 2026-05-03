@@ -26,14 +26,16 @@ function handleLogoClick(event) {
 async function loadAllItems() {
   if (!itemsContainer) return;
   try {
+    console.log('Loading items from API...');
     const response = await fetch('/api/items');
     if (response.ok) {
       const items = await response.json();
+      console.log('Items loaded:', items.length);
       allItems = items; // store for search
-      const newItems = items.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
+      const newItems = [...items].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
       displayItems(newItems);
     } else {
-      console.error('Failed to load items');
+      console.error('Failed to load items:', response.status);
     }
   } catch (error) {
     console.error('Error loading items:', error);
@@ -41,18 +43,26 @@ async function loadAllItems() {
 }
 
 function filterAndDisplay() {
-  if (!searchInput) return;
+  if (!searchInput) {
+    console.log('Search input not found');
+    return;
+  }
+  
   const query = searchInput.value.trim().toLowerCase();
+  console.log('Search query:', query, 'All items:', allItems.length);
+  
   if (!query) {
     // show newest when no query
-    const newItems = allItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
+    const newItems = [...allItems].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
     displayItems(newItems);
     return;
   }
+  
   const filtered = allItems.filter(item =>
     (item.name && item.name.toLowerCase().includes(query)) ||
     (item.description && item.description.toLowerCase().includes(query))
   );
+  console.log('Filtered results:', filtered.length);
   displayItems(filtered);
 }
 
@@ -147,8 +157,15 @@ document.addEventListener('DOMContentLoaded', () => {
   statBorrows = document.getElementById('statBorrows');
   searchInput = document.getElementById('searchInput');
 
+  console.log('Search input element found:', !!searchInput);
+  
   if (logoLink) logoLink.addEventListener('click', handleLogoClick);
-  if (searchInput) searchInput.addEventListener('input', filterAndDisplay);
+  if (searchInput) {
+    searchInput.addEventListener('input', filterAndDisplay);
+    console.log('Search event listener attached');
+  } else {
+    console.error('Search input not found in DOM');
+  }
 
   initializeTheme();
   loadStats();
