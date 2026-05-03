@@ -156,4 +156,14 @@ function initializeTheme() {
 document.addEventListener('DOMContentLoaded', function () {
   initializeTheme();
   clearMessages();
+
+  // Pre-fill from URL parameters
+  const params = new URLSearchParams(window.location.search);
+  const borrowId = params.get('borrowId');
+  const itemName = params.get('itemName');
+  const borrowerName = params.get('borrowerName');
+
+  if (borrowId && borrowIdInput) borrowIdInput.value = borrowId;
+  if (itemName && itemNameInput) itemNameInput.value = itemName;
+  if (borrowerName && borrowerNameInput) borrowerNameInput.value = borrowerName;
 });

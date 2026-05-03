@@ -8,17 +8,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">🌙</button>
+
     <div class="page-wrapper">
         <header class="header">
             <a href="#" class="brand" id="logoLink">
-                <img src="assets/Logo3.jpeg" alt="LetsShare logo" class="logo">
-                <h1>LetsShare</h1>
+                <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
             </a>
-            <div class="auth-buttons">
-                <input type="text" id="searchInput" placeholder="Search items..." class="search-bar" />
-                <a href="login.html" class="btn">Login</a>
-                <a href="User_Register.html" class="btn primary">Register</a>
+            <div class="auth-buttons" id="authButtons">
+                <div class="search-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search items..." class="search-bar" />
+                </div>
+                <div id="guestButtons" style="display: flex; gap: 0.5rem;">
+                    <a href="login.html" class="btn">Login</a>
+                    <a href="User_Register.html" class="btn primary">Register</a>
+                </div>
+                <div id="loggedInButtons" style="display: none; gap: 0.5rem; align-items: center;">
+                    <a href="ItemForm.html" class="btn small primary">List Item</a>
+                    <a href="issue_Item.html" class="btn small">Borrow</a>
+                    <a href="user_Dashboard.html" class="btn small outline">Dashboard</a>
+                    <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+                </div>
             </div>
         </header>
 
@@ -70,6 +80,10 @@
             <div class="section-heading">
                 <h3>Newly Added Items</h3>
                 <p>Fresh picks from our community — updated real time.</p>
+            </div>
+            <div class="list-header">
+                <span class="col-info">Item Details</span>
+                <span class="col-meta"><span>Status</span> <span>Actions</span></span>
             </div>
             <div id="itemsContainer" class="items-grid">
                 <!-- Items will be loaded here -->

@@ -29,14 +29,20 @@ const createTables = async () => {
         owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         owner_name TEXT,
         name TEXT NOT NULL,
+        status TEXT DEFAULT 'available',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS item_details (
+        id SERIAL PRIMARY KEY,
+        item_id INTEGER REFERENCES items(id) ON DELETE CASCADE,
         brand TEXT,
         category TEXT,
         age TEXT,
         condition TEXT DEFAULT 'available',
         description TEXT,
         image BYTEA,
-        status TEXT DEFAULT 'available',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        UNIQUE(item_id)
       );
 
       CREATE TABLE IF NOT EXISTS borrows (
@@ -95,6 +101,10 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS dob DATE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_code TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires TIMESTAMP;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS image BYTEA;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'available';
       ALTER TABLE items ADD COLUMN IF NOT EXISTS owner_name TEXT;

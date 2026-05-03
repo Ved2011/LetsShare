@@ -1,6 +1,5 @@
 // index.js
 const html = document.documentElement;
-let themeToggle;
 let logoLink;
 let itemsContainer;
 let statItems;
@@ -12,27 +11,13 @@ let allItems = [];
 function initializeTheme() {
   const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   html.setAttribute('data-theme', savedTheme);
-  updateThemeToggleIcon(savedTheme);
-}
-
-function updateThemeToggleIcon(theme) {
-  if (!themeToggle) return;
-  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const currentTheme = html.getAttribute('data-theme');
-  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  html.setAttribute('data-theme', nextTheme);
-  localStorage.setItem('theme', nextTheme);
-  updateThemeToggleIcon(nextTheme);
 }
 
 function handleLogoClick(event) {
   event.preventDefault();
   const token = localStorage.getItem('token');
   if (token) {
-    window.location.href = 'user_Profile.html';
+    window.location.href = 'user_Dashboard.html';
   } else {
     window.location.href = 'login.html';
   }
@@ -83,23 +68,26 @@ function displayItems(items) {
     itemCard.className = 'item-card';
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
-    const isOwner = user && user.id === item.owner_id;
+    const isOwner = user && Number(user.id) === Number(item.owner_id);
     const canBorrow = token && !isOwner && item.status === 'available';
 
     let actions = '';
     if (canBorrow) {
-      actions = `<button class="btn small" onclick="borrowItem(${item.id})">Borrow</button>`;
+      actions = `<button class="btn small primary" onclick="borrowItem(${item.id})">Borrow</button>`;
     } else if (isOwner) {
-      actions = `<span class="status owner">Your Item</span>`;
-    } else {
-      actions = `<span class="status ${item.status}">${item.status}</span>`;
+      actions = `<span class="status available">Owner</span>`;
     }
 
     itemCard.innerHTML = `
-      <h4>${item.name}</h4>
-      <p>${item.description || 'No description'}</p>
-      <div class="item-actions">
-        ${actions}
+      <div class="card-info">
+        <h4>${item.name}</h4>
+        <p>${item.description || 'No description'}</p>
+      </div>
+      <div class="item-meta">
+        <span class="status ${item.status}">${item.status}</span>
+        <div class="item-actions">
+          ${actions}
+        </div>
       </div>
     `;
     itemsContainer.appendChild(itemCard);
@@ -152,7 +140,6 @@ async function loadStats() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  themeToggle = document.getElementById('themeToggle');
   logoLink = document.getElementById('logoLink');
   itemsContainer = document.getElementById('itemsContainer');
   statItems = document.getElementById('statItems');
@@ -160,11 +147,25 @@ document.addEventListener('DOMContentLoaded', () => {
   statBorrows = document.getElementById('statBorrows');
   searchInput = document.getElementById('searchInput');
 
-  if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
   if (logoLink) logoLink.addEventListener('click', handleLogoClick);
   if (searchInput) searchInput.addEventListener('input', filterAndDisplay);
 
   initializeTheme();
   loadStats();
   loadAllItems();
+
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (token) {
+    const loggedInButtons = document.getElementById('loggedInButtons');
+    if (loggedInButtons) loggedInButtons.style.display = 'flex';
+    
+    const headerAvatar = document.getElementById('headerAvatar');
+    if (headerAvatar && user.name) {
+      headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+    }
+    
+    const guestButtons = document.getElementById('guestButtons');
+    if (guestButtons) guestButtons.style.display = 'none';
+  }
 });

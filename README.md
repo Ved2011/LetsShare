@@ -26,7 +26,7 @@ This is the backend for the LetsShare application, built with Node.js, Express, 
    npm run dev
    ```
 
-The server will run on http://localhost:3000 and create the database tables automatically.
+The server will run on http://localhost:4000 and create the database tables automatically.
 
 ## Frontend Updates
 The frontend JavaScript files have been updated to make API calls to the backend. Users need to register/login first to get a JWT token, which is stored in localStorage.

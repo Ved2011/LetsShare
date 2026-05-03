@@ -12,16 +12,11 @@ const borrowItemBtn = document.getElementById('borrowItemBtn');
 const editProfileBtn = document.getElementById('editProfileBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const dashboardBtn = document.getElementById('dashboardBtn');
+const requestsList = document.getElementById('requestsList');
 
 function initializeTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', savedTheme);
-  updateThemeToggleIcon(savedTheme);
-}
-
-function updateThemeToggleIcon(theme) {
-  if (!themeToggle) return;
-  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 function toggleTheme() {
@@ -29,48 +24,112 @@ function toggleTheme() {
   const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
   html.setAttribute('data-theme', nextTheme);
   localStorage.setItem('theme', nextTheme);
-  updateThemeToggleIcon(nextTheme);
 }
 
 async function loadUserProfile() {
   const token = localStorage.getItem('token');
-  const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-
-  if (storedUser) {
-    userName.textContent = storedUser.name;
-    userEmail.textContent = storedUser.email;
-    avatar.textContent = storedUser.name.charAt(0).toUpperCase();
-  } else {
-    userName.textContent = 'Guest';
-    userEmail.textContent = 'Please sign in to access full profile features.';
-    avatar.textContent = 'G';
-  }
-
   if (!token) {
+    window.location.href = 'login.html';
     return;
   }
 
   try {
-    const response = await fetch('/api/auth/me', {
+    const response = await fetch('/api/users/me', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (response.ok) {
       const user = await response.json();
       localStorage.setItem('user', JSON.stringify(user));
-      userName.textContent = user.name;
-      userEmail.textContent = user.email;
-      avatar.textContent = user.name.charAt(0).toUpperCase();
+      
+      if (userName) userName.textContent = user.name;
+      if (userEmail) userEmail.textContent = user.email;
+      if (avatar) {
+        if (user.profilePictureBase64) {
+          avatar.innerHTML = `<img src="data:image/jpeg;base64,${user.profilePictureBase64}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        } else {
+          avatar.textContent = user.name.charAt(0).toUpperCase();
+        }
+      }
+
+      const headerAvatar = document.getElementById('headerAvatar');
+      if (headerAvatar) {
+        if (user.profilePictureBase64) {
+          headerAvatar.innerHTML = `<img src="data:image/jpeg;base64,${user.profilePictureBase64}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+          headerAvatar.style.overflow = 'hidden';
+          headerAvatar.style.padding = '0';
+        } else {
+          headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+        }
+      }
+
+      // Populate read-only details
+      const displayFullName = document.getElementById('displayFullName');
+      const displayEmail = document.getElementById('displayEmail');
+      const displayPhone = document.getElementById('displayPhone');
+      const displayDob = document.getElementById('displayDob');
+      const displayAddress = document.getElementById('displayAddress');
+
+      if (displayFullName) displayFullName.textContent = user.name;
+      if (displayEmail) displayEmail.textContent = user.email;
+      if (displayPhone) displayPhone.textContent = user.phone || 'Not provided';
+      if (displayDob) {
+        if (user.dob) {
+          const d = new Date(user.dob);
+          displayDob.textContent = d.toLocaleDateString();
+        } else {
+          displayDob.textContent = 'Not provided';
+        }
+      }
+      if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
+
+      // Pre-fill edit form
+      const editName = document.getElementById('editName');
+      const editEmail = document.getElementById('editEmail');
+      const editPhone = document.getElementById('editPhone');
+      const editDob = document.getElementById('editDob');
+      const editAddress = document.getElementById('editAddress');
+      const twoFactorToggle = document.getElementById('twoFactorToggle');
+
+      if (editName) editName.value = user.name || '';
+      if (editEmail) editEmail.value = user.email || '';
+      if (editPhone) editPhone.value = user.phone || '';
+      if (editDob && user.dob) editDob.value = user.dob.split('T')[0];
+      if (editAddress) editAddress.value = user.address || '';
+      if (twoFactorToggle) twoFactorToggle.checked = user.two_factor_enabled;
+
+      // Update header avatar
+      const headerAvatar = document.getElementById('headerAvatar');
+      if (headerAvatar && !user.profilePictureBase64) headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+
     } else if (response.status === 401 || response.status === 403) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = 'login.html';
-    } else {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
     }
   } catch (error) {
     console.error('Error loading profile:', error);
   }
+}
+
+const toggleProfileEditBtn = document.getElementById('toggleProfileEditBtn');
+const profileEditSection = document.getElementById('profileEditSection');
+const profileDetailsSection = document.getElementById('profileDetailsSection');
+
+if (toggleProfileEditBtn && profileEditSection) {
+  toggleProfileEditBtn.addEventListener('click', () => {
+    const isHidden = profileEditSection.style.display === 'none';
+    profileEditSection.style.display = isHidden ? 'block' : 'none';
+    
+    if (profileDetailsSection) {
+      profileDetailsSection.style.display = isHidden ? 'none' : 'block';
+    }
+    
+    toggleProfileEditBtn.innerHTML = isHidden ? '❌ Cancel Edit' : '✏️ Manage Profile';
+    
+    if (isHidden) {
+      profileEditSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
 }
 
 async function loadNewItems() {
@@ -96,8 +155,8 @@ async function loadMyItems() {
     });
     if (response.ok) {
       const items = await response.json();
-      const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-      const myItems = currentUser ? items.filter(item => item.owner_id === currentUser.id) : [];
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const myItems = items.filter(i => Number(i.owner_id) === Number(currentUser.id));
       displayItems(myItemsList, myItems, true);
     }
   } catch (error) {
@@ -115,204 +174,82 @@ async function loadBorrowedItems() {
     });
     if (response.ok) {
       const borrows = await response.json();
-      const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-      const borrowed = currentUser ? borrows.filter(borrow => borrow.borrower_id === currentUser.id) : [];
-      displayBorrowedItems(borrowed);
+      displayBorrowedItems(borrowedItemsList, borrows);
     }
   } catch (error) {
     console.error('Error loading borrowed items:', error);
   }
 }
 
-function displayItems(container, items, isMyItems = false) {
-  container.innerHTML = '';
-  if (items.length === 0) {
-    container.innerHTML = '<p>No items found.</p>';
-    return;
-  }
-  items.forEach(item => {
-    const itemCard = document.createElement('div');
-    itemCard.className = 'item-card';
-    let buttons = '';
-    if (isMyItems) {
-      buttons = `
-        <div class="item-actions">
-          <button class="btn small" onclick="editItem(${item.id})">Edit</button>
-          <button class="btn small danger" onclick="deleteItem(${item.id})">Delete</button>
-        </div>
-      `;
-    } else {
-      // Check if user can borrow this item
-      const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user') || 'null');
-      const isOwner = user && user.id === item.owner_id;
-      const canBorrow = token && !isOwner && item.status === 'available';
-
-      if (canBorrow) {
-        buttons = `
-          <div class="item-actions">
-            <button class="btn small" onclick="borrowItem(${item.id})">Borrow</button>
-          </div>
-        `;
-      } else if (isOwner) {
-        buttons = `<span class="status owner">Your Item</span>`;
-      } else if (item.status !== 'available') {
-        buttons = `<span class="status ${item.status}">${item.status}</span>`;
-      }
-    }
-    itemCard.innerHTML = `
-      <p><strong>${item.name}</strong></p>
-      <p>${item.description || 'No description'}</p>
-      <span class="status ${item.status}">${item.status}</span>
-      ${buttons}
-    `;
-    container.appendChild(itemCard);
-  });
-}
-
-function displayBorrowedItems(borrows) {
-  borrowedItemsList.innerHTML = '';
-  if (borrows.length === 0) {
-    borrowedItemsList.innerHTML = '<p>No borrowed items.</p>';
-    return;
-  }
-  borrows.forEach(borrow => {
-    const itemCard = document.createElement('div');
-    itemCard.className = 'item-card';
-    itemCard.innerHTML = `
-      <p><strong>${borrow.item_name || 'Unknown Item'}</strong></p>
-      <p class="muted">Due: ${borrow.due_date ? new Date(borrow.due_date).toLocaleDateString() : 'N/A'}</p>
-    `;
-    borrowedItemsList.appendChild(itemCard);
-  });
-}
-
-function handleCreateItem() {
-  window.location.href = 'ItemForm.html';
-}
-
-function handleBorrowItem() {
-  window.location.href = 'issue_Item.html';
-}
-
-function handleEditProfile() {
-  // For now, redirect to a profile edit page or show a modal
-  alert('Edit profile functionality coming soon!');
-}
-
-function handleLogout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  window.location.href = 'index.html';
-}
-
-async function editItem(itemId) {
-  // For now, redirect to ItemForm with item id or show edit modal
-  // Since ItemForm might not support editing, we'll implement a simple edit
-  const newName = prompt('Enter new name:');
-  if (!newName) return;
-
+async function loadRequests() {
   const token = localStorage.getItem('token');
-  try {
-    const response = await fetch(`http://localhost:3000/api/items/${itemId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ name: newName })
-    });
-    if (response.ok) {
-      alert('Item updated successfully');
-      loadMyItems(); // Reload items
-    } else {
-      alert('Failed to update item');
-    }
-  } catch (error) {
-    console.error('Error updating item:', error);
-  }
-}
+  if (!token) return;
 
-async function deleteItem(itemId) {
-  if (!confirm('Are you sure you want to delete this item?')) return;
-
-  const token = localStorage.getItem('token');
   try {
-    const response = await fetch(`/api/items/${itemId}`, {
-      method: 'DELETE',
+    const response = await fetch('/api/borrows/requests', {
       headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (response.ok) {
-      alert('Item deleted successfully');
-      loadMyItems(); // Reload items
-    } else {
-      const error = await response.json();
-      alert('Failed to delete item: ' + error.error);
+// Removed list rendering logic
+
+const profileUpdateForm = document.getElementById('profileUpdateForm');
+if (profileUpdateForm) {
+  profileUpdateForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    const formData = new FormData();
+    formData.append('name', document.getElementById('editName').value);
+    formData.append('email', document.getElementById('editEmail').value);
+    formData.append('phone', document.getElementById('editPhone').value || '');
+    formData.append('dob', document.getElementById('editDob').value || '');
+    formData.append('address', document.getElementById('editAddress').value || '');
+    formData.append('password', document.getElementById('editPassword').value || '');
+    formData.append('two_factor_enabled', document.getElementById('twoFactorToggle').checked);
+
+    const fileInput = document.getElementById('editProfilePic');
+    if (fileInput && fileInput.files[0]) {
+      formData.append('profilePicture', fileInput.files[0]);
     }
-  } catch (error) {
-    console.error('Error deleting item:', error);
-  }
+
+    try {
+      const response = await fetch('/api/users/me', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Profile updated successfully!');
+        loadUserProfile();
+      } else {
+        const err = await response.json();
+        alert('Update failed: ' + err.error);
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+      alert('Failed to update profile');
+    }
+  });
 }
 
-async function borrowItem(itemId) {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('Please log in to borrow items');
-    window.location.href = 'login.html';
-    return;
-  }
 
-  try {
-    const response = await fetch('/api/borrows', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ itemId })
-    });
 
-    if (response.ok) {
-      alert('Borrow request sent successfully!');
-      loadNewItems(); // Refresh the items list
-    } else {
-      const error = await response.json();
-      alert('Failed to send borrow request: ' + error.error);
-    }
-  } catch (error) {
-    console.error('Error sending borrow request:', error);
-    alert('Failed to send borrow request');
-  }
-}
-
+// Logic for Options
 if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
 }
 
-if (createItemBtn) {
-  createItemBtn.addEventListener('click', handleCreateItem);
-}
-
-if (borrowItemBtn) {
-  borrowItemBtn.addEventListener('click', handleBorrowItem);
-}
-
-if (editProfileBtn) {
-  editProfileBtn.addEventListener('click', handleEditProfile);
-}
-
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', handleLogout);
-}
-
-if (dashboardBtn) {
-  dashboardBtn.addEventListener('click', () => {
-    window.location.href = 'user_Dashboard.html';
+const mainLogoutBtn = document.getElementById('mainLogoutBtn');
+if (mainLogoutBtn) {
+  mainLogoutBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to logout?')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    }
   });
 }
 
 initializeTheme();
 loadUserProfile();
-loadNewItems();
-loadMyItems();
-loadBorrowedItems();

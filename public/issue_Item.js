@@ -1,21 +1,17 @@
-// issue_Item.js for borrow
-
-const themeToggle = document.getElementById('themeToggle');
+// issue_Item.js
 const html = document.documentElement;
-const issueItemForm = document.getElementById('issueItemForm');
-const itemIdInput = document.getElementById('itemId');
-const borrowerNameInput = document.getElementById('borrowerName');
-const borrowerEmailInput = document.getElementById('borrowerEmail');
-const issueDateInput = document.getElementById('issueDate');
-const dueDateInput = document.getElementById('dueDate');
-const durationInput = document.getElementById('duration');
-const confirmationMessage = document.getElementById('confirmationMessage');
-const errorMessage = document.getElementById('errorMessage');
+let themeToggle;
+let itemsList;
+
+function initializeTheme() {
+  const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  html.setAttribute('data-theme', savedTheme);
+  updateThemeToggleIcon(savedTheme);
+}
 
 function updateThemeToggleIcon(theme) {
-  if (themeToggle) {
-    themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-  }
+  if (!themeToggle) return;
+  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 function toggleTheme() {
@@ -26,116 +22,114 @@ function toggleTheme() {
   updateThemeToggleIcon(nextTheme);
 }
 
-function clearMessages() {
-  if (confirmationMessage) confirmationMessage.style.display = 'none';
-  if (errorMessage) errorMessage.style.display = 'none';
-}
-
-function showError(message) {
-  if (errorMessage) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-  }
-  if (confirmationMessage) confirmationMessage.style.display = 'none';
-}
-
-function showSuccess(message) {
-  if (confirmationMessage) {
-    confirmationMessage.textContent = message;
-    confirmationMessage.style.display = 'block';
-  }
-  if (errorMessage) {
-    errorMessage.style.display = 'none';
+async function loadItems() {
+  if (!itemsList) return;
+  try {
+    const response = await fetch('/api/items');
+    if (response.ok) {
+      const items = await response.json();
+      displayItems(items);
+    } else {
+      itemsList.innerHTML = '<p class="error">Failed to load items.</p>';
+    }
+  } catch (error) {
+    console.error('Error loading items:', error);
+    itemsList.innerHTML = '<p class="error">Error connecting to server.</p>';
   }
 }
 
-function validateBorrowForm() {
-  clearMessages();
+function displayItems(items) {
+  if (!itemsList) return;
+  itemsList.innerHTML = '';
 
-  if (!itemIdInput?.value.trim()) {
-    showError('Item ID is required.');
-    return false;
-  }
-  if (!borrowerNameInput?.value.trim()) {
-    showError('Borrower name is required.');
-    return false;
-  }
-  if (!borrowerEmailInput?.value.trim()) {
-    showError('Borrower email is required.');
-    return false;
-  }
-  if (!issueDateInput?.value) {
-    showError('Issue date is required.');
-    return false;
-  }
-  if (!dueDateInput?.value) {
-    showError('Due date is required.');
-    return false;
-  }
-  if (!durationInput?.value) {
-    showError('Duration is required.');
-    return false;
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  const token = localStorage.getItem('token');
+
+  // Filter for available items and optionally hide own items
+  const availableItems = items.filter(item => item.status === 'available');
+
+  if (availableItems.length === 0) {
+    itemsList.innerHTML = '<p>No available items to borrow at the moment.</p>';
+    return;
   }
 
-  return true;
-}
-
-if (themeToggle) {
-  themeToggle.addEventListener('click', toggleTheme);
-}
-
-if (issueItemForm) {
-  issueItemForm.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    if (!validateBorrowForm()) return;
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      showError('You must be logged in to issue an item.');
-      return;
+  availableItems.forEach(item => {
+    const isOwner = user && Number(user.id) === Number(item.owner_id);
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    
+    let actionHtml = '';
+    if (isOwner) {
+      actionHtml = '<span class="status available">Owner</span>';
+    } else if (token) {
+      actionHtml = `<button class="btn small primary" onclick="requestItem(${item.id})">Request to Borrow</button>`;
+    } else {
+      actionHtml = '<a href="login.html" class="btn small">Login to Borrow</a>';
     }
 
-    const data = {
-      itemId: itemIdInput.value.trim(),
-      borrowerName: borrowerNameInput.value.trim(),
-      borrowerEmail: borrowerEmailInput.value.trim(),
-      issueDate: issueDateInput.value,
-      dueDate: dueDateInput.value,
-      duration: durationInput.value,
-    };
-
-    try {
-      const response = await fetch('/api/borrows', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        showSuccess('Item issued successfully!');
-        issueItemForm.reset();
-      } else {
-        showError(result.error || 'Failed to issue item');
-      }
-    } catch (error) {
-      console.error('Issue item error:', error);
-      showError('Network error. Please try again.');
-    }
+    card.innerHTML = `
+      <div class="card-info">
+        <h4>${item.name}</h4>
+        <p>${item.description || 'No description'}</p>
+      </div>
+      <div class="item-meta">
+        <span class="status ${item.status}">${item.status}</span>
+        <div class="item-actions">
+          ${actionHtml}
+        </div>
+      </div>
+    `;
+    itemsList.appendChild(card);
   });
 }
 
-function initializeTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  html.setAttribute('data-theme', savedTheme);
-  updateThemeToggleIcon(savedTheme);
+async function requestItem(itemId) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to request items.');
+    window.location.href = 'login.html';
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/borrows', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ itemId })
+    });
+
+    if (response.ok) {
+      alert('Borrow request sent successfully!');
+      loadItems(); // Refresh list
+    } else {
+      const error = await response.json();
+      alert('Failed: ' + (error.error || 'Unknown error'));
+    }
+  } catch (error) {
+    console.error('Request error:', error);
+    alert('Failed to send request.');
+  }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+// Make requestItem global for the onclick handler
+window.requestItem = requestItem;
+
+document.addEventListener('DOMContentLoaded', () => {
+  themeToggle = document.getElementById('themeToggle');
+  itemsList = document.getElementById('itemsList');
+
+  if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
   initializeTheme();
-  clearMessages();
+  
+  const headerAvatar = document.getElementById('headerAvatar');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (headerAvatar && user.name) {
+    headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+  }
+  
+  loadItems();
 });

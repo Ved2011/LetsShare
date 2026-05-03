@@ -11,7 +11,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
   try {
     // Get item details to find owner
-    const itemResult = await pool.query('SELECT owner_id, name FROM items WHERE id = $1', [itemId]);
+    const itemResult = await pool.query('SELECT owner_id, name, status FROM items WHERE id = $1', [itemId]);
     if (itemResult.rows.length === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -42,11 +42,11 @@ router.get('/', authenticateToken, async (req, res) => {
   const userId = req.user.id;
   try {
     const result = await pool.query(`
-      SELECT b.*, i.name as item_name, u.name as borrower_name, u.email as borrower_email
+      SELECT b.*, i.name as item_name, i.owner_id, u.name as borrower_name, u.email as borrower_email
       FROM borrows b
       JOIN items i ON b.item_id = i.id
       JOIN users u ON b.borrower_id = u.id
-      WHERE i.owner_id = $1 OR b.borrower_id = $1
+      WHERE b.borrower_id = $1 AND b.status IN ('requested', 'active')
     `, [userId]);
     res.json(result.rows);
   } catch (err) {
@@ -73,7 +73,8 @@ router.put('/:id/approve', authenticateToken, async (req, res) => {
     }
 
     const borrow = borrowResult.rows[0];
-    if (borrow.owner_id !== userId) {
+    
+    if (Number(borrow.owner_id) != Number(userId)) {
       return res.status(403).json({ error: 'Not authorized to approve this request' });
     }
 
@@ -129,6 +130,67 @@ router.put('/:id/decline', authenticateToken, async (req, res) => {
     res.json({ message: 'Borrow request declined successfully' });
   } catch (err) {
     console.error('Decline borrow error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Return borrowed item
+router.put('/:id/return', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    // Get borrow record
+    const borrowResult = await pool.query(`
+      SELECT b.* FROM borrows b
+      WHERE b.id = $1
+    `, [id]);
+
+    if (borrowResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Borrow record not found' });
+    }
+
+    const borrow = borrowResult.rows[0];
+    
+    // Only borrower can return
+    if (Number(borrow.borrower_id) !== Number(userId)) {
+      return res.status(403).json({ error: 'Not authorized to return this item' });
+    }
+
+    if (borrow.status !== 'active') {
+      return res.status(400).json({ error: 'Item is not currently borrowed' });
+    }
+
+    // Update borrow status
+    await pool.query('UPDATE borrows SET status = $1 WHERE id = $2', ['returned', id]);
+
+    // Update item status back to available
+    await pool.query('UPDATE items SET status = $1 WHERE id = $2', ['available', borrow.item_id]);
+
+    res.json({ message: 'Item returned successfully' });
+  } catch (err) {
+    console.error('Return item error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get overdue borrows for user
+router.get('/overdue', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(`
+      SELECT b.*, i.name as item_name, i.owner_id, u.name as borrower_name,
+             CURRENT_DATE - b.due_date as days_overdue
+      FROM borrows b
+      JOIN items i ON b.item_id = i.id
+      JOIN users u ON b.borrower_id = u.id
+      WHERE (i.owner_id = $1 OR b.borrower_id = $1)
+        AND b.status = 'active'
+        AND b.due_date < CURRENT_DATE
+    `, [userId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Overdue borrows error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

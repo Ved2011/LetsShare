@@ -190,6 +190,12 @@ function initializePage() {
 
   initializeTheme();
   recoverSession();
+  
+  const headerAvatar = document.getElementById('headerAvatar');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (headerAvatar && user.name) {
+    headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+  }
   clearMessages();
   if (previewImage) {
     previewImage.style.display = 'none';

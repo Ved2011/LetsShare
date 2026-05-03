@@ -67,6 +67,149 @@ async function recoverSession() {
   return null;
 }
 
+async function loadOverdueItems() {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch('/api/borrows/overdue', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const overdueItems = await response.json();
+      displayOverdueItems(overdueItems);
+    }
+  } catch (error) {
+    console.error('Error loading overdue items:', error);
+  }
+}
+
+function displayOverdueItems(items) {
+  const overdueSection = document.getElementById('overdueSection');
+  const overdueList = document.getElementById('overdueItemsList');
+  if (!overdueSection || !overdueList) return;
+
+  if (items.length === 0) {
+    overdueSection.style.display = 'none';
+    return;
+  }
+
+  overdueSection.style.display = 'block';
+  overdueList.innerHTML = '';
+
+  items.forEach(item => {
+    const isOwner = item.owner_id === JSON.parse(localStorage.getItem('user')).id;
+    const days = Math.floor(item.days_overdue || 1); // fallback if null
+
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.style.background = '#fff';
+    card.style.border = '1px solid rgba(220, 53, 69, 0.2)';
+    
+    card.innerHTML = `
+      <div class="card-info">
+        <h4 style="color: #dc3545;">${item.item_name}</h4>
+        <p style="font-weight: 500;">
+          ${isOwner ? `Your item is overdue by ${days} days (Borrowed by: ${item.borrower_name})` : `You are overdue by ${days} days! (Owner: ${item.owner_id})`}
+        </p>
+      </div>
+      <div class="item-meta">
+        <span class="status error" style="background: rgba(220,53,69,0.1); color: #dc3545;">Overdue</span>
+        <div class="item-actions">
+           ${!isOwner ? `<button class="btn small" style="background: #dc3545; color: white; border-color: #dc3545;" onclick="returnItem(${item.id})">Return Now</button>` : ''}
+        </div>
+      </div>
+    `;
+    overdueList.appendChild(card);
+  });
+}
+
+async function returnItem(borrowId) {
+  if (!confirm('Are you sure you want to return this item?')) return;
+  
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`/api/borrows/${borrowId}/return`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      alert('Item returned successfully!');
+      loadBorrowedItems();
+      loadOverdueItems();
+    } else {
+      const err = await response.json();
+      alert('Failed to return item: ' + err.error);
+    }
+  } catch (error) {
+    console.error('Return item error:', error);
+    alert('Failed to return item');
+  }
+}
+
+window.returnItem = returnItem;
+
+async function loadComplaints() {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch('/api/complaints', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const complaints = await response.json();
+      displayComplaints(complaints);
+    }
+  } catch (error) {
+    console.error('Error loading complaints:', error);
+  }
+}
+
+function displayComplaints(complaints) {
+  const complaintsSection = document.getElementById('complaintsSection');
+  const complaintsList = document.getElementById('complaintsList');
+  if (!complaintsSection || !complaintsList) return;
+
+  if (complaints.length === 0) {
+    complaintsSection.style.display = 'none';
+    return;
+  }
+
+  complaintsSection.style.display = 'block';
+  complaintsList.innerHTML = '';
+
+  complaints.forEach(complaint => {
+    const isAccused = complaint.accused_id === JSON.parse(localStorage.getItem('user')).id;
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.style.background = '#fff';
+    card.style.border = '1px solid rgba(245, 158, 11, 0.2)';
+    
+    card.innerHTML = `
+      <div class="card-info">
+        <h4 style="color: #d97706;">Issue: ${complaint.issue_type} - ${complaint.item_name}</h4>
+        <p style="font-weight: 500;">
+          ${isAccused ? `A complaint was filed against you regarding: ${complaint.description}` : `You filed a complaint against ${complaint.borrower_name}: ${complaint.description}`}
+        </p>
+      </div>
+      <div class="item-meta">
+        <span class="status error" style="background: rgba(245,158,11,0.1); color: #d97706;">${complaint.status}</span>
+      </div>
+    `;
+    complaintsList.appendChild(card);
+  });
+}
+
+function initDashboard() {
+  loadCounts();
+  loadAllItems();
+  loadMyItems();
+  loadBorrowedItems();
+  loadRequests();
+  loadOverdueItems();
+  loadComplaints();
+}
+
 async function loadDashboard() {
   const token = localStorage.getItem('token');
   let user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -124,12 +267,12 @@ async function loadDashboard() {
 
     if (borrowsResponse.ok) {
       const borrows = await borrowsResponse.json();
-      const myBorrows = borrows.filter(borrow => borrow.borrower_id === user.id);
+      const myBorrows = borrows.filter(borrow => Number(borrow.borrower_id) === Number(user.id));
       dashboardBorrows.textContent = myBorrows.length;
       displayBorrowedItems(myBorrows);
 
       // Load borrow requests for items owned by this user
-      const myRequests = borrows.filter(borrow => borrow.status === 'requested' && borrow.owner_id === user.id);
+      const myRequests = borrows.filter(borrow => borrow.status === 'requested' && Number(borrow.owner_id) === Number(user.id));
       displayRequests(myRequests);
     }
   } catch (error) {
@@ -166,9 +309,16 @@ function displayRecentItems(items) {
     const card = document.createElement('div');
     card.className = 'item-card';
     card.innerHTML = `
-      <h4>${item.name}</h4>
-      <p>${item.description || 'No description'}</p>
-      <span class="status ${item.status}">${item.status}</span>
+      <div class="card-info">
+        <h4>${item.name}</h4>
+        <p>${item.description || 'No description'}</p>
+      </div>
+      <div class="item-meta">
+        <span class="status ${item.status}">${item.status}</span>
+        <div class="item-actions">
+           ${item.status === 'available' ? `<button class="btn small primary" onclick="borrowItem(${item.id})">Borrow</button>` : ''}
+        </div>
+      </div>
     `;
     recentItemsContainer.appendChild(card);
   });
@@ -185,12 +335,16 @@ function displayMyItems(items) {
     const card = document.createElement('div');
     card.className = 'item-card';
     card.innerHTML = `
-      <h4>${item.name}</h4>
-      <p>${item.description || 'No description'}</p>
-      <span class="status ${item.status}">${item.status}</span>
-      <div class="item-actions">
-        <button class="btn small" onclick="editItem(${item.id})">Edit</button>
-        <button class="btn small danger" onclick="deleteItem(${item.id})">Delete</button>
+      <div class="card-info">
+        <h4>${item.name}</h4>
+        <p>${item.description || 'No description'}</p>
+      </div>
+      <div class="item-meta">
+        <span class="status ${item.status}">${item.status}</span>
+        <div class="item-actions">
+          <button class="btn small" onclick="editItem(${item.id})">Edit</button>
+          <button class="btn small danger" onclick="deleteItem(${item.id})">Delete</button>
+        </div>
       </div>
     `;
     myItemsContainer.appendChild(card);
@@ -201,18 +355,24 @@ function displayBorrowedItems(borrows) {
   if (!borrowedItemsContainer) return;
   borrowedItemsContainer.innerHTML = '';
   if (!borrows.length) {
-    borrowedItemsContainer.innerHTML = '<p>You haven\'t borrowed any items yet.</p>';
+    borrowedItemsContainer.innerHTML = '<p>You haven\'t borrowed any items at the moment.</p>';
     return;
   }
   borrows.forEach(borrow => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    const isPending = borrow.status === 'requested';
     card.innerHTML = `
-      <h4>${borrow.item_name || 'Unknown Item'}</h4>
-      <p>Due: ${borrow.due_date ? new Date(borrow.due_date).toLocaleDateString() : 'N/A'}</p>
-      <span class="status ${borrow.status}">${borrow.status}</span>
-      <div class="item-actions">
-        <button class="btn small" onclick="returnItem(${borrow.id})">Return</button>
+      <div class="card-info">
+        <h4>${borrow.item_name || 'Unknown Item'}</h4>
+        <p class="muted">${isPending ? 'Waiting for owner approval' : `Due: ${borrow.due_date ? new Date(borrow.due_date).toLocaleDateString() : 'N/A'}`}</p>
+      </div>
+      <div class="item-meta">
+        <span class="status ${borrow.status}">${isPending ? 'Pending' : 'Borrowed'}</span>
+        <div class="item-actions">
+          ${isPending ? '' : `<button class="btn small outline" style="color: #dc3545; border-color: #dc3545;" onclick="window.location.href='Complains.html?borrowId=${borrow.borrow_id || borrow.id}&itemName=${encodeURIComponent(borrow.item_name)}&borrowerName=${encodeURIComponent(borrow.owner_name)}'">Complain</button>
+          <button class="btn small" onclick="returnItem(${borrow.id})">Return</button>`}
+        </div>
       </div>
     `;
     borrowedItemsContainer.appendChild(card);
@@ -229,17 +389,89 @@ function displayRequests(requests) {
     const card = document.createElement('div');
     card.className = 'item-card request-card';
     card.innerHTML = `
-      <h4>${request.item_name || 'Unknown Item'}</h4>
-      <p>Requested by: ${request.borrower_name} (${request.borrower_email})</p>
-      <p>Requested: ${new Date(request.created_at).toLocaleDateString()}</p>
-      <div class="item-actions">
-        <button class="btn small success" onclick="approveRequest(${request.id})">Approve</button>
-        <button class="btn small danger" onclick="declineRequest(${request.id})">Decline</button>
+      <div class="card-info">
+        <h4>${request.item_name || 'Unknown Item'}</h4>
+        <p>Requested by: ${request.borrower_name} (${request.borrower_email})</p>
+        <p>Requested on: ${new Date(request.created_at).toLocaleDateString()}</p>
+      </div>
+      
+      <div class="item-meta">
+        <div id="actions-${request.id}" class="item-actions">
+          <button class="btn small success" onclick="showApproveForm(${request.id})">Approve</button>
+          <button class="btn small danger" onclick="declineRequest(${request.id})">Decline</button>
+        </div>
+
+        <div id="form-${request.id}" class="approve-form hidden">
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="dueDate-${request.id}">
+          </div>
+          <div class="form-group">
+            <label>Duration (days)</label>
+            <input type="number" id="duration-${request.id}" placeholder="e.g. 7" style="width: 100px;">
+          </div>
+          <div class="item-actions">
+            <button class="btn small success" onclick="submitApproval(${request.id})">Confirm</button>
+            <button class="btn small outline" onclick="hideApproveForm(${request.id})">Cancel</button>
+          </div>
+        </div>
       </div>
     `;
     requestsContainer.appendChild(card);
   });
 }
+
+function showApproveForm(id) {
+  document.getElementById(`actions-${id}`).classList.add('hidden');
+  document.getElementById(`form-${id}`).classList.remove('hidden');
+}
+
+function hideApproveForm(id) {
+  document.getElementById(`actions-${id}`).classList.remove('hidden');
+  document.getElementById(`form-${id}`).classList.add('hidden');
+}
+
+async function submitApproval(requestId) {
+  const issueDate = document.getElementById(`issueDate-${requestId}`).value;
+  const dueDate = document.getElementById(`dueDate-${requestId}`).value;
+  const duration = document.getElementById(`duration-${requestId}`).value;
+
+  if (!issueDate || !dueDate || !duration) {
+    alert('Please fill in all fields.');
+    return;
+  }
+
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch(`/api/borrows/${requestId}/approve`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        issueDate,
+        dueDate,
+        duration: parseInt(duration)
+      })
+    });
+
+    if (response.ok) {
+      alert('Request approved successfully!');
+      loadDashboard();
+    } else {
+      const error = await response.json();
+      alert('Failed to approve request: ' + error.error);
+    }
+  } catch (error) {
+    console.error('Error approving request:', error);
+    alert('Failed to approve request');
+  }
+}
+
+window.showApproveForm = showApproveForm;
+window.hideApproveForm = hideApproveForm;
+window.submitApproval = submitApproval;
 
 function renderUserSearchResults(users) {
   searchUsersContainer.innerHTML = '';
@@ -422,36 +654,26 @@ async function deleteItem(itemId) {
 async function returnItem(borrowId) {
   const token = localStorage.getItem('token');
   try {
-    const borrowsResponse = await fetch('/api/borrows', {
+    const response = await fetch('/api/borrows', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    if (borrowsResponse.ok) {
-      const borrows = await borrowsResponse.json();
+    if (response.ok) {
+      const borrows = await response.json();
       const borrow = borrows.find(b => b.id === borrowId);
       if (borrow) {
-        const returnResponse = await fetch('/api/returns', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            itemId: borrow.item_id,
-            borrowerEmail: JSON.parse(localStorage.getItem('user')).email,
-            condition: 'good',
-            notes: 'Returned via dashboard'
-          })
+        // Redirect to return page with pre-filled info
+        const user = JSON.parse(localStorage.getItem('user'));
+        const params = new URLSearchParams({
+          itemId: borrow.item_id,
+          itemName: borrow.item_name,
+          ownerEmail: borrow.owner_email || '', 
+          borrowerEmail: user.email
         });
-        if (returnResponse.ok) {
-          alert('Item returned successfully');
-          loadDashboard(); // Reload dashboard
-        } else {
-          alert('Failed to return item');
-        }
+        window.location.href = `item_Return.html?${params.toString()}`;
       }
     }
   } catch (error) {
-    console.error('Error returning item:', error);
+    console.error('Error redirecting to return page:', error);
   }
 }
 
@@ -561,5 +783,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initializeTheme();
+  
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const headerAvatar = document.getElementById('headerAvatar');
+  if (headerAvatar && user.name) {
+    headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+  }
+
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+    });
+  }
+
   loadDashboard();
 });

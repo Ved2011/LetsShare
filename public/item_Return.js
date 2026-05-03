@@ -147,4 +147,16 @@ function initializeTheme() {
 document.addEventListener('DOMContentLoaded', function () {
   initializeTheme();
   clearMessages();
+
+  // Pre-fill form from URL parameters
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('itemId')) itemIdInput.value = params.get('itemId');
+  if (params.has('itemName')) itemNameInput.value = params.get('itemName');
+  if (params.has('ownerEmail')) ownerEmailInput.value = params.get('ownerEmail');
+  if (params.has('borrowerEmail')) borrowerEmailInput.value = params.get('borrowerEmail');
+  
+  // Set default return date to today
+  if (returnDateInput) {
+    returnDateInput.value = new Date().toISOString().split('T')[0];
+  }
 });
