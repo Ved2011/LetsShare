@@ -53,24 +53,25 @@ function displayItems(items) {
     return;
   }
 
-  availableItems.forEach(item => {
+    availableItems.forEach(item => {
     const isOwner = user && Number(user.id) === Number(item.owner_id);
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.style.cursor = 'pointer';
+    card.onclick = () => window.location.href = `item_View.html?id=${item.id}`;
     
     let actionHtml = '';
     if (isOwner) {
       actionHtml = '<span class="status available">Owner</span>';
-    } else if (token) {
-      actionHtml = `<button class="btn small primary" onclick="requestItem(${item.id})">Request to Borrow</button>`;
     } else {
-      actionHtml = '<a href="login.html" class="btn small">Login to Borrow</a>';
+      actionHtml = `<button class="btn small primary">View & Borrow</button>`;
     }
 
     card.innerHTML = `
       <div class="card-info">
         <h4>${item.name}</h4>
         <p>${item.description || 'No description'}</p>
+        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
       </div>
       <div class="item-meta">
         <span class="status ${item.status}">${item.status}</span>
@@ -86,8 +87,8 @@ function displayItems(items) {
 async function requestItem(itemId) {
   const token = localStorage.getItem('token');
   if (!token) {
-    alert('Please log in to request items.');
-    window.location.href = 'login.html';
+    window.showAlert('Please log in to request items.', 'error');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
     return;
   }
 
@@ -102,15 +103,15 @@ async function requestItem(itemId) {
     });
 
     if (response.ok) {
-      alert('Borrow request sent successfully!');
+      window.showAlert('Borrow request sent successfully!');
       loadItems(); // Refresh list
     } else {
       const error = await response.json();
-      alert('Failed: ' + (error.error || 'Unknown error'));
+      window.showAlert('Failed: ' + (error.error || 'Unknown error'), 'error');
     }
   } catch (error) {
     console.error('Request error:', error);
-    alert('Failed to send request.');
+    window.showAlert('Failed to send request.', 'error');
   }
 }
 

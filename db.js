@@ -21,6 +21,12 @@ const createTables = async () => {
         phone TEXT,
         dob DATE,
         address TEXT,
+        plan_type TEXT DEFAULT 'Free',
+        plan_expiry TIMESTAMP,
+        borrows_this_month INTEGER DEFAULT 0,
+        last_borrow_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        wallet_balance DECIMAL DEFAULT 0,
+        upi_id TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -29,6 +35,7 @@ const createTables = async () => {
         owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
         owner_name TEXT,
         name TEXT NOT NULL,
+        price_per_day DECIMAL DEFAULT 0,
         status TEXT DEFAULT 'available',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -94,6 +101,53 @@ const createTables = async () => {
         status TEXT DEFAULT 'open',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS transactions (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        amount DECIMAL NOT NULL,
+        type TEXT NOT NULL, -- 'credit', 'debit'
+        category TEXT NOT NULL, -- 'borrow_fee', 'subscription', 'earning', 'withdrawal', 'platform_fee'
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS communities (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        address TEXT,
+        description TEXT,
+        max_limit INTEGER DEFAULT 100,
+        is_private BOOLEAN DEFAULT false,
+        chat_enabled BOOLEAN DEFAULT false,
+        admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS community_members (
+        id SERIAL PRIMARY KEY,
+        community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(community_id, user_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS community_invites (
+        id SERIAL PRIMARY KEY,
+        community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+        inviter_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        invitee_email TEXT NOT NULL,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS community_messages (
+        id SERIAL PRIMARY KEY,
+        community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     await client.query(`
@@ -108,6 +162,7 @@ const createTables = async () => {
       ALTER TABLE items ADD COLUMN IF NOT EXISTS image BYTEA;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'available';
       ALTER TABLE items ADD COLUMN IF NOT EXISTS owner_name TEXT;
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS price_per_day DECIMAL DEFAULT 0;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS brand TEXT;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS age TEXT;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS condition TEXT DEFAULT 'available';
@@ -131,6 +186,12 @@ const createTables = async () => {
       ALTER TABLE complaints ADD COLUMN IF NOT EXISTS before_image BYTEA;
       ALTER TABLE complaints ADD COLUMN IF NOT EXISTS after_image BYTEA;
       ALTER TABLE complaints ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'open';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS wallet_balance DECIMAL DEFAULT 0;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS upi_id TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_type TEXT DEFAULT 'Free';
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS borrows_this_month INTEGER DEFAULT 0;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_borrow_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
     `);
 
     console.log('Tables created successfully');

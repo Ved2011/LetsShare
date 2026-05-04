@@ -9,6 +9,7 @@ const userRoutes = require('./routes/users');
 const returnRoutes = require('./routes/returns');
 const complaintRoutes = require('./routes/complaints');
 const statsRoutes = require('./routes/stats');
+const communitiesRoutes = require('./routes/communities');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/communities', communitiesRoutes);
 
 // Root route
 app.get('/', (req, res) => {

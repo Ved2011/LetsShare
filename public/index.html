@@ -15,18 +15,18 @@
                 <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
             </a>
             <div class="auth-buttons" id="authButtons">
+                <button onclick="history.back()" class="back-btn">&#8592;</button>
                 <div class="search-wrapper">
                     <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Search items..." class="search-bar" />
+                    <input type="text" id="searchInput" placeholder="Search items..." class="search-bar" autocomplete="off" />
+                    <div id="searchResultsDropdown" class="search-results-dropdown"></div>
                 </div>
                 <div id="guestButtons" style="display: flex; gap: 0.5rem;">
                     <a href="login.html" class="btn">Login</a>
                     <a href="User_Register.html" class="btn primary">Register</a>
                 </div>
                 <div id="loggedInButtons" style="display: none; gap: 0.5rem; align-items: center;">
-                    <a href="ItemForm.html" class="btn small primary">List Item</a>
-                    <a href="issue_Item.html" class="btn small">Borrow</a>
-                    <a href="user_Dashboard.html" class="btn small outline">Dashboard</a>
+                    <a href="ItemForm.html" class="btn primary small">List Item</a>
                     <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
                 </div>
             </div>
@@ -97,6 +97,7 @@
         </section>
     </div>
 
+    <script src="notifications.js"></script>
     <script src="index.js"></script>
 </body>
 </html>

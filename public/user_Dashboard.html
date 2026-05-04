@@ -15,13 +15,15 @@
                 <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
             </a>
             <div class="auth-buttons">
+                <button onclick="history.back()" class="back-btn">&#8592;</button>
                 <div class="search-wrapper">
                     <span class="search-icon">🔍</span>
                     <input type="text" id="searchInput" placeholder="Search community items..." class="search-bar" />
                 </div>
                 <a href="ItemForm.html" class="btn small primary">List Item</a>
                 <a href="issue_Item.html" class="btn small">Borrow</a>
-                <a href="index.html" class="btn small outline">Home</a>
+                <a href="communities.html" class="btn small outline">Communities</a>
+
                 <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
             </div>
         </header>
@@ -127,6 +129,7 @@
             <p>Your community-driven platform for sharing and borrowing items locally.</p>
         </section>
     </div>
+    <script src="notifications.js"></script>
     <script src="user_Dashboard.js"></script>
 </body>
 </html>

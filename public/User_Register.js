@@ -1,8 +1,6 @@
 const themeToggle = document.getElementById('themeToggle');
 const html = document.documentElement;
 const registerForm = document.getElementById('registerForm');
-const confirmationMessage = document.getElementById('confirmationMessage');
-const errorMessage = document.getElementById('errorMessage');
 
 function updateThemeToggleIcon(theme) {
   themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
@@ -12,16 +10,6 @@ function initializeTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', savedTheme);
   updateThemeToggleIcon(savedTheme);
-}
-
-function showMessage(element, message) {
-  element.textContent = message;
-  element.style.display = 'block';
-}
-
-function clearMessages() {
-  if (confirmationMessage) confirmationMessage.style.display = 'none';
-  if (errorMessage) errorMessage.style.display = 'none';
 }
 
 if (themeToggle) {
@@ -37,7 +25,6 @@ if (themeToggle) {
 if (registerForm) {
   registerForm.addEventListener('submit', async function (event) {
     event.preventDefault();
-    clearMessages();
 
     const formData = new FormData(registerForm);
     const data = {
@@ -51,7 +38,7 @@ if (registerForm) {
 
     // Validate password confirmation
     if (data.password !== formData.get('confirm_password')) {
-      showMessage(errorMessage, 'Passwords do not match');
+      window.showAlert('Passwords do not match', 'error');
       return;
     }
 
@@ -67,18 +54,17 @@ if (registerForm) {
       const result = await response.json();
 
       if (response.ok) {
-        showMessage(confirmationMessage, 'Registration successful. Redirecting to login...');
+        window.showAlert('Registration successful. Redirecting to login...', 'success');
         setTimeout(() => {
           window.location.href = 'login.html';
         }, 1200);
       } else {
-        showMessage(errorMessage, result.error || 'Registration failed');
+        window.showAlert(result.error || 'Registration failed', 'error');
       }
     } catch (error) {
-      showMessage(errorMessage, 'Network error. Please try again.');
+      window.showAlert('Network error. Please try again.', 'error');
     }
   });
 }
 
 initializeTheme();
-clearMessages();

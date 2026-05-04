@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { pool } = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authenticateTokenOptional } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -11,17 +11,55 @@ const upload = multer({ storage });
 
 // Create item
 router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
-  const { owner_name, name, brand, category, age, condition, description } = req.body;
+  const { owner_name, name, brand, category, age, condition, description, price_per_day } = req.body;
   const image = req.file ? req.file.buffer : null;
   const ownerId = req.user.id;
 
   try {
     // Start transaction
     await pool.query('BEGIN');
-    
+
+    // Get user's plan and balance
+    const userResult = await pool.query('SELECT plan_type, wallet_balance FROM users WHERE id = $1', [ownerId]);
+    if (userResult.rows.length === 0) {
+      await pool.query('ROLLBACK');
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const { plan_type, wallet_balance } = userResult.rows[0];
+
+    // Get current listing count
+    const itemCountResult = await pool.query('SELECT COUNT(*) FROM items WHERE owner_id = $1', [ownerId]);
+    const itemCount = parseInt(itemCountResult.rows[0].count);
+
+    // Determine limit
+    let limit = 5;
+    if (plan_type === 'Pro') limit = 15;
+    if (plan_type === 'Premium') limit = 30;
+
+    let fee = 0;
+    if (itemCount >= limit) {
+      fee = 20;
+      if (wallet_balance < fee) {
+        await pool.query('ROLLBACK');
+        return res.status(400).json({ error: `Listing limit reached for ${plan_type} plan (${limit} items). You need Rs. 20 in your wallet for additional listings.` });
+      }
+
+      // Deduct fee
+      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [fee, ownerId]);
+      
+      // Record transaction
+      await pool.query(
+        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
+        [ownerId, fee, 'debit', 'listing_fee', `Extra listing fee beyond ${limit} items limit`]
+      );
+    }
+
+    // Enforce max price
+    const price = Math.min(parseFloat(price_per_day) || 0, 100);
+
     const itemResult = await pool.query(
-      'INSERT INTO items (owner_id, owner_name, name) VALUES ($1, $2, $3) RETURNING id',
-      [ownerId, owner_name || null, name]
+      'INSERT INTO items (owner_id, owner_name, name, price_per_day) VALUES ($1, $2, $3, $4) RETURNING id',
+      [ownerId, owner_name || null, name, price]
     );
     
     const itemId = itemResult.rows[0].id;
@@ -32,7 +70,10 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     );
     
     await pool.query('COMMIT');
-    res.status(201).json({ message: 'Item created successfully', itemId });
+    res.status(201).json({ 
+      message: fee > 0 ? `Item created successfully! (Rs. ${fee} charged for extra listing)` : 'Item created successfully!', 
+      itemId 
+    });
   } catch (err) {
     await pool.query('ROLLBACK');
     console.error('Create item error:', err);
@@ -40,16 +81,33 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
   }
 });
 
-// Get all items
-router.get('/', async (req, res) => {
+// Get all items (filtered by community if logged in)
+router.get('/', authenticateTokenOptional, async (req, res) => {
   try {
+    const userId = req.user ? req.user.id : null;
+    
+    // If not logged in, maybe show nothing or only public items? The prompt says "a person can only borrow from people in his community"
+    // Let's hide items for non-logged in users to encourage signing up, or show all but prevent borrowing.
+    // Let's only show items of users who share a community, or ALL if user is not logged in (to entice them).
+    
     const query = `
       SELECT i.*, d.brand, d.category, d.age, d.condition, d.description, d.image
       FROM items i
       LEFT JOIN item_details d ON i.id = d.item_id
+      WHERE $1::int IS NULL OR i.owner_id = $1 OR EXISTS (
+        SELECT 1 FROM community_members cm1
+        JOIN community_members cm2 ON cm1.community_id = cm2.community_id
+        WHERE cm1.user_id = i.owner_id AND cm2.user_id = $1
+      )
     `;
-    const result = await pool.query(query);
-    res.json(result.rows);
+    const result = await pool.query(query, [userId]);
+    const items = result.rows.map(item => {
+      if (item.image) {
+        item.imageBase64 = `data:image/jpeg;base64,${item.image.toString('base64')}`;
+      }
+      return item;
+    });
+    res.json(items);
   } catch (err) {
     console.error('Get all items error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -70,7 +128,11 @@ router.get('/:id', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
-    res.json(result.rows[0]);
+    const item = result.rows[0];
+    if (item.image) {
+      item.imageBase64 = `data:image/jpeg;base64,${item.image.toString('base64')}`;
+    }
+    res.json(item);
   } catch (err) {
     console.error('Get item by id error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -80,7 +142,7 @@ router.get('/:id', async (req, res) => {
 // Update item
 router.put('/:id', authenticateToken, upload.single('image'), async (req, res) => {
   const { id } = req.params;
-  const { name, description, category, brand, age, condition } = req.body;
+  const { name, description, category, brand, age, condition, price_per_day } = req.body;
   const image = req.file ? req.file.buffer : null;
   const ownerId = req.user.id;
 
@@ -96,27 +158,51 @@ router.put('/:id', authenticateToken, upload.single('image'), async (req, res) =
 
     await pool.query('BEGIN');
 
-    // Update main items table if name is provided
+    // Update main items table
+    const price = price_per_day !== undefined ? Math.min(parseFloat(price_per_day) || 0, 100) : undefined;
+    let mainQuery = 'UPDATE items SET ';
+    let mainParams = [];
+    let mIdx = 1;
+
     if (name !== undefined) {
-      await pool.query('UPDATE items SET name = $1 WHERE id = $2', [name, id]);
+      mainQuery += `name = $${mIdx++}, `;
+      mainParams.push(name);
+    }
+    if (price !== undefined) {
+      mainQuery += `price_per_day = $${mIdx++}, `;
+      mainParams.push(price);
+    }
+
+    if (mainParams.length > 0) {
+      mainQuery = mainQuery.slice(0, -2); // remove last comma
+      mainQuery += ` WHERE id = $${mIdx}`;
+      mainParams.push(id);
+      await pool.query(mainQuery, mainParams);
     }
 
     // Update item_details table
-    const detailFields = [];
-    const detailValues = [];
+    let detailQuery = 'UPDATE item_details SET ';
+    let detailParams = [];
     let dIdx = 1;
 
-    if (description !== undefined) { detailFields.push(`description = $${dIdx++}`); detailValues.push(description); }
-    if (category !== undefined) { detailFields.push(`category = $${dIdx++}`); detailValues.push(category); }
-    if (brand !== undefined) { detailFields.push(`brand = $${dIdx++}`); detailValues.push(brand); }
-    if (age !== undefined) { detailFields.push(`age = $${dIdx++}`); detailValues.push(age); }
-    if (condition !== undefined) { detailFields.push(`condition = $${dIdx++}`); detailValues.push(condition); }
-    if (image !== null) { detailFields.push(`image = $${dIdx++}`); detailValues.push(image); }
+    const fields = { brand, category, age, condition, description };
+    for (const [key, value] of Object.entries(fields)) {
+      if (value !== undefined) {
+        detailQuery += `${key} = $${dIdx++}, `;
+        detailParams.push(value);
+      }
+    }
 
-    if (detailFields.length > 0) {
-      detailValues.push(id);
-      const detailQuery = `UPDATE item_details SET ${detailFields.join(', ')} WHERE item_id = $${dIdx}`;
-      await pool.query(detailQuery, detailValues);
+    if (req.file) {
+      detailQuery += `image = $${dIdx++}, `;
+      detailParams.push(req.file.buffer);
+    }
+
+    if (detailParams.length > 0) {
+      detailQuery = detailQuery.slice(0, -2);
+      detailQuery += ` WHERE item_id = $${dIdx}`;
+      detailParams.push(id);
+      await pool.query(detailQuery, detailParams);
     }
 
     await pool.query('COMMIT');

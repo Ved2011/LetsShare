@@ -24,9 +24,24 @@ router.post('/register', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
-  const { identifier, password } = req.body;
+  const { identifier, password, recaptchaToken } = req.body;
+
+  if (!recaptchaToken) {
+    return res.status(400).json({ error: 'reCAPTCHA token is missing.' });
+  }
 
   try {
+    // Validate reCAPTCHA token with Google
+    const recaptchaSecret = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'; // Google test secret key
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecret}&response=${recaptchaToken}`;
+    
+    const recaptchaResponse = await fetch(verifyUrl, { method: 'POST' });
+    const recaptchaData = await recaptchaResponse.json();
+    
+    if (!recaptchaData.success) {
+      return res.status(400).json({ error: 'reCAPTCHA validation failed.' });
+    }
+
     const result = await pool.query(
       'SELECT * FROM users WHERE email = $1 OR name = $1',
       [identifier]

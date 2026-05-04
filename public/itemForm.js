@@ -3,30 +3,8 @@
 // ============= DARK MODE THEME TOGGLE =============
 const html = document.documentElement;
 
-let themeToggle;
-let nameInput;
-let itemNameInput;
-let itemImageInput;
-let brandInput;
-let categorySelect;
-let ageSelect;
-let conditionSelect;
-let descriptionInput;
-let submitButton;
-let clearButton;
-let confirmationMessage;
-let errorMessage;
-let itemDetails;
-let detailName;
-let detailItemName;
-let detailBrand;
-let detailCategory;
-let detailAge;
-let detailCondition;
-let detailDescription;
-let imagePreviewContainer;
-let previewImage;
-
+let themeToggle, nameInput, itemNameInput, itemImageInput, brandInput, categorySelect, ageSelect, conditionSelect, descriptionInput, pricePerDayInput;
+let submitButton, clearButton, confirmationMessage, errorMessage, itemDetails, previewImage, imagePreviewContainer;
 let currentImageUrl = null;
 
 // Load theme from localStorage or system preference
@@ -52,12 +30,8 @@ function safeToggleTheme() {
 }
 
 function clearMessages() {
-  if (confirmationMessage) {
-    confirmationMessage.style.display = 'none';
-  }
-  if (errorMessage) {
-    errorMessage.style.display = 'none';
-  }
+  if (confirmationMessage) confirmationMessage.style.display = 'none';
+  if (errorMessage) errorMessage.style.display = 'none';
 }
 
 function getCachedAuth() {
@@ -70,7 +44,6 @@ function getCachedAuth() {
 async function recoverSession() {
   const { token } = getCachedAuth();
   if (!token) return false;
-
   try {
     const response = await fetch('/api/auth/me', {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -89,41 +62,21 @@ async function recoverSession() {
 }
 
 function showError(message) {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   if (errorMessage) {
     errorMessage.style.display = 'block';
     errorMessage.textContent = message;
+    errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-  if (confirmationMessage) {
-    confirmationMessage.style.display = 'none';
-  }
-  if (itemDetails) {
-    itemDetails.style.display = 'none';
-  }
+  if (confirmationMessage) confirmationMessage.style.display = 'none';
 }
 
 function showSuccess(message) {
   if (confirmationMessage) {
     confirmationMessage.style.display = 'block';
     confirmationMessage.textContent = message;
+    confirmationMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
-  if (errorMessage) {
-    errorMessage.style.display = 'none';
-  }
-}
-
-function renderItemDetails() {
-  if (!detailName || !detailItemName || !detailBrand || !detailCategory || !detailAge || !detailCondition || !detailDescription || !itemDetails) {
-    return;
-  }
-  detailName.textContent = nameInput?.value.trim() || '';
-  detailItemName.textContent = itemNameInput?.value.trim() || '';
-  detailBrand.textContent = brandInput?.value.trim() || '';
-  detailCategory.textContent = categorySelect?.value || '';
-  detailAge.textContent = ageSelect?.value || '';
-  detailCondition.textContent = conditionSelect?.value || '';
-  detailDescription.textContent = descriptionInput?.value.trim() || '';
-  itemDetails.style.display = 'block';
+  if (errorMessage) errorMessage.style.display = 'none';
 }
 
 function isAllFieldsFilled() {
@@ -134,8 +87,91 @@ function isAllFieldsFilled() {
     categorySelect?.value !== '' &&
     ageSelect?.value !== '' &&
     conditionSelect?.value !== '' &&
-    descriptionInput?.value.trim() !== ''
+    descriptionInput?.value.trim() !== '' &&
+    pricePerDayInput?.value.trim() !== ''
   );
+}
+
+async function loadItemForEdit(id) {
+  try {
+    const response = await fetch(`/api/items/${id}`);
+    if (response.ok) {
+      const item = await response.json();
+      if (nameInput) nameInput.value = item.owner_name || '';
+      itemNameInput.value = item.name;
+      brandInput.value = item.brand || '';
+      categorySelect.value = item.category || '';
+      ageSelect.value = item.age || '';
+      conditionSelect.value = item.condition || '';
+      descriptionInput.value = item.description || '';
+      pricePerDayInput.value = item.price_per_day || 0;
+      
+      if (item.imageBase64) {
+        previewImage.src = item.imageBase64;
+        imagePreviewContainer.style.display = 'block';
+      }
+      
+      const event = new Event('input');
+      pricePerDayInput.dispatchEvent(event);
+    }
+  } catch (err) {
+    console.error('Error loading item for edit:', err);
+  }
+}
+
+async function submitForm(editId = null) {
+  console.log('Attempting to submit form. editId:', editId);
+  
+  if (!isAllFieldsFilled()) {
+    showError('Please fill in all required fields. Item image is optional.');
+    return;
+  }
+
+  const { token } = getCachedAuth();
+  if (!token) {
+    showError('Please log in first.');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('owner_name', nameInput.value.trim());
+  formData.append('name', itemNameInput.value.trim());
+  formData.append('brand', brandInput.value.trim());
+  formData.append('category', categorySelect.value);
+  formData.append('age', ageSelect.value);
+  formData.append('condition', conditionSelect.value);
+  formData.append('description', descriptionInput.value.trim());
+  formData.append('price_per_day', pricePerDayInput.value);
+  
+  if (itemImageInput.files[0]) {
+    formData.append('image', itemImageInput.files[0]);
+  }
+
+  try {
+    const url = editId ? `/api/items/${editId}` : '/api/items';
+    const method = editId ? 'PUT' : 'POST';
+    
+    console.log(`Sending ${method} request to ${url}`);
+    
+    const response = await fetch(url, {
+      method: method,
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+
+    if (response.ok) {
+      showSuccess(editId ? 'Item updated successfully!' : 'Item listed successfully!');
+      setTimeout(() => {
+        window.location.href = 'user_Dashboard.html';
+      }, 1500);
+    } else {
+      const err = await response.json();
+      showError(err.error || 'Failed to save item.');
+    }
+  } catch (err) {
+    console.error('Submit error:', err);
+    showError('An error occurred. Please check your connection.');
+  }
 }
 
 function initializePage() {
@@ -148,187 +184,93 @@ function initializePage() {
   ageSelect = document.getElementById('Age');
   conditionSelect = document.getElementById('itemCondition');
   descriptionInput = document.getElementById('itemDescription');
+  pricePerDayInput = document.getElementById('pricePerDay');
+  
   submitButton = document.querySelector('button[type="submit"]');
   clearButton = document.getElementById('clearButton');
   confirmationMessage = document.getElementById('confirmationMessage');
   errorMessage = document.getElementById('errorMessage');
   itemDetails = document.getElementById('itemDetails');
-  detailName = document.getElementById('detailName');
-  detailItemName = document.getElementById('detailItemName');
-  detailBrand = document.getElementById('detailBrand');
-  detailCategory = document.getElementById('detailCategory');
-  detailAge = document.getElementById('detailAge');
-  detailCondition = document.getElementById('detailCondition');
-  detailDescription = document.getElementById('detailDescription');
   imagePreviewContainer = document.getElementById('imagePreview');
   previewImage = document.getElementById('preview');
 
-  if (themeToggle) {
-    themeToggle.addEventListener('click', safeToggleTheme);
-  }
+  const priceBreakdown = document.getElementById('priceBreakdown');
+  const platformFee = document.getElementById('platformFee');
+  const ownerEarnings = document.getElementById('ownerEarnings');
 
-  const itemForm = document.getElementById('itemForm');
-  if (itemForm) {
-    itemForm.addEventListener('submit', handleSubmit);
-  }
-  if (clearButton) {
-    clearButton.addEventListener('click', clearForm);
-  }
-  if (itemImageInput) {
-    itemImageInput.addEventListener('change', function () {
-      clearMessages();
-      const file = itemImageInput.files?.[0];
-      showImagePreview(file);
+  if (pricePerDayInput) {
+    pricePerDayInput.addEventListener('input', () => {
+      const price = parseFloat(pricePerDayInput.value) || 0;
+      if (price > 100) { pricePerDayInput.value = 100; return; }
+      if (price > 0) {
+        priceBreakdown.style.display = 'block';
+        const fee = price * 0.10;
+        platformFee.textContent = `Rs. ${fee.toFixed(2)}`;
+        ownerEarnings.textContent = `Rs. ${ (price - fee).toFixed(2)}`;
+      } else {
+        priceBreakdown.style.display = 'none';
+      }
     });
   }
 
-  [nameInput, itemNameInput, brandInput, descriptionInput].forEach(el => {
-    if (el) {
-      el.addEventListener('keydown', handleEnterKey);
+  if (themeToggle) themeToggle.addEventListener('click', safeToggleTheme);
+  if (clearButton) clearButton.addEventListener('click', () => { window.location.reload(); });
+  
+  if (itemImageInput) {
+    itemImageInput.addEventListener('change', () => {
+      const file = itemImageInput.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target.result;
+          imagePreviewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  initializeTheme();
+  recoverSession().then(() => {
+    const { user } = getCachedAuth();
+    if (user && nameInput && !nameInput.value) {
+      nameInput.value = user.name;
+    }
+    const headerAvatar = document.getElementById('headerAvatar');
+    if (headerAvatar && user?.name) {
+      headerAvatar.textContent = user.name.charAt(0).toUpperCase();
     }
   });
 
-  initializeTheme();
-  recoverSession();
-  
-  const headerAvatar = document.getElementById('headerAvatar');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  if (headerAvatar && user.name) {
-    headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+  const urlParams = new URLSearchParams(window.location.search);
+  const editItemId = urlParams.get('id');
+
+  if (editItemId) {
+    const pageTitle = document.querySelector('h2');
+    if (pageTitle) pageTitle.textContent = 'Edit Item Details';
+    if (submitButton) submitButton.textContent = 'Update Item';
+    loadItemForEdit(editItemId);
   }
-  clearMessages();
-  if (previewImage) {
-    previewImage.style.display = 'none';
+
+  const itemFormEl = document.getElementById('itemForm');
+  if (itemFormEl) {
+    itemFormEl.addEventListener('submit', (e) => {
+      e.preventDefault();
+      submitForm(editItemId);
+    });
   }
-  if (itemDetails) {
-    itemDetails.style.display = 'none';
-  }
+
+  // Handle Enter key for all inputs
+  [nameInput, itemNameInput, brandInput, descriptionInput, pricePerDayInput].forEach(el => {
+    if (el) {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          submitForm(editItemId);
+        }
+      });
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', initializePage);
-
-async function handleSubmit(event) {
-  event.preventDefault();
-  clearMessages();
-
-  if (!isAllFieldsFilled()) {
-    showError('Please fill in all required fields. Item image is optional.');
-    return;
-  }
-
-  let token = localStorage.getItem('token');
-  let user = JSON.parse(localStorage.getItem('user') || 'null');
-
-  console.log('ItemForm submit - token:', !!token, 'user:', !!user);
-
-  if (token && !user) {
-    console.log('Trying to recover user from token');
-    const recovered = await recoverSession();
-    console.log('Recovery result:', recovered);
-    if (recovered) {
-      user = JSON.parse(localStorage.getItem('user') || 'null');
-      console.log('Recovered user:', !!user);
-    } else {
-      token = null;
-    }
-  }
-
-  if (!token || !user) {
-    console.log('No valid auth, showing error');
-    showError('You must be logged in to submit an item.');
-    return;
-  }
-
-  console.log('Submitting item for user:', user.name);
-
-  renderItemDetails();
-
-  const formData = new FormData();
-  formData.append('owner_name', nameInput?.value.trim() || '');
-  formData.append('name', itemNameInput?.value.trim() || '');
-  formData.append('brand', brandInput?.value.trim() || '');
-  formData.append('category', categorySelect?.value || '');
-  formData.append('age', ageSelect?.value || '');
-  formData.append('condition', conditionSelect?.value || '');
-  formData.append('description', descriptionInput?.value.trim() || '');
-  if (itemImageInput?.files && itemImageInput.files.length > 0) {
-    formData.append('image', itemImageInput.files[0]);
-  }
-
-  try {
-    const response = await fetch('/api/items', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      const message = data.error || 'Submission failed';
-      showError(message);
-      return;
-    }
-
-    showSuccess('Item submitted successfully!');
-    clearForm();
-  } catch (error) {
-    console.error('Item submit error:', error);
-    showError('Network error. Please try again.');
-  }
-}
-
-function showImagePreview(file) {
-  if (!previewImage) {
-    return;
-  }
-  if (!file) {
-    previewImage.style.display = 'none';
-    previewImage.src = '';
-    return;
-  }
-
-  const allowedTypes = ['image/png', 'image/jpeg'];
-  if (!allowedTypes.includes(file.type)) {
-    showError('Only PNG and JPEG images are accepted.');
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function (e) {
-    previewImage.src = e.target.result;
-    previewImage.style.display = 'block';
-    currentImageUrl = e.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function clearForm() {
-  if (nameInput) nameInput.value = '';
-  if (itemNameInput) itemNameInput.value = '';
-  if (itemImageInput) itemImageInput.value = '';
-  if (brandInput) brandInput.value = 'Toys';
-  if (categorySelect) categorySelect.value = 'Toys';
-  if (ageSelect) ageSelect.value = '0-3';
-  if (conditionSelect) conditionSelect.value = 'Excellent';
-  if (descriptionInput) descriptionInput.value = '';
-  if (previewImage) {
-    previewImage.style.display = 'none';
-    previewImage.src = '';
-  }
-  clearMessages();
-  if (itemDetails) {
-    itemDetails.style.display = 'none';
-  }
-  currentImageUrl = null;
-}
-
-function handleEnterKey(event) {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    handleSubmit(event);
-  }
-}
-

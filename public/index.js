@@ -42,29 +42,64 @@ async function loadAllItems() {
   }
 }
 
+let searchResultsDropdown;
+
 function filterAndDisplay() {
-  if (!searchInput) {
-    console.log('Search input not found');
-    return;
-  }
+  if (!searchInput || !searchResultsDropdown) return;
   
   const query = searchInput.value.trim().toLowerCase();
-  console.log('Search query:', query, 'All items:', allItems.length);
   
   if (!query) {
-    // show newest when no query
-    const newItems = [...allItems].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 6);
-    displayItems(newItems);
+    searchResultsDropdown.classList.remove('active');
+    searchResultsDropdown.innerHTML = '';
     return;
   }
   
   const filtered = allItems.filter(item =>
     (item.name && item.name.toLowerCase().includes(query)) ||
-    (item.description && item.description.toLowerCase().includes(query))
+    (item.description && item.description.toLowerCase().includes(query)) ||
+    (item.owner_name && item.owner_name.toLowerCase().includes(query))
   );
-  console.log('Filtered results:', filtered.length);
-  displayItems(filtered);
+  
+  displayDropdownResults(filtered);
 }
+
+function displayDropdownResults(items) {
+  if (!searchResultsDropdown) return;
+  
+  searchResultsDropdown.innerHTML = '';
+  
+  if (items.length === 0) {
+    searchResultsDropdown.innerHTML = '<div style="padding: 1rem; color: var(--muted); text-align: center;">No items found.</div>';
+  } else {
+    items.forEach(item => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'dropdown-item';
+      itemEl.innerHTML = `
+        <div class="dropdown-info">
+          <h5>${item.name}</h5>
+          <p>${item.owner_name ? 'Owner: ' + item.owner_name : 'No description'}</p>
+        </div>
+        <span class="dropdown-status status ${item.status}">${item.status}</span>
+      `;
+      itemEl.addEventListener('click', () => {
+        window.location.href = `item_View.html?id=${item.id}`;
+      });
+      searchResultsDropdown.appendChild(itemEl);
+    });
+  }
+  
+  searchResultsDropdown.classList.add('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  if (searchResultsDropdown && !searchInput.contains(e.target) && !searchResultsDropdown.contains(e.target)) {
+    searchResultsDropdown.classList.remove('active');
+  }
+});
+
+window.borrowItem = borrowItem;
 
 function displayItems(items) {
   if (!itemsContainer) return;
@@ -76,27 +111,29 @@ function displayItems(items) {
   items.forEach(item => {
     const itemCard = document.createElement('div');
     itemCard.className = 'item-card';
+    itemCard.style.cursor = 'pointer';
+    
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || 'null');
     const isOwner = user && Number(user.id) === Number(item.owner_id);
-    const canBorrow = token && !isOwner && item.status === 'available';
 
-    let actions = '';
-    if (canBorrow) {
-      actions = `<button class="btn small primary" onclick="borrowItem(${item.id})">Borrow</button>`;
-    } else if (isOwner) {
-      actions = `<span class="status available">Owner</span>`;
-    }
+    itemCard.addEventListener('click', () => {
+      window.location.href = `item_View.html?id=${item.id}`;
+    });
 
     itemCard.innerHTML = `
-      <div class="card-info">
-        <h4>${item.name}</h4>
-        <p>${item.description || 'No description'}</p>
+      <div style="display: flex; align-items: center; gap: 1.5rem; flex: 1;">
+        <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
+        <div class="card-info">
+          <h4>${item.name}</h4>
+          <p style="margin-bottom: 0.25rem; opacity: 0.7;">Owner: ${item.owner_name || 'Anonymous'}</p>
+          <p style="font-weight: 700; color: var(--accent); margin: 0;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
+        </div>
       </div>
       <div class="item-meta">
         <span class="status ${item.status}">${item.status}</span>
         <div class="item-actions">
-          ${actions}
+           <button class="btn small outline">View Details</button>
         </div>
       </div>
     `;
@@ -107,8 +144,8 @@ function displayItems(items) {
 async function borrowItem(itemId) {
   const token = localStorage.getItem('token');
   if (!token) {
-    alert('Please log in to borrow items');
-    window.location.href = 'login.html';
+    window.showAlert('Please log in to borrow items', 'error');
+    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
     return;
   }
 
@@ -123,15 +160,15 @@ async function borrowItem(itemId) {
     });
 
     if (response.ok) {
-      alert('Borrow request sent successfully!');
+      window.showAlert('Borrow request sent successfully!');
       loadAllItems(); // Refresh the items list
     } else {
       const error = await response.json();
-      alert('Failed to send borrow request: ' + error.error);
+      window.showAlert('Failed to send borrow request: ' + error.error, 'error');
     }
   } catch (error) {
     console.error('Error sending borrow request:', error);
-    alert('Failed to send borrow request');
+    window.showAlert('Failed to send borrow request', 'error');
   }
 }
 
@@ -156,8 +193,10 @@ document.addEventListener('DOMContentLoaded', () => {
   statUsers = document.getElementById('statUsers');
   statBorrows = document.getElementById('statBorrows');
   searchInput = document.getElementById('searchInput');
+  searchResultsDropdown = document.getElementById('searchResultsDropdown');
 
   console.log('Search input element found:', !!searchInput);
+  console.log('Search dropdown element found:', !!searchResultsDropdown);
   
   if (logoLink) logoLink.addEventListener('click', handleLogoClick);
   if (searchInput) {

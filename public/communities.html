@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communities - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .community-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .community-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .community-badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-public {
+            background: #10b98122;
+            color: #10b981;
+        }
+
+        .badge-private {
+            background: #f59e0b22;
+            color: #f59e0b;
+        }
+
+        .chat-box {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            background: var(--bg-main);
+            margin-bottom: 1rem;
+        }
+
+        .chat-message {
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-message strong {
+            color: var(--accent);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-wrapper">
+        <header class="header">
+            <a href="user_Dashboard.html" class="brand">
+                <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
+            </a>
+            <div class="auth-buttons">
+                <button onclick="history.back()" class="back-btn">&#8592;</button>
+                <button id="createCommunityBtn" class="btn small primary">Create Community</button>
+                <a href="user_Dashboard.html" class="btn small">Dashboard</a>
+                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+            </div>
+        </header>
+
+        <section class="card">
+            <h2>Invites</h2>
+            <div id="invitesList"></div>
+        </section>
+
+        <section class="card">
+            <h2>Communities Around Me</h2>
+            <div class="community-grid" id="communitiesList"></div>
+        </section>
+
+        <!-- Create Community Modal -->
+        <div id="createCommunityModal" class="modal">
+            <div class="modal-content">
+                <h3>Create New Community</h3>
+                <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">Cost: Rs. 200 deducted from
+                    wallet.</p>
+                <form id="createCommunityForm">
+                    <div class="form-group">
+                        <label>Name of Community</label>
+                        <input type="text" id="commName" required class="input-minimal">
+                    </div>
+                    <div class="form-group">
+                        <label>Address / Location Area</label>
+                        <input type="text" id="commAddress" required class="input-minimal">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Max People Limit</label>
+                        <input type="number" id="commLimit" value="100" class="input-minimal">
+                    </div>
+                    <div class="form-group"
+                        style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 0;">
+                        <label style="margin: 0; font-weight: 500;">Make Private</label>
+                        <div class="toggle-container" style="margin: 0;">
+                            <input type="checkbox" id="commPrivate" class="toggle-input">
+                            <label for="commPrivate" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="justify-content: flex-end; margin-top: 1rem;">
+                        <button type="button" class="btn outline"
+                            onclick="document.getElementById('createCommunityModal').classList.remove('active')">Cancel</button>
+                        <button type="submit" class="btn primary">Pay Rs. 200 & Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Community View Modal -->
+        <div id="viewCommunityModal" class="modal">
+            <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 id="viewCommName">Community Name</h3>
+                    <button class="btn small outline"
+                        onclick="document.getElementById('viewCommunityModal').classList.remove('active')">Close</button>
+                </div>
+
+
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button id="joinCommBtn" class="btn small primary" style="display: none;">Join Community</button>
+                    <button id="inviteCommBtn" class="btn small outline" style="display: none;">Invite User</button>
+                    <button id="manageCommBtn" class="btn small outline" style="display: none; border-color: var(--accent); color: var(--accent);">Manage Community</button>
+                </div>
+
+                <div id="inviteForm"
+                    style="display: none; margin-bottom: 1rem; border: 1px solid var(--border); padding: 1rem; border-radius: 8px;">
+                    <h4>Invite User</h4>
+                    <input type="email" id="inviteEmail" class="input-minimal" placeholder="User's email">
+                    <button id="sendInviteBtn" class="btn small primary" style="margin-top: 0.5rem;">Send
+                        Invite</button>
+                </div>
+
+                <!-- Admin Management Section -->
+                <div id="adminManagementSection"
+                    style="display: none; margin-bottom: 1rem; border: 1px solid var(--accent); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 1rem;">Admin Controls</h4>
+                    <button id="chatSettingsBtn" class="btn small outline" style="margin-bottom: 1rem;">Toggle Chat Setting</button>
+                    
+                    <h5 style="margin: 0 0 0.5rem 0;">Add Member Directly</h5>
+                    <input type="email" id="adminAddEmail" class="input-minimal" placeholder="User's email">
+                    <button id="adminAddBtn" class="btn small primary" style="margin-top: 0.5rem;">Add Member</button>
+                    
+                    <hr style="margin: 1rem 0;">
+                    
+                    <h5 style="margin: 0 0 0.5rem 0;">Remove Member</h5>
+                    <input type="number" id="adminRemoveId" class="input-minimal" placeholder="User ID to remove">
+                    <button id="adminRemoveBtn" class="btn small outline" style="margin-top: 0.5rem;">Remove
+                        Member</button>
+                </div>
+
+                <div id="chatSection" style="display: none;">
+                    <h4>Community Chat</h4>
+                    <div class="chat-box" id="chatBox"></div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="chatInput" class="input-minimal" placeholder="Type a message..."
+                            style="flex: 1;">
+                        <button id="sendChatBtn" class="btn small primary">Send</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="communities.js"></script>
+</body>
+
+</html>

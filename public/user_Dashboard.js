@@ -65,7 +65,7 @@ async function recoverSession() {
   // Only clear if we get an auth error (401/403)
   // For now, return null and let dashboard handle it
   return null;
-}
+};
 
 async function loadOverdueItems() {
   const token = localStorage.getItem('token');
@@ -123,29 +123,29 @@ function displayOverdueItems(items) {
 }
 
 async function returnItem(borrowId) {
-  if (!confirm('Are you sure you want to return this item?')) return;
-  
-  const token = localStorage.getItem('token');
-  try {
-    const response = await fetch(`/api/borrows/${borrowId}/return`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`
+  window.showConfirm('Are you sure you want to return this item?', async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`/api/borrows/${borrowId}/return`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        window.showAlert('Item returned successfully!');
+        loadDashboard();
+        loadOverdueItems();
+      } else {
+        const err = await response.json();
+        window.showAlert('Failed to return item: ' + err.error, 'error');
       }
-    });
-    
-    if (response.ok) {
-      alert('Item returned successfully!');
-      loadBorrowedItems();
-      loadOverdueItems();
-    } else {
-      const err = await response.json();
-      alert('Failed to return item: ' + err.error);
+    } catch (error) {
+      console.error('Return item error:', error);
+      window.showAlert('Failed to return item', 'error');
     }
-  } catch (error) {
-    console.error('Return item error:', error);
-    alert('Failed to return item');
-  }
+  });
 }
 
 window.returnItem = returnItem;
@@ -308,15 +308,27 @@ function displayRecentItems(items) {
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.style.cursor = 'pointer';
+    
+    card.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON') {
+        window.location.href = `item_View.html?id=${item.id}`;
+      }
+    });
+
     card.innerHTML = `
-      <div class="card-info">
-        <h4>${item.name}</h4>
-        <p>${item.description || 'No description'}</p>
+      <div style="display: flex; align-items: center; gap: 1.5rem; flex: 1;">
+        <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: #f1f5f9;">
+        <div class="card-info">
+          <h4>${item.name}</h4>
+          <p style="margin-bottom: 0.25rem; opacity: 0.7;">Owner: ${item.owner_name || 'Anonymous'}</p>
+          <p style="font-weight: 700; color: var(--accent); margin: 0;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
+        </div>
       </div>
       <div class="item-meta">
         <span class="status ${item.status}">${item.status}</span>
         <div class="item-actions">
-           ${item.status === 'available' ? `<button class="btn small primary" onclick="borrowItem(${item.id})">Borrow</button>` : ''}
+           <button class="btn small outline">View Details</button>
         </div>
       </div>
     `;
@@ -334,13 +346,24 @@ function displayMyItems(items) {
   items.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.style.cursor = 'pointer';
+
+    card.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON') {
+        window.location.href = `item_View.html?id=${item.id}`;
+      }
+    });
+
     card.innerHTML = `
-      <div class="card-info">
-        <h4>${item.name}</h4>
-        <p>${item.description || 'No description'}</p>
+      <div style="display: flex; align-items: center; gap: 1.5rem; flex: 1;">
+        <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover; background: #f1f5f9;">
+        <div class="card-info">
+          <h4>${item.name}</h4>
+          <p style="margin-bottom: 0.25rem; opacity: 0.7;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
+          <p style="font-size: 0.8rem; color: var(--muted); margin: 0;">(You earn: Rs. ${(Number(item.price_per_day || 0) * 0.85).toFixed(2)})</p>
+        </div>
       </div>
       <div class="item-meta">
-        <span class="status ${item.status}">${item.status}</span>
         <div class="item-actions">
           <button class="btn small" onclick="editItem(${item.id})">Edit</button>
           <button class="btn small danger" onclick="deleteItem(${item.id})">Delete</button>
@@ -432,12 +455,11 @@ function hideApproveForm(id) {
 }
 
 async function submitApproval(requestId) {
-  const issueDate = document.getElementById(`issueDate-${requestId}`).value;
   const dueDate = document.getElementById(`dueDate-${requestId}`).value;
   const duration = document.getElementById(`duration-${requestId}`).value;
 
-  if (!issueDate || !dueDate || !duration) {
-    alert('Please fill in all fields.');
+  if (!dueDate || !duration) {
+    window.showAlert('Please fill in all fields.', 'error');
     return;
   }
 
@@ -450,22 +472,22 @@ async function submitApproval(requestId) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        issueDate,
+        issueDate: new Date().toISOString().split('T')[0],
         dueDate,
         duration: parseInt(duration)
       })
     });
 
     if (response.ok) {
-      alert('Request approved successfully!');
+      window.showAlert('Request approved successfully!');
       loadDashboard();
     } else {
       const error = await response.json();
-      alert('Failed to approve request: ' + error.error);
+      window.showAlert('Failed to approve request: ' + error.error, 'error');
     }
   } catch (error) {
     console.error('Error approving request:', error);
-    alert('Failed to approve request');
+    window.showAlert('Failed to approve request', 'error');
   }
 }
 
@@ -567,7 +589,7 @@ async function searchDashboard(query) {
 async function toggleFollow(userId, isFollowed) {
   const token = localStorage.getItem('token');
   if (!token) {
-    alert('Please log in to follow users.');
+    window.showAlert('Please log in to follow users.', 'error');
     return;
   }
 
@@ -584,11 +606,11 @@ async function toggleFollow(userId, isFollowed) {
       }
     } else {
       const error = await response.json();
-      alert('Follow action failed: ' + (error.error || 'Unknown error'));
+      window.showAlert('Follow action failed: ' + (error.error || 'Unknown error'), 'error');
     }
   } catch (error) {
     console.error('Follow action error:', error);
-    alert('Could not update follow status.');
+    window.showAlert('Could not update follow status.', 'error');
   }
 }
 
@@ -606,9 +628,10 @@ async function handleSearch() {
 }
 
 async function editItem(itemId) {
-  const newName = prompt('Enter new name:');
-  if (!newName) return;
+  window.location.href = `ItemForm.html?id=${itemId}`;
+}
 
+async function updateItem(itemId, newName) {
   const token = localStorage.getItem('token');
   try {
     const response = await fetch(`/api/items/${itemId}`, {
@@ -620,10 +643,10 @@ async function editItem(itemId) {
       body: JSON.stringify({ name: newName })
     });
     if (response.ok) {
-      alert('Item updated successfully');
+      window.showAlert('Item updated successfully');
       loadDashboard(); // Reload dashboard
     } else {
-      alert('Failed to update item');
+      window.showAlert('Failed to update item', 'error');
     }
   } catch (error) {
     console.error('Error updating item:', error);
@@ -631,24 +654,24 @@ async function editItem(itemId) {
 }
 
 async function deleteItem(itemId) {
-  if (!confirm('Are you sure you want to delete this item?')) return;
-
-  const token = localStorage.getItem('token');
-  try {
-    const response = await fetch(`/api/items/${itemId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    if (response.ok) {
-      alert('Item deleted successfully');
-      loadDashboard(); // Reload dashboard
-    } else {
-      const error = await response.json();
-      alert('Failed to delete item: ' + error.error);
+  window.showConfirm('Are you sure you want to delete this item?', async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`/api/items/${itemId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        window.showAlert('Item deleted successfully');
+        loadDashboard(); // Reload dashboard
+      } else {
+        const error = await response.json();
+        window.showAlert('Failed to delete item: ' + error.error, 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
     }
-  } catch (error) {
-    console.error('Error deleting item:', error);
-  }
+  });
 }
 
 async function returnItem(borrowId) {
@@ -703,41 +726,41 @@ async function approveRequest(requestId) {
     });
 
     if (response.ok) {
-      alert('Request approved successfully!');
+      window.showAlert('Request approved successfully!');
       loadDashboard(); // Reload dashboard
     } else {
       const error = await response.json();
-      alert('Failed to approve request: ' + error.error);
+      window.showAlert('Failed to approve request: ' + error.error, 'error');
     }
   } catch (error) {
     console.error('Error approving request:', error);
-    alert('Failed to approve request');
+    window.showAlert('Failed to approve request', 'error');
   }
 }
 
 async function declineRequest(requestId) {
-  if (!confirm('Are you sure you want to decline this borrow request?')) return;
+  window.showConfirm('Are you sure you want to decline this borrow request?', async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`/api/borrows/${requestId}/decline`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-  const token = localStorage.getItem('token');
-  try {
-    const response = await fetch(`/api/borrows/${requestId}/decline`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`
+      if (response.ok) {
+        window.showAlert('Request declined successfully!');
+        loadDashboard(); // Reload dashboard
+      } else {
+        const error = await response.json();
+        window.showAlert('Failed to decline request: ' + error.error, 'error');
       }
-    });
-
-    if (response.ok) {
-      alert('Request declined successfully!');
-      loadDashboard(); // Reload dashboard
-    } else {
-      const error = await response.json();
-      alert('Failed to decline request: ' + error.error);
+    } catch (error) {
+      console.error('Error declining request:', error);
+      window.showAlert('Failed to decline request', 'error');
     }
-  } catch (error) {
-    console.error('Error declining request:', error);
-    alert('Failed to decline request');
-  }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
