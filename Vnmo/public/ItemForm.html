@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Item - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div style="flex-grow: 1;">
+                <h2>List a New Item</h2>
+                <p>Share your belongings with the community.</p>
+            </div>
+        </header>
+
+
+
+        <form class="form-card" id="itemForm">
+            <div id="confirmationMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+            <h2>Register an Item</h2>
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <input type="text" id="Name" name="Name" placeholder="eg. John Abraham" autocomplete="name" required>
+            </div>
+            <div class="form-group">
+                <label for="itemName">Item Name</label>
+                <input type="text" id="itemName" name="itemName" placeholder="eg. Star Wars Starship" autocomplete="off" required>
+            </div>
+
+            <div class="form-group">
+                <label for="itemImage">Item Image (optional)</label>
+                <input type="file" id="itemImage" name="itemImage" accept="image/*">
+            </div>
+
+            <div id="imagePreview" class="image-preview" style="margin-top: 1rem;">
+                <img id="preview" src="" alt="Image preview" style="max-width: 300px; max-height: 300px; border: 1px solid #ccc; border-radius: 8px; display: none;">
+            </div>
+
+            <div class="form-group">
+                <label for="Brand">Brand</label>
+                <input type="text" id="Brand" name="Brand" placeholder="eg. Lego" required>
+            </div>
+
+            <div class="form-group">
+                <label for="itemCategory">Category</label>
+                <select id="itemCategory" name="itemCategory" required>
+                    <option value="">Select a category</option>
+                    <option value="Clothing">Clothing</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Books">Books</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Toys">Toys</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="itemCondition">Condition</label>
+                <select id="itemCondition" name="itemCondition" required>
+                    <option value="">Select condition</option>
+                    <option value="excellent">Excellent</option>
+                    <option value="good">Good</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="poor">Poor</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Age">Recommended Age Group</label>
+                <select id="Age" name="Age" required>
+                    <option value="">Select age group</option>
+                    <option value="0-3 years">0-3 years</option>
+                    <option value="4-7 years">4-7 years</option>
+                    <option value="8-12 years">8-12 years</option>
+                    <option value="13-17 years">13-17 years</option>
+                    <option value="18+ years">18+ years</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="itemDescription">Description</label>
+                <textarea id="itemDescription" name="itemDescription" placeholder="Describe the item in a few sentences...." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="itemVisibility">Visibility</label>
+                <select id="itemVisibility" name="itemVisibility">
+                    <option value="">Everyone (Public)</option>
+                    <!-- User communities will be loaded here -->
+                </select>
+                <p style="font-size: 0.8rem; color: var(--muted); margin-top: 0.25rem;">Select a community to make this item exclusive to that group only.</p>
+            </div>
+
+            <div class="form-group">
+                <label for="pricePerDay">Price Per Day (Max Rs. 100)</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="font-weight: 600;">Rs.</span>
+                    <input type="number" id="pricePerDay" name="pricePerDay" min="0" max="100" value="0" step="0.01" autocomplete="transaction-amount" required style="flex: 1;">
+                </div>
+                <div id="priceBreakdown" style="margin-top: 0.5rem; font-size: 0.85rem; padding: 0.75rem; background: rgba(79, 124, 222, 0.05); border-radius: 10px; display: none;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                        <span>Platform Fee (10%):</span>
+                        <span id="platformFee">Rs. 0.00</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--accent);">
+                        <span>You will earn:</span>
+                        <span id="ownerEarnings">Rs. 0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">Submit</button>
+                <button type="reset" id="clearButton">Clear Form</button>
+            </div>
+
+            <div id="itemDetails" class="item-details" style="display:none; margin-top: 1rem; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; background:#fafafa;">
+                <h3>Item Summary</h3>
+                <p><strong>Name:</strong> <span id="detailName"></span></p>
+                <p><strong>Item Name:</strong> <span id="detailItemName"></span></p>
+                <p><strong>Brand:</strong> <span id="detailBrand"></span></p>
+                <p><strong>Category:</strong> <span id="detailCategory"></span></p>
+                <p><strong>Recommended Age:</strong> <span id="detailAge"></span></p>
+                <p><strong>Condition:</strong> <span id="detailCondition"></span></p>
+                <p><strong>Description:</strong> <span id="detailDescription"></span></p>
+            </div>
+
+        </form>
+        
+
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="itemForm.js"></script>
+</body>
+</html>

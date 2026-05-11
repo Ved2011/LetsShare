@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow Item - LetsShare</title>
+    <link rel="icon" href="assets/Logo2.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+            <a href="user_Profile.html" class="brand">
+                <img src="assets/Logo2.jpeg" class="logo">
+            </a>
+            <div class="auth-buttons">
+                <a href="ItemForm.html" class="btn small primary">List Item</a>
+                <a href="user_Dashboard.html" class="btn small">Dashboard</a>
+
+                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div id="confirmationMessage" class="message"></div>
+            <div id="errorMessage" class="message"></div>
+
+            <h2>Browse & Request Items</h2>
+            <p>Select an item below to send a borrow request to the owner.</p>
+
+            <div id="itemsList" class="items-grid">
+                <p>Loading items...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="issue_Item.js"></script>
+</body>
+</html>

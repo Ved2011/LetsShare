@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Items - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div id="communityHeaderInfo" style="flex-grow: 1;">
+                <h2 id="communityName">Loading Community...</h2>
+                <p id="communityStats">View all items available in this group.</p>
+            </div>
+            <div class="header-actions">
+                <input type="text" id="itemSearch" class="input-minimal" placeholder="Search items in this community..." style="width: 250px;">
+            </div>
+        </header>
+
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0;">Community Inventory</h3>
+                <span id="itemCount" class="badge">0 Items</span>
+            </div>
+            <div id="communityItemsGrid" class="items-square-grid">
+                <p class="empty-state">Loading items...</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const communityId = urlParams.get('id');
+        let allItems = [];
+
+        async function loadCommunityItems() {
+            const token = localStorage.getItem('token');
+            if (!communityId) {
+                window.location.href = 'communities.html';
+                return;
+            }
+
+            try {
+                // Get community details
+                const commRes = await fetch(`/api/communities/${communityId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (commRes.ok) {
+                    const comm = await commRes.json();
+                    document.getElementById('communityName').textContent = comm.name;
+                    document.title = `${comm.name} - LetsShare`;
+                }
+
+                // Get items in this community
+                const itemsRes = await fetch(`/api/communities/${communityId}/items`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (itemsRes.ok) {
+                    allItems = await itemsRes.json();
+                    renderItems(allItems);
+                }
+            } catch (err) {
+                console.error('Error loading community items:', err);
+            }
+        }
+
+        function renderItems(items) {
+            const grid = document.getElementById('communityItemsGrid');
+            const count = document.getElementById('itemCount');
+            count.textContent = `${items.length} Item${items.length === 1 ? '' : 's'}`;
+
+            if (items.length === 0) {
+                grid.innerHTML = '<p class="empty-state">No items found in this community.</p>';
+                return;
+            }
+
+            grid.innerHTML = items.map(item => `
+                <div class="item-square" onclick="window.location.href='item_View.html?id=${item.id}'">
+                    <img src="${item.imageBase64 || 'assets/untitled.png'}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; background: #f1f5f9;">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-category">${item.category || 'Miscellaneous'}</div>
+                    <div style="color: var(--accent); font-weight: 700; margin-top: 0.5rem;">Rs. ${Number(item.price_per_day).toFixed(2)}/day</div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('itemSearch').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allItems.filter(item => 
+                item.name.toLowerCase().includes(term) || 
+                (item.category && item.category.toLowerCase().includes(term))
+            );
+            renderItems(filtered);
+        });
+
+        document.addEventListener('DOMContentLoaded', loadCommunityItems);
+    </script>
+</body>
+</html>

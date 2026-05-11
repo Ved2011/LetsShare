@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Followers - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="Logo" class="header-logo">
+                </a>
+            </div>
+            <div class="header-center">
+                <h1 class="page-title">Followers</h1>
+            </div>
+            <div class="header-right">
+                <a href="user_Dashboard.html" class="btn outline small">Dashboard</a>
+            </div>
+        </header>
+
+        <section class="card">
+            <h3>People Who Follow You</h3>
+            <p style="color: var(--muted); margin-bottom: 1.5rem;">These users get notified when you upload new items.</p>
+            <div id="followersUsersList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                <p class="empty-state">Loading followers...</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script>
+        async function loadFollowersData() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const usersRes = await fetch('/api/users/followers', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await usersRes.json();
+                const usersList = document.getElementById('followersUsersList');
+
+                if (users.length === 0) {
+                    usersList.innerHTML = '<p class="empty-state">No one is following you yet. Share your profile to get more followers!</p>';
+                } else {
+                    usersList.innerHTML = users.map(u => `
+                        <div class="card" onclick="window.location.href='user_View.html?id=${u.id}'" style="margin-bottom: 0; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s ease;">
+                            <div class="header-avatar" style="width: 45px; height: 45px; font-size: 1rem;">${u.name.charAt(0).toUpperCase()}</div>
+                            <div style="flex-grow: 1;">
+                                <h4 style="margin: 0; font-size: 1.1rem;">${u.name}</h4>
+                                <p style="margin: 0; font-size: 0.85rem; color: var(--muted);">@${u.username || u.email.split('@')[0]}</p>
+                            </div>
+                            <span style="color: var(--muted);">→</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading followers data:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFollowersData);
+    </script>
+</body>
+</html>

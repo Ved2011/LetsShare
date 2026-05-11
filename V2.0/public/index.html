@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LetsShare - Share and Borrow Items</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="page-wrapper">
+        <header class="header">
+            <a href="#" class="brand" id="logoLink">
+                <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
+            </a>
+            <div class="auth-buttons" id="authButtons">
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">Community Sharing, Made Simple</p>
+                <h2>Borrow what you need. Share what you want to.</h2>
+                <p>Discover nearby items, list your own, and build a trusted local borrowing community.</p>
+                <div class="hero-actions">
+                    <a href="User_Register.html" class="btn primary">Join for Free</a>
+                    <a href="login.html" class="btn outline">Log in</a>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat-card">
+                    <strong id="statItems">0</strong>
+                    <span>Items Shared</span>
+                </div>
+                <div class="hero-stat-card">
+                    <strong id="statUsers">0</strong>
+                    <span>Active Users</span>
+                </div>
+                <div class="hero-stat-card">
+                    <strong id="statBorrows">0</strong>
+                    <span>Active Borrows</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="features" style="margin-bottom: 3rem;">
+            <h3>Why join LetsShare?</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h4>Save Money</h4>
+                    <p>Borrow items instead of buying them and keep your wallet happy.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Reduce Waste</h4>
+                    <p>Let someone else use your items when you don’t need them.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Build Trust</h4>
+                    <p>Meet neighbors, share responsibly, and grow a helpful community.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-heading">
+                <div>
+                    <h3>Recent Items</h3>
+                    <p>Latest discoveries from your neighbors.</p>
+                </div>
+                <a href="SearchPage.html" class="btn small outline">View All</a>
+            </div>
+            <div id="itemsContainer" class="items-grid">
+                <!-- items here -->
+            </div>
+        </section>
+
+        <section class="card reveal">
+            <div class="section-heading">
+                <div>
+                    <h3>Featured Communities</h3>
+                    <p>Connect with groups sharing similar interests.</p>
+                </div>
+                <a href="communities.html" class="btn small primary">Explore All</a>
+            </div>
+            <div id="featuredCommunitiesGrid" class="community-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                <!-- Communities will be loaded here -->
+            </div>
+        </section>
+
+        <section class="about">
+            <h3>About LetsShare</h3>
+            <p>LetsShare is a platform where users can share their unused items with the community. Whether it's tools,
+                books, electronics, or anything else, you can list your items for others to borrow. It's a great way to
+                reduce waste, save money, and build community connections.</p>
+            <p>Join thousands of users who are already sharing and borrowing items locally.</p>
+        </section>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>

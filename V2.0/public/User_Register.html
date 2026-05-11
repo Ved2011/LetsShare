@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+
+            <div class="header-left" style="display: flex; align-items: center; gap: 1rem;">
+                <a href="user_Profile.html" class="brand">
+                    <img src="assets/Logo3.jpeg" class="logo" alt="LetsShare logo">
+                    <h1>LetsShare</h1>
+                </a>
+            </div>
+
+
+
+        </div>
+        <form class="form-card" id="registerForm">
+            <div id="confirmationMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+            <h2 class="page-subtitle">Register User</h2>
+            
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <label>Confirm Password:</label>
+                <input type="password" name="confirm_password" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number:</label>
+                <input type="tel" name="phone">
+            </div>
+
+            <div class="form-group">
+                <label>Date of Birth:</label>
+                <input type="date" name="dob">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Country / Nation:</label>
+                    <input type="text" name="country" id="regCountry" value="India" required>
+                </div>
+                <div class="form-group">
+                    <label>State:</label>
+                    <input type="text" name="state" id="regState" required placeholder="Select or type state">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>City:</label>
+                    <input type="text" name="city" id="regCity" required placeholder="Select or type city">
+                </div>
+                <div class="form-group">
+                    <label>Locality (Optional):</label>
+                    <input type="text" name="locality" placeholder="e.g. South Extension">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Full Address (Optional):</label>
+                <input type="text" name="address">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit">Register</button>
+                <button type="reset" id="clearButton">reset</button>
+            </div>
+            <div class="already-registered">
+                Already registered? <a href="login.html" class="login-link">Login here</a>.
+            </div>
+        </form>
+    </div>
+    
+    <script src="notifications.js"></script>
+    <script src="location_service.js"></script>
+    <script src="User_Register.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setupLocationChain('regCountry', 'regState', 'regCity');
+        });
+    </script>
+</body>
+</body>
+</html>

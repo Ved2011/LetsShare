@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow Item - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="Logo" class="header-logo">
+                </a>
+            </div>
+            <div class="header-center">
+                <h1 class="page-title">Borrow Items</h1>
+            </div>
+            <div class="header-right">
+                <input type="text" id="borrowSearch" class="input-minimal" placeholder="Search items..." style="width: 200px;">
+            </div>
+        </header>
+
+        <section class="card">
+            <div id="confirmationMessage" class="message"></div>
+            <div id="errorMessage" class="message"></div>
+            <div id="itemsList" class="items-square-grid">
+                <p class="empty-state">Loading items...</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="issue_Item.js"></script>
+</body>
+</html>

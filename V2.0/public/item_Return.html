@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Return - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <header class="header">
+            <div style="flex-grow: 1;">
+                <h2>Log Return</h2>
+                <p>Record the return of a borrowed item.</p>
+            </div>
+        </header>
+
+        <div class="form-card">
+            <div id="confirmationMessage" class="message"></div>
+            <div id="errorMessage" class="message"></div>
+            <h2 class="page-subtitle">Log Return</h2>
+            <form id="issueItemForm">
+                <div class="form-group">
+                    <label for="itemId">Item ID</label>
+                    <input type="text" id="itemId" name="itemId" placeholder="Enter the Item ID..." required>
+                </div> 
+                <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" name="itemName" placeholder="Enter the Item Name..." required>
+                </div>
+                <div class="form-group">
+                    <label for="ownerEmail">Owner's Email</label>
+                    <input type="email" id="ownerEmail" name="ownerEmail" placeholder="Enter the owner's email..." required>
+                </div>
+                <div class="form-group">
+                    <label for="borrowerEmail">Borrower's Email</label>
+                    <input type="email" id="borrowerEmail" name="borrowerEmail" placeholder="Enter the borrower's email..." required>
+                </div>
+                <div class="form-group">
+                    <label for="returnCondition">Return Condition</label>
+                    <select id="returnCondition" name="returnCondition" required>
+                        <option value="" disabled selected>Select condition...</option>
+                        <option value="Excellent">Excellent</option>
+                        <option value="Good">Good</option>
+                        <option value="Fair">Fair</option>
+                        <option value="Poor">Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" placeholder="Add optional notes about the return..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="returnDate">Return Date</label>
+                    <input type="date" id="returnDate" name="returnDate" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Submit</button>
+                    <button type="reset">Clear Form</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="item_Return.js"></script>
+</body>
+</html>

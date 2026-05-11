@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="user_Profile.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
+                </a>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div id="confirmationMessage" class="message success"></div>
+            <div id="errorMessage" class="message error"></div>
+
+            <h2>Welcome back!</h2>
+            <h4 style="color: var(--muted); margin-top: -0.5rem; margin-bottom: 1.5rem;">Login to your LetsShare account and continue.</h4>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="identifier">Email or username</label>
+                    <input type="text" id="identifier" name="identifier" placeholder="you@example.com or username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Sign in</button>
+                </div>
+
+                <div class="bottom-note">
+                    Don't have an account? <a href="User_Register.html">Register</a>
+                </div>
+            </form>
+
+            <form id="otpForm" style="display: none;">
+                <div class="form-group">
+                    <label for="otpCode">Enter Verification Code</label>
+                    <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem;">A 6-digit code has been sent to your registered device/email.</p>
+                    <input type="text" id="otpCode" name="otpCode" placeholder="Enter 6-digit OTP" required maxlength="6" style="text-align: center; letter-spacing: 5px; font-weight: bold; font-size: 1.2rem;">
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Verify & Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>
