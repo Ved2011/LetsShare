@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Following - LetsShare</title>
+    <link rel="icon" href="assets/Logo2.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button class="menu-toggle" id="mobileMenuBtn" style="display: block !important;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div style="display: flex; flex-direction: column;">
+                    <h2 style="margin: 0; font-size: 1.25rem;">Following</h2>
+                    <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Stay updated with people you follow.</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="card">
+            <h3>Recent Uploads from Following</h3>
+            <div id="followingItemsGrid" class="community-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <p class="empty-state">Loading items...</p>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>People You Follow</h3>
+            <div id="followingUsersList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <p class="empty-state">Loading followed users...</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script>
+        async function loadFollowingData() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                // Load items
+                const itemsRes = await fetch('/api/users/following/items', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const itemsGrid = document.getElementById('followingItemsGrid');
+                
+                if (!itemsRes.ok) {
+                    if (itemsRes.status === 403 || itemsRes.status === 401) {
+                        itemsGrid.innerHTML = '<p class="empty-state" style="color: var(--danger);">Session expired. Please log in again.</p>';
+                    } else {
+                        itemsGrid.innerHTML = '<p class="empty-state" style="color: var(--danger);">Server error loading items.</p>';
+                    }
+                    return;
+                }
+
+                const items = await itemsRes.json();
+                
+                if (items.length === 0) {
+                    itemsGrid.innerHTML = '<p class="empty-state">No recent uploads from people you follow.</p>';
+                } else {
+                    itemsGrid.innerHTML = items.map(item => `
+                        <div class="item-card">
+                            <div style="height: 150px; background: #eee; border-radius: 8px; overflow: hidden; margin-bottom: 1rem;">
+                                ${item.imageBase64 ? `<img src="${item.imageBase64}" style="width: 100%; height: 100%; object-fit: cover;">` : '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #aaa;">No Image</div>'}
+                            </div>
+                            <h4>${item.name}</h4>
+                            <p style="font-size: 0.8rem; color: var(--muted);">By ${item.owner_name}</p>
+                            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span class="status-pill ${item.status}">${item.status}</span>
+                                <a href="item_Details.html?id=${item.id}" class="btn small">View</a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Load followed users
+                const usersRes = await fetch('/api/users/following', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await usersRes.json();
+                const usersList = document.getElementById('followingUsersList');
+
+                if (users.length === 0) {
+                    usersList.innerHTML = '<p class="empty-state">You are not following anyone yet.</p>';
+                } else {
+                    usersList.innerHTML = users.map(u => `
+                        <div class="card" style="margin-bottom: 0; padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+                            <div class="header-avatar" style="width: 40px; height: 40px;">${u.name.charAt(0).toUpperCase()}</div>
+                            <div style="flex-grow: 1;">
+                                <h4 style="margin: 0;">${u.name}</h4>
+                                <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">@${u.username || u.email.split('@')[0]}</p>
+                            </div>
+                            <button onclick="unfollowUser(${u.id})" class="btn small outline">Unfollow</button>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading following data:', err);
+            }
+        }
+
+        async function unfollowUser(id) {
+            if (!confirm('Stop following this user?')) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/users/${id}/follow`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) loadFollowingData();
+            } catch (err) {
+                console.error('Unfollow error:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFollowingData);
+    </script>
+</body>
+</html>

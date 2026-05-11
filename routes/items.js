@@ -11,7 +11,7 @@ const upload = multer({ storage });
 
 // Create item
 router.post('/', authenticateToken, upload.single('image'), async (req, res) => {
-  const { owner_name, name, brand, category, age, condition, description, price_per_day } = req.body;
+  const { owner_name, name, brand, category, age, condition, description, price_per_day, exclusive_community_id } = req.body;
   const image = req.file ? req.file.buffer : null;
   const ownerId = req.user.id;
 
@@ -58,8 +58,8 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     const price = Math.min(parseFloat(price_per_day) || 0, 100);
 
     const itemResult = await pool.query(
-      'INSERT INTO items (owner_id, owner_name, name, price_per_day) VALUES ($1, $2, $3, $4) RETURNING id',
-      [ownerId, owner_name || null, name, price]
+      'INSERT INTO items (owner_id, owner_name, name, price_per_day, exclusive_community_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      [ownerId, owner_name || null, name, price, exclusive_community_id || null]
     );
     
     const itemId = itemResult.rows[0].id;
@@ -85,22 +85,36 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
 router.get('/', authenticateTokenOptional, async (req, res) => {
   try {
     const userId = req.user ? req.user.id : null;
+    const { community_id } = req.query;
     
-    // If not logged in, maybe show nothing or only public items? The prompt says "a person can only borrow from people in his community"
-    // Let's hide items for non-logged in users to encourage signing up, or show all but prevent borrowing.
-    // Let's only show items of users who share a community, or ALL if user is not logged in (to entice them).
-    
-    const query = `
-      SELECT i.*, d.brand, d.category, d.age, d.condition, d.description, d.image
-      FROM items i
-      LEFT JOIN item_details d ON i.id = d.item_id
-      WHERE $1::int IS NULL OR i.owner_id = $1 OR EXISTS (
-        SELECT 1 FROM community_members cm1
-        JOIN community_members cm2 ON cm1.community_id = cm2.community_id
-        WHERE cm1.user_id = i.owner_id AND cm2.user_id = $1
-      )
-    `;
-    const result = await pool.query(query, [userId]);
+    let query;
+    let params;
+
+    if (community_id) {
+        query = `
+          SELECT i.*, d.brand, d.category, d.age, d.condition, d.description, d.image
+          FROM items i
+          LEFT JOIN item_details d ON i.id = d.item_id
+          WHERE i.owner_id IN (
+            SELECT user_id FROM community_members WHERE community_id = $1
+          )
+        `;
+        params = [community_id];
+    } else {
+        query = `
+          SELECT i.*, d.brand, d.category, d.age, d.condition, d.description, d.image
+          FROM items i
+          LEFT JOIN item_details d ON i.id = d.item_id
+          WHERE $1::int IS NULL OR i.owner_id = $1 OR EXISTS (
+            SELECT 1 FROM community_members cm1
+            JOIN community_members cm2 ON cm1.community_id = cm2.community_id
+            WHERE cm1.user_id = i.owner_id AND cm2.user_id = $1
+          )
+        `;
+        params = [userId];
+    }
+
+    const result = await pool.query(query, params);
     const items = result.rows.map(item => {
       if (item.image) {
         item.imageBase64 = `data:image/jpeg;base64,${item.image.toString('base64')}`;
@@ -110,6 +124,47 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
     res.json(items);
   } catch (err) {
     console.error('Get all items error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get items by user ID (restricted to shared communities)
+router.get('/user/:userId', authenticateToken, async (req, res) => {
+  const { userId: targetUserId } = req.params;
+  const viewerId = req.user.id;
+
+  try {
+    const query = `
+      SELECT i.*, d.brand, d.category, d.age, d.condition, d.description, d.image
+      FROM items i
+      LEFT JOIN item_details d ON i.id = d.item_id
+      WHERE i.owner_id = $1 
+      AND (
+        -- Case 1: Item is exclusive to a specific community the viewer is in
+        (i.exclusive_community_id IS NOT NULL AND EXISTS (
+          SELECT 1 FROM community_members cm 
+          WHERE cm.community_id = i.exclusive_community_id AND cm.user_id = $2
+        ))
+        OR
+        -- Case 2: Item is public but only visible if they share ANY community
+        (i.exclusive_community_id IS NULL AND EXISTS (
+          SELECT 1 FROM community_members cm1
+          JOIN community_members cm2 ON cm1.community_id = cm2.community_id
+          WHERE cm1.user_id = i.owner_id AND cm2.user_id = $2
+        ))
+      )
+      ORDER BY i.created_at DESC
+    `;
+    const result = await pool.query(query, [targetUserId, viewerId]);
+    const items = result.rows.map(item => {
+      if (item.image) {
+        item.imageBase64 = `data:image/jpeg;base64,${item.image.toString('base64')}`;
+      }
+      return item;
+    });
+    res.json(items);
+  } catch (err) {
+    console.error('Get user items error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -142,7 +197,7 @@ router.get('/:id', async (req, res) => {
 // Update item
 router.put('/:id', authenticateToken, upload.single('image'), async (req, res) => {
   const { id } = req.params;
-  const { name, description, category, brand, age, condition, price_per_day } = req.body;
+  const { name, description, category, brand, age, condition, price_per_day, exclusive_community_id } = req.body;
   const image = req.file ? req.file.buffer : null;
   const ownerId = req.user.id;
 
@@ -171,6 +226,10 @@ router.put('/:id', authenticateToken, upload.single('image'), async (req, res) =
     if (price !== undefined) {
       mainQuery += `price_per_day = $${mIdx++}, `;
       mainParams.push(price);
+    }
+    if (exclusive_community_id !== undefined) {
+      mainQuery += `exclusive_community_id = $${mIdx++}, `;
+      mainParams.push(exclusive_community_id || null);
     }
 
     if (mainParams.length > 0) {

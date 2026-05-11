@@ -8,15 +8,41 @@ const router = express.Router();
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
+    const { city, state, locality, country } = req.query;
     
-    const result = await pool.query(`
+    let query = `
       SELECT c.*, 
         (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as member_count,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member
+        (SELECT COUNT(*) FROM items i 
+         JOIN community_members cm ON i.owner_id = cm.user_id 
+         WHERE cm.community_id = c.id AND (i.exclusive_community_id IS NULL OR i.exclusive_community_id = c.id)) as item_count,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
       FROM communities c
-      WHERE c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1)
-      ORDER BY c.created_at DESC
-    `, [userId]);
+      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1))
+    `;
+    const params = [userId];
+
+    if (city) {
+      query += ` AND c.city ILIKE $${params.length + 1}`;
+      params.push(`%${city}%`);
+    }
+    if (state) {
+      query += ` AND c.state ILIKE $${params.length + 1}`;
+      params.push(`%${state}%`);
+    }
+    if (locality) {
+      query += ` AND c.locality ILIKE $${params.length + 1}`;
+      params.push(`%${locality}%`);
+    }
+    if (country) {
+      query += ` AND c.country ILIKE $${params.length + 1}`;
+      params.push(`%${country}%`);
+    }
+
+    query += ` ORDER BY c.created_at DESC`;
+    
+    const result = await pool.query(query, params);
     
     res.json(result.rows);
   } catch (err) {
@@ -25,44 +51,102 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Get user invites
+router.get('/invites', authenticateToken, async (req, res) => {
+  try {
+    // get user email
+    const userResult = await pool.query('SELECT email FROM users WHERE id = $1', [req.user.id]);
+    const userEmail = userResult.rows[0].email;
+
+    const result = await pool.query(`
+      SELECT i.*, c.name as community_name 
+      FROM community_invites i 
+      JOIN communities c ON i.community_id = c.id 
+      WHERE i.invitee_email = $1 AND i.status = 'pending'
+    `, [userEmail]);
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching invites:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get single community details
+router.get('/:id', authenticateToken, async (req, res) => {
+  const communityId = req.params.id;
+  const userId = req.user.id;
+  console.log('Fetching community details. ID:', communityId, 'User:', userId);
+  try {
+    const result = await pool.query(`
+      SELECT c.*, 
+        (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as member_count,
+        (SELECT COUNT(*) FROM items i 
+         JOIN community_members cm ON i.owner_id = cm.user_id 
+         WHERE cm.community_id = c.id AND (i.exclusive_community_id IS NULL OR i.exclusive_community_id = c.id)) as item_count,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $2) as is_member,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $2 AND is_admin = true) as is_current_user_admin
+      FROM communities c
+      WHERE c.id = $1
+    `, [communityId, userId]);
+    
+    console.log('DB Result rows:', result.rows.length);
+    if (result.rows.length === 0) {
+        console.log('Community not found in DB for ID:', communityId);
+        return res.status(404).json({ error: 'Community not found' });
+    }
+    
+    const community = result.rows[0];
+    // Check if user has access
+    if (community.is_private && !community.is_member && community.admin_id !== userId) {
+        return res.status(403).json({ error: 'This is a private community.' });
+    }
+    
+    res.json(community);
+  } catch (err) {
+    console.error('Error fetching community details:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Create a community
 router.post('/', authenticateToken, async (req, res) => {
-  const { name, address, description, max_limit, is_private } = req.body;
-  const userId = req.user.id;
+    const { name, address, description, max_limit, is_private, city, state, locality } = req.body;
+    const userId = req.user.id;
 
-  if (!name) return res.status(400).json({ error: 'Community name is required' });
+    if (!name) return res.status(400).json({ error: 'Community name is required' });
 
-  try {
-    await pool.query('BEGIN');
-    
-    // Check wallet balance
-    const userResult = await pool.query('SELECT wallet_balance FROM users WHERE id = $1', [userId]);
-    const walletBalance = Number(userResult.rows[0].wallet_balance);
-    const creationCost = 200;
+    try {
+      await pool.query('BEGIN');
+      
+      // Check wallet balance
+      const userResult = await pool.query('SELECT wallet_balance FROM users WHERE id = $1', [userId]);
+      const walletBalance = Number(userResult.rows[0].wallet_balance);
+      const creationCost = 200;
 
-    if (walletBalance < creationCost) {
-      await pool.query('ROLLBACK');
-      return res.status(400).json({ error: `Insufficient balance. Creating a community costs Rs. ${creationCost}.` });
-    }
+      if (walletBalance < creationCost) {
+        await pool.query('ROLLBACK');
+        return res.status(400).json({ error: `Insufficient balance. Creating a community costs Rs. ${creationCost}.` });
+      }
 
-    // Deduct cost and log transaction
-    await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [creationCost, userId]);
-    await pool.query(
-      'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-      [userId, creationCost, 'debit', 'platform_fee', `Community creation fee for ${name}`]
-    );
+      // Deduct cost and log transaction
+      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [creationCost, userId]);
+      await pool.query(
+        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
+        [userId, creationCost, 'debit', 'platform_fee', `Community creation fee for ${name}`]
+      );
 
-    const communityResult = await pool.query(
-      'INSERT INTO communities (name, address, description, max_limit, is_private, admin_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [name, address, description || '', max_limit || 100, is_private || false, userId]
-    );
+      const communityResult = await pool.query(
+        'INSERT INTO communities (name, address, description, max_limit, is_private, admin_id, city, state, locality, country) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+        [name, address || '', description || '', max_limit || 100, is_private || false, userId, city || null, state || null, locality || null, country || 'India']
+      );
     
     const newCommunity = communityResult.rows[0];
     
-    // Add creator as member
+    // Add creator as member and admin
     await pool.query(
-      'INSERT INTO community_members (community_id, user_id) VALUES ($1, $2)',
-      [newCommunity.id, userId]
+      'INSERT INTO community_members (community_id, user_id, is_admin) VALUES ($1, $2, $3)',
+      [newCommunity.id, userId, true]
     );
 
     await pool.query('COMMIT');
@@ -102,26 +186,7 @@ router.post('/:id/join', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user invites
-router.get('/invites', authenticateToken, async (req, res) => {
-  try {
-    // get user email
-    const userResult = await pool.query('SELECT email FROM users WHERE id = $1', [req.user.id]);
-    const userEmail = userResult.rows[0].email;
 
-    const result = await pool.query(`
-      SELECT i.*, c.name as community_name 
-      FROM community_invites i 
-      JOIN communities c ON i.community_id = c.id 
-      WHERE i.invitee_email = $1 AND i.status = 'pending'
-    `, [userEmail]);
-    
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Error fetching invites:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
 
 // Accept invite
 router.post('/invites/:id/accept', authenticateToken, async (req, res) => {
@@ -166,23 +231,55 @@ router.post('/invites/:id/accept', authenticateToken, async (req, res) => {
 // Invite to community
 router.post('/:id/invite', authenticateToken, async (req, res) => {
   const communityId = req.params.id;
-  const { email } = req.body;
+  const { identifier } = req.body;
   const userId = req.user.id;
+
+  if (!identifier) return res.status(400).json({ error: 'Email or Username is required' });
 
   try {
     const commResult = await pool.query('SELECT * FROM communities WHERE id = $1', [communityId]);
     if (commResult.rows.length === 0) return res.status(404).json({ error: 'Community not found' });
+    const community = commResult.rows[0];
     
     // Check if inviter is a member or admin
     const isMemberResult = await pool.query('SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2', [communityId, userId]);
-    if (isMemberResult.rows.length === 0 && commResult.rows[0].admin_id !== userId) {
+    if (isMemberResult.rows.length === 0 && community.admin_id !== userId) {
       return res.status(403).json({ error: 'You must be a member to invite others.' });
+    }
+
+    let targetEmail = identifier;
+    // Check if identifier is a username
+    if (!identifier.includes('@')) {
+      const userResult = await pool.query('SELECT email FROM users WHERE username = $1 OR name = $1', [identifier]);
+      if (userResult.rows.length === 0) return res.status(404).json({ error: 'User with this username not found' });
+      targetEmail = userResult.rows[0].email;
     }
 
     await pool.query(
       'INSERT INTO community_invites (community_id, inviter_id, invitee_email) VALUES ($1, $2, $3)',
-      [communityId, userId, email]
+      [communityId, userId, targetEmail]
     );
+
+    // Send invite email
+    try {
+      const { sendEmail } = require('../utils/email');
+      const inviterResult = await pool.query('SELECT name FROM users WHERE id = $1', [userId]);
+      const inviterName = inviterResult.rows[0].name;
+
+      await sendEmail(
+        targetEmail,
+        `Invitation to join ${community.name} on LetsShare`,
+        `${inviterName} has invited you to join the community "${community.name}" on LetsShare. Login to accept the invite.`,
+        `<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+          <h2>Community Invitation</h2>
+          <p><strong>${inviterName}</strong> has invited you to join the community <strong>"${community.name}"</strong> on LetsShare.</p>
+          <p>Join now to start sharing and borrowing items with your community!</p>
+          <a href="http://localhost:4000/login.html" style="display: inline-block; padding: 10px 20px; background-color: #4f7cde; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">Login to Accept</a>
+        </div>`
+      );
+    } catch (mailErr) {
+      console.error('Failed to send invite email:', mailErr);
+    }
 
     res.json({ message: 'Invite sent successfully' });
   } catch (err) {
@@ -199,17 +296,22 @@ router.put('/:id/chat', authenticateToken, async (req, res) => {
 
   try {
     const userResult = await pool.query('SELECT plan_type FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    
     if (userResult.rows[0].plan_type !== 'Premium') {
       return res.status(403).json({ error: 'Only admins with a Premium plan can enable or disable chat.' });
     }
 
-    const commResult = await pool.query('SELECT admin_id FROM communities WHERE id = $1', [communityId]);
-    if (commResult.rows.length === 0) return res.status(404).json({ error: 'Community not found' });
-    if (commResult.rows[0].admin_id !== userId) return res.status(403).json({ error: 'Only the admin can change chat settings.' });
+    // Check if user is an admin in this community
+    const adminCheck = await pool.query('SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2 AND is_admin = true', [communityId, userId]);
+    if (adminCheck.rows.length === 0) {
+        return res.status(403).json({ error: 'Only admins can change chat settings.' });
+    }
 
     await pool.query('UPDATE communities SET chat_enabled = $1 WHERE id = $2', [chat_enabled, communityId]);
     res.json({ message: `Chat has been ${chat_enabled ? 'enabled' : 'disabled'}.` });
   } catch (err) {
+    console.error('Error toggling chat:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -263,6 +365,114 @@ router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
   }
 });
 
+// Get community members
+router.get('/:id/members', authenticateToken, async (req, res) => {
+  const communityId = req.params.id;
+  try {
+    const result = await pool.query(`
+      SELECT u.id, u.name, u.email, cm.is_admin 
+      FROM users u 
+      JOIN community_members cm ON u.id = cm.user_id 
+      WHERE cm.community_id = $1
+      ORDER BY cm.is_admin DESC, u.name ASC
+    `, [communityId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching members:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Leave a community
+router.post('/:id/leave', authenticateToken, async (req, res) => {
+  const communityId = req.params.id;
+  const userId = req.user.id;
+
+  try {
+    const commResult = await pool.query('SELECT admin_id FROM communities WHERE id = $1', [communityId]);
+    if (commResult.rows.length === 0) return res.status(404).json({ error: 'Community not found' });
+    
+    // Check if user is the primary admin or one of the admins
+    const memberResult = await pool.query('SELECT is_admin FROM community_members WHERE community_id = $1 AND user_id = $2', [communityId, userId]);
+    if (memberResult.rows.length === 0) return res.status(400).json({ error: 'You are not a member of this community.' });
+
+    const isAdmin = memberResult.rows[0].is_admin;
+
+    if (isAdmin) {
+      // Check if there are other admins
+      const otherAdmins = await pool.query('SELECT COUNT(*) FROM community_members WHERE community_id = $1 AND is_admin = true AND user_id <> $2', [communityId, userId]);
+      if (parseInt(otherAdmins.rows[0].count) === 0) {
+        return res.status(400).json({ error: 'You are the only admin. You must promote another member to admin before leaving or delete the community.' });
+      }
+    }
+
+    await pool.query('DELETE FROM community_members WHERE community_id = $1 AND user_id = $2', [communityId, userId]);
+    
+    // If user was the primary admin (admin_id in communities table), transfer it to another admin
+    if (commResult.rows[0].admin_id === userId) {
+        const nextAdmin = await pool.query('SELECT user_id FROM community_members WHERE community_id = $1 AND is_admin = true LIMIT 1', [communityId]);
+        if (nextAdmin.rows.length > 0) {
+            await pool.query('UPDATE communities SET admin_id = $1 WHERE id = $2', [nextAdmin.rows[0].user_id, communityId]);
+        }
+    }
+
+    res.json({ message: 'Successfully left the community' });
+  } catch (err) {
+    console.error('Error leaving community:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete a community
+router.delete('/:id', authenticateToken, async (req, res) => {
+  const communityId = req.params.id;
+  const userId = req.user.id;
+
+  try {
+    const commResult = await pool.query('SELECT admin_id FROM communities WHERE id = $1', [communityId]);
+    if (commResult.rows.length === 0) return res.status(404).json({ error: 'Community not found' });
+    
+    // Check if user is an admin
+    const memberResult = await pool.query('SELECT is_admin FROM community_members WHERE community_id = $1 AND user_id = $2', [communityId, userId]);
+    if (memberResult.rows.length === 0 || !memberResult.rows[0].is_admin) {
+        return res.status(403).json({ error: 'Only admins can delete the community.' });
+    }
+
+    await pool.query('DELETE FROM communities WHERE id = $1', [communityId]);
+    res.json({ message: 'Community deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting community:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Toggle admin status of a member
+router.put('/:id/members/:targetUserId/admin', authenticateToken, async (req, res) => {
+  const communityId = req.params.id;
+  const targetUserId = req.params.targetUserId;
+  const { is_admin } = req.body;
+  const userId = req.user.id;
+
+  try {
+    // Check if requester is an admin
+    const requesterResult = await pool.query('SELECT is_admin FROM community_members WHERE community_id = $1 AND user_id = $2', [communityId, userId]);
+    if (requesterResult.rows.length === 0 || !requesterResult.rows[0].is_admin) {
+        return res.status(403).json({ error: 'Only admins can manage admin roles.' });
+    }
+
+    // Check if target is a member
+    const targetResult = await pool.query('SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2', [communityId, targetUserId]);
+    if (targetResult.rows.length === 0) return res.status(404).json({ error: 'Target user is not a member of this community.' });
+
+    await pool.query('UPDATE community_members SET is_admin = $1 WHERE community_id = $2 AND user_id = $3', [is_admin, communityId, targetUserId]);
+    
+    res.json({ message: `User role updated to ${is_admin ? 'Admin' : 'Member'}.` });
+  } catch (err) {
+    console.error('Error updating admin role:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Chat GET messages
 router.get('/:id/chat', authenticateToken, async (req, res) => {
   const communityId = req.params.id;
@@ -310,6 +520,26 @@ router.post('/:id/chat', authenticateToken, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
   }
+});
+
+// Get items for a community
+router.get('/:id/items', authenticateToken, async (req, res) => {
+    try {
+        const communityId = req.params.id;
+        const items = await pool.query(`
+            SELECT i.*, idt.category, idt.description, encode(idt.image, 'base64') as "imageBase64"
+            FROM items i
+            JOIN users u ON i.owner_id = u.id
+            JOIN community_members cm ON u.id = cm.user_id
+            LEFT JOIN item_details idt ON i.id = idt.item_id
+            WHERE cm.community_id = $1
+            ORDER BY i.created_at DESC
+        `, [communityId]);
+        res.json(items.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 module.exports = router;

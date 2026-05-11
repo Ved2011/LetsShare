@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Item Details - LetsShare</title>
+    <link rel="icon" href="assets/Logo2.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .item-view-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 3rem;
+            background: var(--card-bg);
+            padding: 3rem;
+            border-radius: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+        }
+
+        .item-image-large {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #f1f5f9;
+            border-radius: 24px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+
+        .item-info-detailed h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .item-owner-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            padding: 0.5rem 1rem;
+            background: rgba(79, 124, 222, 0.05);
+            border-radius: 99px;
+            width: fit-content;
+        }
+
+        .owner-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .item-description-box {
+            margin: 2rem 0;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .item-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+            padding: 2rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-item strong {
+            display: block;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .item-view-container {
+                grid-template-columns: 1fr;
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+        }
+
+        /* Lightbox Styles */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .lightbox-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 16px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .lightbox-modal.active .lightbox-content {
+            transform: scale(1);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <!-- Lightbox Modal -->
+        <div id="lightbox" class="lightbox-modal">
+            <span class="lightbox-close">&times;</span>
+            <img class="lightbox-content" id="lightboxImg" src="" alt="Closeup">
+        </div>
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button class="menu-toggle" id="mobileMenuBtn" style="display: block !important;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <a href="user_Dashboard.html" class="brand">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" class="logo" style="max-height: 32px; border-radius: 4px;">
+                </a>
+            </div>
+        </header>
+
+        <div id="itemView" class="item-view-container">
+            <!-- Content loaded via JS -->
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
+                <h3>Loading item details...</h3>
+            </div>
+        </div>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="item_View.js"></script>
+</body>
+</html>

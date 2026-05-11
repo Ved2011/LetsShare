@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communities - LetsShare</title>
+    <link rel="icon" href="assets/Logo2.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .community-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .community-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .community-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--shadow);
+        }
+
+        .community-badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-public {
+            background: #10b98122;
+            color: #10b981;
+        }
+
+        .badge-private {
+            background: #f59e0b22;
+            color: #f59e0b;
+        }
+
+        .chat-box {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 8px;
+            background: var(--bg-main);
+            margin-bottom: 1rem;
+        }
+
+        .chat-message {
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-message strong {
+            color: var(--accent);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-wrapper">
+        <header class="header">
+            <div style="flex-grow: 1;">
+                <h2>Communities</h2>
+                <p>Join or create local sharing groups.</p>
+            </div>
+            <button id="createCommunityBtn" class="btn primary">Create Community</button>
+        </header>
+
+        <section class="card" style="margin-bottom: 2rem;">
+            <h3>Your Pending Invitations</h3>
+            <div id="invitesList"></div>
+        </section>
+
+        <section class="card">
+            <h2>My Communities</h2>
+            <div class="community-grid" id="myCommunitiesList"></div>
+        </section>
+
+        <section class="card">
+            <h2>Communities Around Me</h2>
+            <div class="community-grid" id="communitiesList"></div>
+        </section>
+
+        <!-- Create Community Modal -->
+        <div id="createCommunityModal" class="modal">
+            <div class="modal-content">
+                <h3>Create New Community</h3>
+                <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">Cost: Rs. 200 deducted from
+                    wallet.</p>
+                <form id="createCommunityForm">
+                    <div class="form-group">
+                        <label>Name of Community</label>
+                        <input type="text" id="commName" required class="input-minimal">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Country / Nation</label>
+                            <input type="text" id="commCountry" value="India" required class="input-minimal">
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" id="commState" placeholder="Select or type state" required class="input-minimal">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="commCity" placeholder="Select or type city" required class="input-minimal">
+                        </div>
+                        <div class="form-group">
+                            <label>Locality (Optional)</label>
+                            <input type="text" id="commLocality" placeholder="e.g. South Extension" class="input-minimal">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Full Address (Optional)</label>
+                        <input type="text" id="commAddress" class="input-minimal">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Max People Limit</label>
+                        <input type="number" id="commLimit" value="100" class="input-minimal">
+                    </div>
+                    <div class="form-group"
+                        style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 0;">
+                        <label style="margin: 0; font-weight: 500;">Make Private</label>
+                        <div class="toggle-container" style="margin: 0;">
+                            <input type="checkbox" id="commPrivate" class="toggle-input">
+                            <label for="commPrivate" class="toggle-label"></label>
+                        </div>
+                    </div>
+                    <div class="form-actions" style="justify-content: flex-end; margin-top: 1rem;">
+                        <button type="button" class="btn outline"
+                            onclick="document.getElementById('createCommunityModal').classList.remove('active')">Cancel</button>
+                        <button type="submit" class="btn primary">Pay Rs. 200 & Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Community View Modal -->
+        <div id="viewCommunityModal" class="modal">
+            <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 id="viewCommName">Community Name</h3>
+                    <button class="btn small outline"
+                        onclick="document.getElementById('viewCommunityModal').classList.remove('active')">Close</button>
+                </div>
+
+
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <button id="joinCommBtn" class="btn small primary" style="display: none;">Join Community</button>
+                    <button id="leaveCommBtn" class="btn small outline" style="display: none; color: #ef4444; border-color: #ef4444;">Leave Community</button>
+                    <button id="inviteCommBtn" class="btn small outline" style="display: none;">Invite User</button>
+                    <button id="manageCommBtn" class="btn small outline" 
+                        style="display: none; border-color: var(--accent); color: var(--accent);"
+                        onclick="const s = document.getElementById('adminManagementSection'); s.style.display = s.style.display === 'none' ? 'block' : 'none';">Manage Community</button>
+                </div>
+
+                <div id="membersSection" style="margin-bottom: 1rem;">
+                    <h4>Members</h4>
+                    <div id="membersList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; border: 1px solid var(--border); padding: 0.5rem; border-radius: 8px; background: var(--bg-main);">
+                        <!-- Members will be loaded here -->
+                    </div>
+                </div>
+
+                <div id="inviteForm"
+                    style="display: none; margin-bottom: 1rem; border: 1px solid var(--border); padding: 1rem; border-radius: 8px;">
+                    <h4>Invite User</h4>
+                    <input type="text" id="inviteIdentifier" class="input-minimal" placeholder="Email or Username">
+                    <button id="sendInviteBtn" class="btn small primary" style="margin-top: 0.5rem;">Send
+                        Invite</button>
+                </div>
+
+                <!-- Admin Management Section -->
+                <div id="adminManagementSection"
+                    style="display: none; margin-bottom: 1rem; border: 1px solid var(--accent); padding: 1rem; border-radius: 8px;">
+                    <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 1rem;">Admin Controls</h4>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button id="chatSettingsBtn" class="btn small outline">Toggle Chat Setting</button>
+                        <button id="deleteCommBtn" class="btn small outline" style="color: #ef4444; border-color: #ef4444;">Delete Community</button>
+                    </div>
+                </div>
+
+                <div id="chatSection" style="display: none;">
+                    <h4>Community Chat</h4>
+                    <div class="chat-box" id="chatBox"></div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="chatInput" class="input-minimal" placeholder="Type a message..."
+                            style="flex: 1;">
+                        <button id="sendChatBtn" class="btn small primary">Send</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="location_service.js"></script>
+    <script src="communities.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setupLocationChain('commCountry', 'commState', 'commCity');
+        });
+    </script>
+</body>
+
+</html>

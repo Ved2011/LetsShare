@@ -23,6 +23,13 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .community-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px var(--shadow);
         }
 
         .community-badge {
@@ -92,26 +99,32 @@
 
     <div class="page-wrapper">
         <header class="header">
-            <a href="user_Dashboard.html" class="brand">
-                <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
-            </a>
-            <div class="auth-buttons">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
-                <button id="createCommunityBtn" class="btn small primary">Create Community</button>
-                <a href="user_Dashboard.html" class="btn small">Dashboard</a>
-                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="Logo" class="header-logo">
+                </a>
+            </div>
+            <div class="header-center">
+                <h1 class="page-title">Communities</h1>
+            </div>
+            <div class="header-right">
+                <input type="text" id="communitySearch" class="input-minimal" placeholder="Search your communities..." style="width: 200px; margin-right: 1rem;">
+                <button id="createCommunityBtn" class="btn primary small">Create New</button>
             </div>
         </header>
 
-        <section class="card">
-            <h2>Invites</h2>
+        <section class="card" style="margin-bottom: 2rem;">
+            <h3>Your Pending Invitations</h3>
             <div id="invitesList"></div>
         </section>
 
         <section class="card">
-            <h2>Communities Around Me</h2>
-            <div class="community-grid" id="communitiesList"></div>
+            <h2>My Communities</h2>
+            <div class="community-grid" id="myCommunitiesList"></div>
         </section>
+
+
 
         <!-- Create Community Modal -->
         <div id="createCommunityModal" class="modal">
@@ -124,9 +137,29 @@
                         <label>Name of Community</label>
                         <input type="text" id="commName" required class="input-minimal">
                     </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>Country / Nation</label>
+                            <input type="text" id="commCountry" value="India" required class="input-minimal">
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" id="commState" placeholder="Select or type state" required class="input-minimal">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" id="commCity" placeholder="Select or type city" required class="input-minimal">
+                        </div>
+                        <div class="form-group">
+                            <label>Locality (Optional)</label>
+                            <input type="text" id="commLocality" placeholder="e.g. South Extension" class="input-minimal">
+                        </div>
+                    </div>
                     <div class="form-group">
-                        <label>Address / Location Area</label>
-                        <input type="text" id="commAddress" required class="input-minimal">
+                        <label>Full Address (Optional)</label>
+                        <input type="text" id="commAddress" class="input-minimal">
                     </div>
 
                     <div class="form-group">
@@ -160,16 +193,26 @@
                 </div>
 
 
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
                     <button id="joinCommBtn" class="btn small primary" style="display: none;">Join Community</button>
+                    <button id="leaveCommBtn" class="btn small outline" style="display: none; color: #ef4444; border-color: #ef4444;">Leave Community</button>
                     <button id="inviteCommBtn" class="btn small outline" style="display: none;">Invite User</button>
-                    <button id="manageCommBtn" class="btn small outline" style="display: none; border-color: var(--accent); color: var(--accent);">Manage Community</button>
+                    <button id="manageCommBtn" class="btn small outline" 
+                        style="display: none; border-color: var(--accent); color: var(--accent);"
+                        onclick="const s = document.getElementById('adminManagementSection'); s.style.display = s.style.display === 'none' ? 'block' : 'none';">Manage Community</button>
+                </div>
+
+                <div id="membersSection" style="margin-bottom: 1rem;">
+                    <h4>Members</h4>
+                    <div id="membersList" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto; border: 1px solid var(--border); padding: 0.5rem; border-radius: 8px; background: var(--bg-main);">
+                        <!-- Members will be loaded here -->
+                    </div>
                 </div>
 
                 <div id="inviteForm"
                     style="display: none; margin-bottom: 1rem; border: 1px solid var(--border); padding: 1rem; border-radius: 8px;">
                     <h4>Invite User</h4>
-                    <input type="email" id="inviteEmail" class="input-minimal" placeholder="User's email">
+                    <input type="text" id="inviteIdentifier" class="input-minimal" placeholder="Email or Username">
                     <button id="sendInviteBtn" class="btn small primary" style="margin-top: 0.5rem;">Send
                         Invite</button>
                 </div>
@@ -178,18 +221,10 @@
                 <div id="adminManagementSection"
                     style="display: none; margin-bottom: 1rem; border: 1px solid var(--accent); padding: 1rem; border-radius: 8px;">
                     <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 1rem;">Admin Controls</h4>
-                    <button id="chatSettingsBtn" class="btn small outline" style="margin-bottom: 1rem;">Toggle Chat Setting</button>
-                    
-                    <h5 style="margin: 0 0 0.5rem 0;">Add Member Directly</h5>
-                    <input type="email" id="adminAddEmail" class="input-minimal" placeholder="User's email">
-                    <button id="adminAddBtn" class="btn small primary" style="margin-top: 0.5rem;">Add Member</button>
-                    
-                    <hr style="margin: 1rem 0;">
-                    
-                    <h5 style="margin: 0 0 0.5rem 0;">Remove Member</h5>
-                    <input type="number" id="adminRemoveId" class="input-minimal" placeholder="User ID to remove">
-                    <button id="adminRemoveBtn" class="btn small outline" style="margin-top: 0.5rem;">Remove
-                        Member</button>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button id="chatSettingsBtn" class="btn small outline">Toggle Chat Setting</button>
+                        <button id="deleteCommBtn" class="btn small outline" style="color: #ef4444; border-color: #ef4444;">Delete Community</button>
+                    </div>
                 </div>
 
                 <div id="chatSection" style="display: none;">
@@ -207,7 +242,15 @@
 
     </div>
 
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="location_service.js"></script>
     <script src="communities.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setupLocationChain('commCountry', 'commState', 'commCity');
+        });
+    </script>
 </body>
 
 </html>

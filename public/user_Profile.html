@@ -12,17 +12,11 @@
 
     <div class="page-wrapper">
         <div class="header">
-            <a href="user_Profile.html" class="brand">
-                <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
-            </a>
-            <div class="auth-buttons">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
-                <a href="ItemForm.html" class="btn small primary">List Item</a>
-                <a href="issue_Item.html" class="btn small">Borrow</a>
-                <a href="communities.html" class="btn small outline">Communities</a>
-                <a href="user_Dashboard.html" class="btn small outline">Dashboard</a>
-                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+            <div style="flex-grow: 1;">
+                <h2>My Profile</h2>
+                <p>Manage your account settings and preferences.</p>
             </div>
+            <a href="Pricing.html" class="btn primary small">Upgrade Plan</a>
         </div>
     <!-- MAIN CONTAINER -->
     <div class="container">
@@ -50,6 +44,13 @@
                 <h3 style="margin: 0;">Personal Details</h3>
                 <button id="toggleProfileEditBtn" class="btn primary small">✏️ Manage Profile</button>
             </div>
+            
+            <!-- Bio Section -->
+            <div class="bio-display-container" style="background: var(--bg-main); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">About Me</h4>
+                <p id="displayBio" style="margin: 0; line-height: 1.6; font-size: 1.05rem;">Sharing is caring! Looking forward to connecting with the community.</p>
+            </div>
+
             <div class="options-card" style="padding: 1.5rem;">
                 <div class="option-row" style="border: none; padding: 0 0 1rem 0;">
                     <div class="option-info">
@@ -107,6 +108,10 @@
                             <strong>Public Username</strong>
                             <input type="text" id="editUsername" class="input-minimal" placeholder="Unique username">
                         </div>
+                    </div>
+                    <div class="option-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+                        <strong>About Me</strong>
+                        <textarea id="editBio" class="input-minimal" style="width: 100%; min-height: 100px; padding: 1rem;" placeholder="Tell the community something about yourself..."></textarea>
                     </div>
                     <div class="option-row">
                         <div class="option-info">
@@ -209,7 +214,7 @@
                 </div>
                 <div class="option-row">
                     <div class="option-info">
-                        <strong>Two-Step Authentication</strong>
+                        <strong>Two-Factor Authentication</strong>
                         <p>Protect your account with an extra layer of security via OTP.</p>
                     </div>
                     <div class="toggle-container">

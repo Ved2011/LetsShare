@@ -6,14 +6,12 @@
     <title>Login - LetsShare</title>
     <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
     <link rel="stylesheet" href="style.css">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
     <div class="page-wrapper">
         <div class="header">
             <div style="display: flex; align-items: center; gap: 1rem;">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
                 <a href="user_Profile.html" class="brand">
                     <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
                 </a>
@@ -35,11 +33,6 @@
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="••••••••" required>
-                </div>
-
-                <div class="form-group captcha-wrapper" style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
-                    <!-- Using Google's official reCAPTCHA test keys -->
-                    <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
                 </div>
 
                 <div class="form-actions">

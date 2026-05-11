@@ -11,30 +11,25 @@
 
     <div class="page-wrapper">
         <header class="header">
-            <a href="user_Profile.html" class="brand">
-                <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
-            </a>
-            <div class="auth-buttons">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
-                <div class="search-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Search community items..." class="search-bar" />
-                </div>
-                <a href="ItemForm.html" class="btn small primary">List Item</a>
-                <a href="issue_Item.html" class="btn small">Borrow</a>
-                <a href="communities.html" class="btn small outline">Communities</a>
-
-                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="user_Dashboard.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="LetsShare" class="logo" style="max-height: 40px; border-radius: 4px;">
+                </a>
+                <span style="font-weight: 600; color: var(--accent);">Dashboard</span>
             </div>
         </header>
 
         <section class="card">
-            <h3>Community Items</h3>
-            <div class="list-header">
-                <span class="col-info">Item Details</span>
-                <span class="col-meta"><span>Status</span> <span>Actions</span></span>
+            <div class="section-heading">
+                <div>
+                    <h2>Your Communities</h2>
+                    <p>Access your joined communities or discover new ones.</p>
+                </div>
+                <a href="communities.html" class="btn small primary" style="margin-left: 1rem;">Browse All</a>
             </div>
-            <div id="dashboardRecentItems" class="items-grid"></div>
+            <div id="joinedCommunitiesGrid" class="community-grid">
+                <!-- Joined communities will be loaded here -->
+            </div>
         </section>
 
         <section class="card">
@@ -43,10 +38,6 @@
                     <h2>Your Dashboard</h2>
                     <p>Live counts from the database and quick access to your items.</p>
                 </div>
-            </div>
-            <div class="dashboard-search">
-                <input type="text" id="dashboardSearchInput" placeholder="Search users or items...">
-                <button id="dashboardSearchButton" class="btn">Search</button>
             </div>
             <div id="dashboardSearchMessage" class="search-message hidden"></div>
             <div class="dashboard-grid">
@@ -84,26 +75,13 @@
         </section>
 
         <section class="card hidden" id="dashboardSearchSection">
-            <h3>Search Results</h3>
-            <div class="search-results">
-                <div>
-                    <h4>Users</h4>
-                    <div id="dashboardUsersSearchResults" class="items-grid"></div>
-                </div>
-                <div>
-                    <h4>Items</h4>
-                    <div id="dashboardItemsSearchResults" class="items-grid"></div>
-                </div>
-            </div>
+            <h3>Community Search Results</h3>
+            <div id="dashboardCommunitiesSearchResults" class="community-grid"></div>
         </section>
 
         <section class="card">
             <h3>My Uploaded Items</h3>
-            <div class="list-header">
-                <span class="col-info">Item Details</span>
-                <span class="col-meta"><span>Status</span> <span>Actions</span></span>
-            </div>
-            <div id="dashboardMyItemsList" class="items-grid"></div>
+            <div id="dashboardMyItemsList" class="items-square-grid"></div>
         </section>
 
         <section class="card" id="complaintsSection" style="display: none; border-left: 4px solid #f59e0b;">
@@ -130,6 +108,7 @@
         </section>
     </div>
     <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
     <script src="user_Dashboard.js"></script>
 </body>
 </html>

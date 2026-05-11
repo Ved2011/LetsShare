@@ -9,19 +9,17 @@
 </head>
 <body>
     <div class="page-wrapper">
-        <div class="header">
-
-            <div class="header-left" style="display: flex; align-items: center; gap: 1rem;">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
-                <a href="user_Profile.html" class="brand">
-                    <img src="assets/Logo3.jpeg" class="logo" alt="LetsShare logo">
-                    <h1>LetsShare</h1>
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="user_Dashboard.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="LetsShare" class="logo" style="max-height: 40px; border-radius: 4px;">
                 </a>
+                <span style="font-weight: 600; color: var(--accent); white-space: nowrap;">Complaints</span>
             </div>
-
-
-
-        </div>
+            <div class="auth-buttons desktop-only">
+                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+            </div>
+        </header>
 
         <div class="form-card">
             <h2>Report an Issue</h2>
@@ -91,6 +89,7 @@
     </div>
 
     <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
     <script src="Complains.js"></script>
 </body>
 </html>

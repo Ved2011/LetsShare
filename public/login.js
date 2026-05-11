@@ -67,12 +67,6 @@ if (loginForm) {
     event.preventDefault();
 
 if (validateLoginForm()) {
-      const recaptchaResponse = grecaptcha.getResponse();
-      if (!recaptchaResponse) {
-        window.showAlert('Please complete the reCAPTCHA.', 'error');
-        return;
-      }
-
       const identifier = document.getElementById('identifier').value.trim();
       const password = document.getElementById('password').value;
 
@@ -82,7 +76,7 @@ if (validateLoginForm()) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ identifier, password, recaptchaToken: recaptchaResponse }),
+          body: JSON.stringify({ identifier, password }),
         });
 
         const data = await response.json();
@@ -104,12 +98,17 @@ if (validateLoginForm()) {
             }, 1200);
           }
         } else {
+          if (data.unverified) {
+            window.showAlert(data.error, 'warning');
+            setTimeout(() => {
+              window.location.href = `verify.html?userId=${data.userId}`;
+            }, 2000);
+            return;
+          }
           window.showAlert(data.error || 'Login failed', 'error');
-          generateCaptcha();
         }
       } catch (error) {
         window.showAlert('Network error. Please try again.', 'error');
-        generateCaptcha();
       }
     }
   });

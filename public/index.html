@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <div class="page-wrapper">
@@ -15,27 +17,13 @@
                 <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
             </a>
             <div class="auth-buttons" id="authButtons">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
-                <div class="search-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Search items..." class="search-bar" autocomplete="off" />
-                    <div id="searchResultsDropdown" class="search-results-dropdown"></div>
-                </div>
-                <div id="guestButtons" style="display: flex; gap: 0.5rem;">
-                    <a href="login.html" class="btn">Login</a>
-                    <a href="User_Register.html" class="btn primary">Register</a>
-                </div>
-                <div id="loggedInButtons" style="display: none; gap: 0.5rem; align-items: center;">
-                    <a href="ItemForm.html" class="btn primary small">List Item</a>
-                    <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
-                </div>
             </div>
         </header>
 
         <section class="hero">
             <div class="hero-copy">
                 <p class="eyebrow">Community Sharing, Made Simple</p>
-                <h2>Borrow what you need. Share what you don’t.</h2>
+                <h2>Borrow what you need. Share what you want to.</h2>
                 <p>Discover nearby items, list your own, and build a trusted local borrowing community.</p>
                 <div class="hero-actions">
                     <a href="User_Register.html" class="btn primary">Join for Free</a>
@@ -58,7 +46,7 @@
             </div>
         </section>
 
-        <section class="features">
+        <section class="features" style="margin-bottom: 3rem;">
             <h3>Why join LetsShare?</h3>
             <div class="features-grid">
                 <div class="feature-card">
@@ -76,28 +64,44 @@
             </div>
         </section>
 
-        <section class="new-items">
+        <section class="card">
             <div class="section-heading">
-                <h3>Newly Added Items</h3>
-                <p>Fresh picks from our community — updated real time.</p>
-            </div>
-            <div class="list-header">
-                <span class="col-info">Item Details</span>
-                <span class="col-meta"><span>Status</span> <span>Actions</span></span>
+                <div>
+                    <h3>Recent Items</h3>
+                    <p>Latest discoveries from your neighbors.</p>
+                </div>
+                <a href="SearchPage.html" class="btn small outline">View All</a>
             </div>
             <div id="itemsContainer" class="items-grid">
-                <!-- Items will be loaded here -->
+                <!-- items here -->
+            </div>
+        </section>
+
+        <section class="card reveal">
+            <div class="section-heading">
+                <div>
+                    <h3>Featured Communities</h3>
+                    <p>Connect with groups sharing similar interests.</p>
+                </div>
+                <a href="communities.html" class="btn small primary">Explore All</a>
+            </div>
+            <div id="featuredCommunitiesGrid" class="community-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                <!-- Communities will be loaded here -->
             </div>
         </section>
 
         <section class="about">
             <h3>About LetsShare</h3>
-            <p>LetsShare is a platform where users can share their unused items with the community. Whether it's tools, books, electronics, or anything else, you can list your items for others to borrow. It's a great way to reduce waste, save money, and build community connections.</p>
+            <p>LetsShare is a platform where users can share their unused items with the community. Whether it's tools,
+                books, electronics, or anything else, you can list your items for others to borrow. It's a great way to
+                reduce waste, save money, and build community connections.</p>
             <p>Join thousands of users who are already sharing and borrowing items locally.</p>
         </section>
     </div>
 
     <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
     <script src="index.js"></script>
 </body>
+
 </html>

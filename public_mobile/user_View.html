@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - LetsShare</title>
+    <link rel="icon" href="assets/Logo2.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <a href="user_Dashboard.html" class="brand">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" class="logo" style="max-height: 32px; border-radius: 4px;">
+                </a>
+            </div>
+        </header>
+
+        <section class="card profile-hero" style="text-align: center; padding: 2rem 1rem;">
+            <div id="userAvatar" class="avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 1rem;">?</div>
+            <h1 id="userName" style="margin-bottom: 0.25rem; font-size: 1.5rem;">Loading...</h1>
+            <p id="userUsername" style="color: var(--muted); margin-bottom: 1.25rem; font-size: 0.9rem;">@username</p>
+            <div id="followActionContainer">
+                <button id="followBtn" class="btn primary" style="width: 100%; max-width: 200px; padding: 0.75rem; border-radius: 50px; font-weight: 600;">Follow</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="section-heading">
+                <h2 style="font-size: 1.25rem;">Items Uploaded</h2>
+                <p style="font-size: 0.85rem;">Items shared by this user.</p>
+            </div>
+            <div id="userItemsGrid" class="community-grid" style="margin-top: 1rem;">
+                <p>Loading items...</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Sidebar component would be injected or handled by sidebar.js -->
+    <script src="sidebar.js"></script>
+    <script src="user_View.js"></script>
+</body>
+</html>

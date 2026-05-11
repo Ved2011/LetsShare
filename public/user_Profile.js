@@ -111,22 +111,62 @@ async function loadUserProfile() {
       if (walletBalance) walletBalance.textContent = `Rs. ${Number(user.wallet_balance || 0).toFixed(2)}`;
       if (editUpiId) editUpiId.value = user.upi_id || '';
 
-      // Pre-fill edit form
-      const editName = document.getElementById('editName');
-      const editUsername = document.getElementById('editUsername');
-      const editEmail = document.getElementById('editEmail');
-      const editPhone = document.getElementById('editPhone');
-      const editDob = document.getElementById('editDob');
-      const editAddress = document.getElementById('editAddress');
-      const twoFactorToggle = document.getElementById('twoFactorToggle');
+    const displayBio = document.getElementById('displayBio');
+    if (displayBio) displayBio.textContent = user.bio || 'Sharing is caring! Looking forward to connecting with the community.';
 
-      if (editName) editName.value = user.name || '';
-      if (editUsername) editUsername.value = user.username || '';
-      if (editEmail) editEmail.value = user.email || '';
-      if (editPhone) editPhone.value = user.phone || '';
-      if (editDob && user.dob) editDob.value = user.dob.split('T')[0];
-      if (editAddress) editAddress.value = user.address || '';
-      if (twoFactorToggle) twoFactorToggle.checked = user.two_factor_enabled;
+    // Pre-fill edit form
+    const editName = document.getElementById('editName');
+    const editUsername = document.getElementById('editUsername');
+    const editEmail = document.getElementById('editEmail');
+    const editPhone = document.getElementById('editPhone');
+    const editDob = document.getElementById('editDob');
+    const editAddress = document.getElementById('editAddress');
+    const editBio = document.getElementById('editBio');
+    const twoFactorToggle = document.getElementById('twoFactorToggle');
+
+    if (editName) editName.value = user.name || '';
+    if (editUsername) editUsername.value = user.username || '';
+    if (editEmail) editEmail.value = user.email || '';
+    if (editPhone) editPhone.value = user.phone || '';
+    if (editDob && user.dob) editDob.value = user.dob.split('T')[0];
+    if (editAddress) editAddress.value = user.address || '';
+    if (editBio) editBio.value = user.bio || '';
+      if (twoFactorToggle) {
+        twoFactorToggle.checked = user.two_factor_enabled;
+        
+        // Add listener for immediate save
+        twoFactorToggle.onchange = async () => {
+          const isEnabled = twoFactorToggle.checked;
+          const formData = new FormData();
+          // We need to send all required fields or update the backend to support partial updates
+          // But since the backend expects everything in the PUT /me route, we'll use a simpler approach if possible
+          // or just reuse the save logic.
+          // For now, let's just trigger a click on the save button if it exists, or fetch the API directly.
+          
+          try {
+            const updateRes = await fetch('/api/users/me', {
+              method: 'PUT',
+              headers: { 'Authorization': `Bearer ${token}` },
+              body: (function() {
+                const fd = new FormData();
+                fd.append('name', user.name);
+                fd.append('email', user.email);
+                fd.append('two_factor_enabled', isEnabled);
+                return fd;
+              })()
+            });
+            if (updateRes.ok) {
+              window.showAlert(`Two-Factor Authentication ${isEnabled ? 'enabled' : 'disabled'}`);
+            } else {
+              twoFactorToggle.checked = !isEnabled; // revert
+              window.showAlert('Failed to update security settings', 'error');
+            }
+          } catch (err) {
+            twoFactorToggle.checked = !isEnabled; // revert
+            window.showAlert('Server error', 'error');
+          }
+        };
+      }
 
       // Update header avatar
       if (headerAvatar && !user.profilePictureBase64) headerAvatar.textContent = user.name.charAt(0).toUpperCase();
@@ -263,6 +303,7 @@ if (profileUpdateForm) {
     formData.append('phone', document.getElementById('editPhone').value || '');
     formData.append('dob', document.getElementById('editDob').value || '');
     formData.append('address', document.getElementById('editAddress').value || '');
+    formData.append('bio', document.getElementById('editBio').value || '');
     
     const oldPass = document.getElementById('oldPassword').value;
     const newPass = document.getElementById('newPassword').value;

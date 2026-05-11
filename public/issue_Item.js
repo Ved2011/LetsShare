@@ -22,13 +22,15 @@ function toggleTheme() {
   updateThemeToggleIcon(nextTheme);
 }
 
+let allItems = [];
+
 async function loadItems() {
   if (!itemsList) return;
   try {
     const response = await fetch('/api/items');
     if (response.ok) {
-      const items = await response.json();
-      displayItems(items);
+      allItems = await response.json();
+      displayItems(allItems);
     } else {
       itemsList.innerHTML = '<p class="error">Failed to load items.</p>';
     }
@@ -43,45 +45,23 @@ function displayItems(items) {
   itemsList.innerHTML = '';
 
   const user = JSON.parse(localStorage.getItem('user') || 'null');
-  const token = localStorage.getItem('token');
-
+  
   // Filter for available items and optionally hide own items
   const availableItems = items.filter(item => item.status === 'available');
 
   if (availableItems.length === 0) {
-    itemsList.innerHTML = '<p>No available items to borrow at the moment.</p>';
+    itemsList.innerHTML = '<p class="empty-state">No items found.</p>';
     return;
   }
 
-    availableItems.forEach(item => {
-    const isOwner = user && Number(user.id) === Number(item.owner_id);
-    const card = document.createElement('div');
-    card.className = 'item-card';
-    card.style.cursor = 'pointer';
-    card.onclick = () => window.location.href = `item_View.html?id=${item.id}`;
-    
-    let actionHtml = '';
-    if (isOwner) {
-      actionHtml = '<span class="status available">Owner</span>';
-    } else {
-      actionHtml = `<button class="btn small primary">View & Borrow</button>`;
-    }
-
-    card.innerHTML = `
-      <div class="card-info">
-        <h4>${item.name}</h4>
-        <p>${item.description || 'No description'}</p>
-        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
-      </div>
-      <div class="item-meta">
-        <span class="status ${item.status}">${item.status}</span>
-        <div class="item-actions">
-          ${actionHtml}
-        </div>
-      </div>
-    `;
-    itemsList.appendChild(card);
-  });
+  itemsList.innerHTML = availableItems.map(item => `
+    <div class="item-square" onclick="window.location.href='item_View.html?id=${item.id}'">
+        <img src="${item.imageBase64 || 'assets/untitled.png'}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; background: #f1f5f9;">
+        <div class="item-name">${item.name}</div>
+        <div class="item-category">${item.category || 'Miscellaneous'}</div>
+        <div style="color: var(--accent); font-weight: 700; margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)}/day</div>
+    </div>
+  `).join('');
 }
 
 async function requestItem(itemId) {
@@ -126,10 +106,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   initializeTheme();
   
-  const headerAvatar = document.getElementById('headerAvatar');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
   if (headerAvatar && user.name) {
     headerAvatar.textContent = user.name.charAt(0).toUpperCase();
+  }
+
+  const borrowSearch = document.getElementById('borrowSearch');
+  if (borrowSearch) {
+    borrowSearch.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase();
+      const filtered = allItems.filter(item => 
+        item.name.toLowerCase().includes(term) || 
+        (item.description && item.description.toLowerCase().includes(term))
+      );
+      displayItems(filtered);
+    });
   }
   
   loadItems();

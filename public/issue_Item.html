@@ -9,33 +9,32 @@
 </head>
 <body>
     <div class="page-wrapper">
-        <div class="header">
-            <a href="user_Profile.html" class="brand">
-                <img src="assets/Logo1.jpeg" class="logo">
-            </a>
-            <div class="auth-buttons">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
-                <a href="ItemForm.html" class="btn small primary">List Item</a>
-                <a href="user_Dashboard.html" class="btn small">Dashboard</a>
-
-                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="Logo" class="header-logo">
+                </a>
             </div>
-        </div>
+            <div class="header-center">
+                <h1 class="page-title">Borrow Items</h1>
+            </div>
+            <div class="header-right">
+                <input type="text" id="borrowSearch" class="input-minimal" placeholder="Search items..." style="width: 200px;">
+            </div>
+        </header>
 
-        <div class="form-card">
+        <section class="card">
             <div id="confirmationMessage" class="message"></div>
             <div id="errorMessage" class="message"></div>
-
-            <h2>Browse & Request Items</h2>
-            <p>Select an item below to send a borrow request to the owner.</p>
-
-            <div id="itemsList" class="items-grid">
-                <p>Loading items...</p>
+            <div id="itemsList" class="items-square-grid">
+                <p class="empty-state">Loading items...</p>
             </div>
-        </div>
+        </section>
     </div>
 
     <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
     <script src="issue_Item.js"></script>
 </body>
 </html>

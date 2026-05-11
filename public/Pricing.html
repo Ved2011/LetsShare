@@ -151,15 +151,11 @@
 <body>
     <div class="page-wrapper">
         <header class="header">
-            <a href="index.html" class="brand">
-                <img src="assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
-            </a>
-            <div class="auth-buttons">
-                <button onclick="history.back()" class="back-btn">&#8592;</button>
-                <a href="user_Profile.html" class="btn outline">Back to Profile</a>
+            <div style="flex-grow: 1;">
+                <h2>Plans & Pricing</h2>
+                <p>Choose the right plan for your sharing needs.</p>
             </div>
         </header>
-
 
         <!-- Upgrade Confirmation Modal -->
         <div class="modal-overlay" id="upgradeModal" style="display: none; align-items: center; justify-content: center;">
@@ -278,13 +274,13 @@
                 confirmUpgradeBtn.textContent = 'Processing...';
 
                 try {
-                    const response = await fetch('/api/users/me', {
-                        method: 'PUT',
+                    const response = await fetch('/api/users/upgrade-plan', {
+                        method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ plan_type: pendingPlan.name })
+                        body: JSON.stringify({ planType: pendingPlan.name })
                     });
 
                     if (response.ok) {
@@ -312,6 +308,7 @@
                 if (e.target === upgradeModal) upgradeModal.style.display = 'none';
             });
         }
-    </script>
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
 </body>
 </html>
