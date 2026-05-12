@@ -87,7 +87,7 @@ app.get('/test', async (req, res) => {
 console.log('Initializing Database...');
 createTables().then(() => {
   console.log('Database Initialized.');
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0',() => {
     console.log(`Server is LIVE on port ${PORT}`);
   });
 }).catch(err => {
