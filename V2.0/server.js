@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { pool, createTables } = require('./db');
@@ -15,10 +15,12 @@ const useragent = require('express-useragent');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-
+/*
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT}`);
+//  console.log(`Server running on port ${PORT}`);
 });
+*/
+
 
 // Middleware
 app.use(cors());
@@ -86,13 +88,24 @@ app.get('/test', async (req, res) => {
 console.log('Initializing Database...');
 createTables().then(() => {
   console.log('Database Initialized.');
-  app.listen(PORT, '0.0.0.0', () => {
+  app.listen(PORT, '0.0.0.0',() => {
     console.log(`Server is LIVE on port ${PORT}`);
   });
 }).catch(err => {
   console.error('Database Initialization Failed:', err);
   // Still try to start server if DB fails? No, usually better to wait.
-  app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT} (DB ERROR)`);
+});
+// ... (all your middleware and routes)
+
+// Initialize database
+console.log('Initializing Database...');
+createTables().then(() => {
+  console.log('Database Initialized.');
+  // THIS IS THE ONLY LISTEN COMMAND YOU NEED:
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server is LIVE on port ${PORT}`);
   });
+}).catch(err => {
+  console.error('Database Initialization Failed:', err);
+  process.exit(1); // Stop the process if the DB fails
 });
