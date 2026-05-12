@@ -15,12 +15,6 @@ const useragent = require('express-useragent');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-/*
-app.listen(PORT, '0.0.0.0', () => {
-//  console.log(`Server running on port ${PORT}`);
-});
-*/
-
 
 // Middleware
 app.use(cors());
@@ -28,6 +22,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(useragent.express());
 
+// Request Logging
 app.use((req, res, next) => {
   console.log('--- Incoming Request ---');
   console.log('Method:', req.method);
@@ -36,7 +31,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes (Moved to top for priority)
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/borrows', borrowRoutes);
@@ -46,17 +41,14 @@ app.use('/api/complaints', complaintRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/communities', communitiesRoutes);
 
-// Static File Routing for Mobile vs Desktop
+// Static File Routing
 const publicStatic = express.static('public');
 const mobileStatic = express.static('public_mobile');
 
 app.use((req, res, next) => {
-    // Skip static routing for API endpoints (already handled above, but kept for safety)
     if (req.path.startsWith('/api/')) {
         return next();
     }
-    
-    // Check if device is mobile OR if the domain explicitly requests mobile
     if (req.useragent.isMobile || (req.hostname && req.hostname.startsWith('mobile.'))) {
         mobileStatic(req, res, next);
     } else {
@@ -84,28 +76,19 @@ app.get('/test', async (req, res) => {
   }
 });
 
-// Initialize database
+// --- SINGLE INITIALIZATION BLOCK ---
 console.log('Initializing Database...');
-createTables().then(() => {
-  console.log('Database Initialized.');
-  app.listen(PORT, '0.0.0.0',() => {
-    console.log(`Server is LIVE on port ${PORT}`);
-  });
-}).catch(err => {
-  console.error('Database Initialization Failed:', err);
-  // Still try to start server if DB fails? No, usually better to wait.
-});
-// ... (all your middleware and routes)
 
-// Initialize database
-console.log('Initializing Database...');
-createTables().then(() => {
-  console.log('Database Initialized.');
-  // THIS IS THE ONLY LISTEN COMMAND YOU NEED:
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server is LIVE on port ${PORT}`);
+createTables()
+  .then(() => {
+    console.log('Database Initialized.');
+    // Start server ONLY after DB is ready
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server is LIVE on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Database Initialization Failed:', err);
+    // Exit so you can fix the tunnel/config
+    process.exit(1); 
   });
-}).catch(err => {
-  console.error('Database Initialization Failed:', err);
-  process.exit(1); // Stop the process if the DB fails
-});
