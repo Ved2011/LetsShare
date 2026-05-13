@@ -99,12 +99,4 @@ async function loadUserItems(userId) {
                 <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">${item.description || 'No description'}</p>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="status ${item.status.toLowerCase()}">${item.status}</span>
-                    <a href="item_Details.html?id=${item.id}" class="btn small outline">Details</a>
-                </div>
-            </div>
-        `).join('');
-    } catch (err) {
-        console.error('Error loading user items:', err);
-        grid.innerHTML = '<p>Error loading items.</p>';
-    }
-}
+             

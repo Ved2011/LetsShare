@@ -583,5 +583,4 @@ initializeTheme();
 loadUserProfile();
 loadNewItems();
 loadMyItems();
-loadBorrowedItems();
-loadRequests();
+loadB

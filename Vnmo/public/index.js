@@ -207,15 +207,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const revealOnScroll = () => {
     document.querySelectorAll('.reveal, .card').forEach(el => {
       const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight - 50) el.classList.add('active');
-    });
-  };
-  window.addEventListener('scroll', revealOnScroll);
-  setTimeout(revealOnScroll, 100);
-
-  const token = localStorage.getItem('token');
-  if (token) {
-    const guestButtons = document.querySelectorAll('.auth-buttons a.btn');
-    guestButtons.forEach(btn => btn.style.display = 'none');
-  }
-});
+      if (rect.top < window.innerHeight - 50) el.classList.add('active'
