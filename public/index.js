@@ -40,7 +40,7 @@ async function loadAllItems() {
       }
 
       if (items.length === 0) {
-        itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No items available at the moment. Be the first to share something!</p>';
+        itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No Items Available</p>';
       } else {
         const newItems = filteredItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3);
         if (newItems.length === 0) {
