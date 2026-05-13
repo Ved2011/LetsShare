@@ -141,6 +141,7 @@ function displayItems(items) {
     itemCard.innerHTML = `
       <div style="display: flex; align-items: center; gap: 1.5rem; flex: 1;">
         <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
+        <img src="${item.imageBase64 || '/assets/untitled.png'}" alt="${item.name}" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
         <div class="card-info">
           <h4>${item.name}</h4>
           <p style="margin-bottom: 0.25rem; opacity: 0.7;">Owner: ${item.owner_name || 'Anonymous'}</p>

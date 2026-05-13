@@ -550,6 +550,7 @@ function displayItems(container, items, isMyItems = false) {
     <div class="item-card" onclick="window.location.href='item_View.html?id=${item.id}'">
       <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}">
       <div class="item-info">
+      <div class="item-info"> 
         <h3>${item.name}</h3>
         <p class="item-price">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
         <span class="status ${item.status}">${item.status}</span>

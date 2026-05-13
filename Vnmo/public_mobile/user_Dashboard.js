@@ -342,6 +342,7 @@ function displayMyItems(items) {
   myItemsContainer.innerHTML = recentItems.map(item => `
     <div class="community-card" onclick="window.location.href='item_View.html?id=${item.id}'" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem;">
       <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 100%; height: 160px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
+      <img src="${item.imageBase64 || '/assets/untitled.png'}" alt="${item.name}" style="width: 100%; height: 160px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
       <div style="flex: 1;">
         <h4 style="margin: 0; font-size: 1rem; line-height: 1.4;">${item.name}</h4>
         <p style="color: var(--accent); font-weight: 700; margin-top: 0.25rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>

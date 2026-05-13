@@ -46,6 +46,12 @@ if (registerForm) {
       return;
     }
 
+    const recaptchaResponse = grecaptcha.getResponse();
+    if (!recaptchaResponse) {
+      window.showAlert('Please complete the reCAPTCHA.', 'error');
+      return;
+    }
+
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -55,9 +61,12 @@ if (registerForm) {
         body: JSON.stringify(data),
       });
 
+      
       const result = await response.json();
 
       if (response.ok) {
+        // Reset reCAPTCHA on successful registration
+        grecaptcha.reset();
         window.showAlert('Registration successful. Please check your email for the verification code.', 'success');
         setTimeout(() => {
           window.location.href = `verify.html?userId=${result.userId}`;
@@ -65,8 +74,10 @@ if (registerForm) {
       } else {
         window.showAlert(result.error || 'Registration failed', 'error');
       }
+      grecaptcha.reset(); // Reset reCAPTCHA on failure
     } catch (error) {
       window.showAlert('Network error. Please try again.', 'error');
+      grecaptcha.reset(); // Reset reCAPTCHA on network error
     }
   });
 }

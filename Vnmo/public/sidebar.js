@@ -14,6 +14,12 @@ function injectSidebar() {
     mobileHeader.className = 'mobile-header';
     const pageTitle = document.title.split(' - ')[0];
 
+    // Helper to determine the correct logo source
+    function getLogoSrc() {
+        const isMobile = window.innerWidth <= 1024;
+        return isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
+    }
+
     mobileHeader.innerHTML = `
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
@@ -182,7 +188,9 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
+            logo.src = '/assets/Logo1.jpeg'; // Ensure root-relative path
             logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.jpeg';
+            logo.src = '/assets/Logo1.jpeg'; // Ensure root-relative path
         }
     });
 
