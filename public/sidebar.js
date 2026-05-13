@@ -25,7 +25,7 @@ function injectSidebar() {
             <h2>${pageTitle}</h2>
         </div>
         <div class="mobile-header-right">
-            <a href="user_Profile.html" class="header-avatar" style="width: 32px; height: 32px;">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
+            <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="header-avatar" style="width: 32px; height: 32px; font-size: 0.6rem; text-decoration: none;">${user?.name?.charAt(0).toUpperCase() || 'Login'}</a>
         </div>
     `;
 
@@ -68,9 +68,9 @@ function injectSidebar() {
                 <i>💎</i> <span class="nav-text">Upgrade Plan</span>
             </a>
             <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem;">
-                <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
-                    <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
-                    <span class="nav-text">My Profile</span>
+                <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
+                    <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.5rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || 'Login'}</div>
+                    <span class="nav-text">${isLoggedIn ? 'My Profile' : 'Login'}</span>
                 </a>
                 <a href="#" class="nav-item" id="sidebarLogout">
                     <i>🚪</i> <span class="nav-text">Logout</span>
@@ -125,10 +125,10 @@ function injectSidebar() {
                     </a>
                 </div>
                 <div class="header-center">
-                    <h1 class="page-title">${pageTitle}</h1>
+                    <h1 class="page-title">${pageTitle === 'LetsShare' ? '' : pageTitle}</h1>
                 </div>
                 <div class="header-right">
-                    ${preservedRight}
+                    ${isLoggedIn ? preservedRight : `<a href="login.html" class="btn small primary" style="text-decoration: none;">Login</a>`}
                 </div>
             `;
         }

@@ -38,11 +38,16 @@ async function loadAllItems() {
       if (user) {
         filteredItems = filteredItems.filter(item => Number(item.owner_id) !== Number(user.id));
       }
-      const newItems = filteredItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3);
-      if (newItems.length === 0 && items.length > 0) {
-        itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No new uploads from others yet.</p>';
+
+      if (items.length === 0) {
+        itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No items available at the moment. Be the first to share something!</p>';
       } else {
-        displayItems(newItems);
+        const newItems = filteredItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3);
+        if (newItems.length === 0) {
+          itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No new uploads from others yet.</p>';
+        } else {
+          displayItems(newItems);
+        }
       }
     }
   } catch (error) {
