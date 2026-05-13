@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plans & Pricing - LetsShare</title>
-    <link rel="icon" href="assets/Logo2.jpeg" type="image/jpeg">
+    <link rel="icon" href="/assets/Logo3.jpeg" type="image/jpeg">
     <link rel="stylesheet" href="style.css">
     <style>
         .pricing-container {
@@ -49,7 +50,7 @@
 
         .plan-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             border-color: var(--accent);
         }
 
@@ -148,11 +149,12 @@
         }
     </style>
 </head>
+
 <body>
     <div class="page-wrapper">
         <header class="header">
             <a href="index.html" class="brand">
-                <img src="assets/Logo2.jpeg" alt="LetsShare logo" class="logo">
+                <img src="/assets/Logo1.jpeg" alt="LetsShare logo" class="logo">
             </a>
             <div class="auth-buttons">
                 <a href="user_Profile.html" class="btn outline">Back to Profile</a>
@@ -161,17 +163,21 @@
 
 
         <!-- Upgrade Confirmation Modal -->
-        <div class="modal-overlay" id="upgradeModal" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-overlay" id="upgradeModal"
+            style="display: none; align-items: center; justify-content: center;">
             <div class="card" style="max-width: 450px; width: 90%; text-align: center; padding: 3rem;">
                 <div style="font-size: 3rem; margin-bottom: 1.5rem;">🚀</div>
                 <h2 id="modalPlanName">Upgrade Plan</h2>
-                <p id="modalPlanDetails" style="color: var(--muted); margin-bottom: 2rem;">Are you sure you want to upgrade your plan?</p>
-                
+                <p id="modalPlanDetails" style="color: var(--muted); margin-bottom: 2rem;">Are you sure you want to
+                    upgrade your plan?</p>
+
                 <div id="modalStatus" class="message" style="margin-bottom: 1.5rem; display: none;"></div>
 
                 <div style="display: grid; gap: 1rem;">
-                    <button id="confirmUpgradeBtn" class="btn primary" style="width: 100%; padding: 1rem;">Yes, Upgrade Now</button>
-                    <button id="cancelUpgradeBtn" class="btn outline" style="width: 100%; padding: 1rem;">Maybe Later</button>
+                    <button id="confirmUpgradeBtn" class="btn primary" style="width: 100%; padding: 1rem;">Yes, Upgrade
+                        Now</button>
+                    <button id="cancelUpgradeBtn" class="btn outline" style="width: 100%; padding: 1rem;">Maybe
+                        Later</button>
                 </div>
             </div>
         </div>
@@ -180,7 +186,8 @@
             <div class="pricing-header">
                 <h1>Choose Your Plan</h1>
                 <p>Unlock more borrows and grow your sharing community.</p>
-                <div id="globalStatus" class="message" style="max-width: 600px; margin: 0 auto 2rem; display: none;"></div>
+                <div id="globalStatus" class="message" style="max-width: 600px; margin: 0 auto 2rem; display: none;">
+                </div>
             </div>
 
             <div class="plans-grid">
@@ -203,7 +210,8 @@
                     <div class="featured-tag">Most Popular</div>
                     <div class="plan-name">Pro</div>
                     <div class="plan-price">Rs. 50<span>/month</span></div>
-                    <div style="font-size: 0.9rem; color: var(--accent); font-weight: 600; margin-bottom: 1rem;">OR Rs. 500/year (Save 17%)</div>
+                    <div style="font-size: 0.9rem; color: var(--accent); font-weight: 600; margin-bottom: 1rem;">OR Rs.
+                        500/year (Save 17%)</div>
                     <ul class="plan-features">
                         <li><strong>15 Listings</strong> max capacity</li>
                         <li><strong>15 Borrows</strong> per month</li>
@@ -218,7 +226,8 @@
                 <div class="plan-card">
                     <div class="plan-name">Premium</div>
                     <div class="plan-price">Rs. 120<span>/month</span></div>
-                    <div style="font-size: 0.9rem; color: var(--accent); font-weight: 600; margin-bottom: 1rem;">OR Rs. 1000/year (Save 30%)</div>
+                    <div style="font-size: 0.9rem; color: var(--accent); font-weight: 600; margin-bottom: 1rem;">OR Rs.
+                        1000/year (Save 30%)</div>
                     <ul class="plan-features">
                         <li><strong>30 Listings</strong> max capacity</li>
                         <li><strong>30 Borrows</strong> per month</li>
@@ -238,7 +247,7 @@
         const globalStatus = document.getElementById('globalStatus');
         const confirmUpgradeBtn = document.getElementById('confirmUpgradeBtn');
         const cancelUpgradeBtn = document.getElementById('cancelUpgradeBtn');
-        
+
         let pendingPlan = null;
 
         function showStatus(el, msg, type) {
@@ -265,7 +274,7 @@
         if (confirmUpgradeBtn) {
             confirmUpgradeBtn.addEventListener('click', async () => {
                 if (!pendingPlan) return;
-                
+
                 const token = localStorage.getItem('token');
                 if (!token) {
                     showStatus(modalStatus, 'Please login first', 'error');
@@ -313,4 +322,5 @@
         }
     </script>
 </body>
+
 </html>

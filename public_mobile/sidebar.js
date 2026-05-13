@@ -3,20 +3,20 @@ function injectSidebar() {
     const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
-    
+
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     sidebar.className = 'sidebar';
     sidebar.id = 'sidebar';
-    
+
     // Create Overlay
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
     overlay.id = 'sidebarOverlay';
-    
+
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="assets/Logo2.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+            <img src="/assets/Logo1.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             <span class="nav-text" style="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
@@ -46,7 +46,7 @@ function injectSidebar() {
             </a>
             <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem;">
                 <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
-                    <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
+                    <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || 'Login'}</div>
                     <span class="nav-text">My Profile</span>
                 </a>
                 <a href="#" class="nav-item" id="sidebarLogout">
@@ -61,7 +61,7 @@ function injectSidebar() {
         const mainWrapper = document.createElement('div');
         mainWrapper.className = 'main-wrapper';
         mainWrapper.id = 'mainWrapper';
-        
+
         // Move all current body children into mainWrapper (except scripts and the sidebar/overlay)
         const children = Array.from(document.body.children);
         children.forEach(child => {
@@ -69,7 +69,7 @@ function injectSidebar() {
                 mainWrapper.appendChild(child);
             }
         });
-        
+
         document.body.prepend(mainWrapper);
         document.body.prepend(overlay);
         document.body.prepend(sidebar);
@@ -124,7 +124,7 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
-        
+
         // Ensure main wrapper doesn't have padding
         mainWrapper.style.paddingLeft = '0';
     }

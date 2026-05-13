@@ -3,22 +3,22 @@ function injectSidebar() {
     const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
-    
+
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     sidebar.className = 'sidebar collapsed';
     sidebar.id = 'sidebar';
-    
+
     // Create Mobile Header
     const mobileHeader = document.createElement('div');
     mobileHeader.className = 'mobile-header';
     const pageTitle = document.title.split(' - ')[0];
-    
+
     mobileHeader.innerHTML = `
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
             <a href="index.html" class="brand">
-                <img src="assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+                <img src="/assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             </a>
         </div>
         <div class="mobile-header-center">
@@ -33,10 +33,10 @@ function injectSidebar() {
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
     overlay.id = 'sidebarOverlay';
-    
+
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+            <img src="/assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             <span class="nav-text" style="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
@@ -84,11 +84,11 @@ function injectSidebar() {
         const appContainer = document.createElement('div');
         appContainer.className = 'app-container';
         appContainer.id = 'appContainer';
-        
+
         const mainWrapper = document.createElement('div');
         mainWrapper.className = 'main-wrapper';
         mainWrapper.id = 'mainWrapper';
-        
+
         // Move all current body children into mainWrapper (except scripts and the sidebar/overlay)
         const children = Array.from(document.body.children);
         children.forEach(child => {
@@ -96,12 +96,12 @@ function injectSidebar() {
                 mainWrapper.appendChild(child);
             }
         });
-        
+
         document.body.prepend(appContainer);
         appContainer.appendChild(sidebar);
         appContainer.appendChild(mainWrapper);
         document.body.prepend(overlay);
-        
+
         mainWrapper.prepend(mobileHeader);
 
         // Standardize Header across all pages
@@ -110,13 +110,13 @@ function injectSidebar() {
             const pageTitle = document.title.split(' - ')[0];
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
-            const logoSrc = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.jpeg';
-            
+            const logoSrc = '/assets/Logo1.jpeg';
+
             const headerRight = header.querySelector('.header-right');
             const preservedRight = headerRight ? headerRight.innerHTML : `
                 <a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
             `;
-            
+
             header.innerHTML = `
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle">☰</button>
@@ -137,14 +137,14 @@ function injectSidebar() {
     // Toggle logic - Moved AFTER injection
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    
+
     const toggleSidebar = () => {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         sidebar.classList.toggle('collapsed');
         overlay.classList.toggle('active');
-    }; 
-    
+    };
+
     if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
     if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
 
@@ -203,7 +203,7 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
-        
+
         // Ensure main wrapper doesn't have padding
         mainWrapper.style.paddingLeft = '0';
     }

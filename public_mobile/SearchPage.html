@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Search - LetsShare</title>
-    <link rel="icon" href="assets/Logo2.jpeg" type="image/jpeg">
+    <link rel="icon" href="/assets/Logo3.jpeg" type="image/jpeg">
     <link rel="stylesheet" href="style.css">
     <style>
         .search-container {
@@ -12,10 +13,12 @@
             margin: 0 auto;
             padding: 1rem;
         }
+
         .search-box-wrapper {
             position: relative;
             margin-bottom: 1.5rem;
         }
+
         .search-box {
             width: 100%;
             padding: 1.25rem 1.5rem 1.25rem 3.5rem;
@@ -26,11 +29,13 @@
             color: var(--text);
             transition: all 0.3s ease;
         }
+
         .search-box:focus {
             border-color: var(--accent);
             outline: none;
             box-shadow: 0 0 0 4px rgba(79, 124, 222, 0.1);
         }
+
         .search-icon-large {
             position: absolute;
             left: 1.25rem;
@@ -39,6 +44,7 @@
             font-size: 1.5rem;
             color: var(--muted);
         }
+
         .result-item {
             padding: 1rem;
             border-bottom: 1px solid var(--border);
@@ -49,12 +55,15 @@
             text-decoration: none;
             color: inherit;
         }
+
         .result-item:hover {
-            background: rgba(0,0,0,0.02);
+            background: rgba(0, 0, 0, 0.02);
         }
+
         html[data-theme="dark"] .result-item:hover {
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
         }
+
         .result-category {
             font-size: 0.7rem;
             font-weight: 700;
@@ -66,16 +75,19 @@
             margin-bottom: 0.25rem;
             display: inline-block;
         }
+
         .result-subtext {
             font-size: 0.85rem;
             color: var(--muted);
         }
     </style>
 </head>
+
 <body>
     <div class="page-wrapper">
         <div class="search-container">
-            <header class="header card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem;">
+            <header class="header card"
+                style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <button class="menu-toggle" id="mobileMenuBtn" style="display: block !important;">
                         <i class="fas fa-bars"></i>
@@ -86,7 +98,8 @@
 
             <div class="search-box-wrapper">
                 <span class="search-icon-large">🔍</span>
-                <input type="text" id="globalSearchInput" class="search-box" placeholder="Search communities, items, or users..." autofocus>
+                <input type="text" id="globalSearchInput" class="search-box"
+                    placeholder="Search communities, items, or users..." autofocus>
             </div>
 
             <div id="searchResults" class="card" style="padding: 0; min-height: 200px;">
@@ -105,7 +118,7 @@
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
             const query = e.target.value.trim();
-            
+
             if (query.length < 1) {
                 resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>';
                 return;
@@ -134,7 +147,7 @@
                     let link = '#';
                     if (r.category === 'Community') link = `community_Home.html?id=${r.id}`;
                     else if (r.category === 'Item') link = `item_Details.html?id=${r.id}`;
-                    else if (r.category === 'User') link = `user_View.html?id=${r.id}`; 
+                    else if (r.category === 'User') link = `user_View.html?id=${r.id}`;
 
                     return `
                         <a href="${link}" class="result-item">
@@ -154,7 +167,7 @@
         }
 
         function getCategoryColor(cat) {
-            switch(cat) {
+            switch (cat) {
                 case 'Community': return '#10b981';
                 case 'Item': return '#3b82f6';
                 case 'User': return '#f59e0b';
@@ -163,4 +176,5 @@
         }
     </script>
 </body>
+
 </html>

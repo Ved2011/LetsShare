@@ -66,7 +66,13 @@ if (loginForm) {
   loginForm.addEventListener('submit', async function (event) {
     event.preventDefault();
 
-if (validateLoginForm()) {
+    if (validateLoginForm()) {
+      const recaptchaResponse = grecaptcha.getResponse();
+      if (!recaptchaResponse) {
+        window.showAlert('Please complete the reCAPTCHA.', 'error');
+        return;
+      }
+
       const identifier = document.getElementById('identifier').value.trim();
       const password = document.getElementById('password').value;
 
@@ -76,7 +82,7 @@ if (validateLoginForm()) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ identifier, password }),
+          body: JSON.stringify({ identifier, password, recaptchaToken: recaptchaResponse }),
         });
 
         const data = await response.json();

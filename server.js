@@ -12,6 +12,7 @@ const statsRoutes = require('./routes/stats');
 const communitiesRoutes = require('./routes/communities');
 
 const useragent = require('express-useragent');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -20,6 +21,7 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(useragent.express());
 
 // Request Logging
@@ -46,22 +48,22 @@ const publicStatic = express.static('public');
 const mobileStatic = express.static('public_mobile');
 
 app.use((req, res, next) => {
-    if (req.path.startsWith('/api/')) {
-        return next();
-    }
-    if (req.useragent.isMobile || (req.hostname && req.hostname.startsWith('mobile.'))) {
-        mobileStatic(req, res, next);
-    } else {
-        publicStatic(req, res, next);
-    }
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  if (req.useragent.isMobile || (req.hostname && req.hostname.startsWith('mobile.'))) {
+    mobileStatic(req, res, next);
+  } else {
+    publicStatic(req, res, next);
+  }
 });
 
 // Root route
 app.get('/', (req, res) => {
   if (req.useragent.isMobile || (req.hostname && req.hostname.startsWith('mobile.'))) {
-      res.sendFile(__dirname + '/public_mobile/index.html');
+    res.sendFile(__dirname + '/public_mobile/index.html');
   } else {
-      res.sendFile(__dirname + '/public/index.html');
+    res.sendFile(__dirname + '/public/index.html');
   }
 });
 
@@ -90,5 +92,5 @@ createTables()
   .catch(err => {
     console.error('Database Initialization Failed:', err);
     // Exit so you can fix the tunnel/config
-    process.exit(1); 
+    process.exit(1);
   });

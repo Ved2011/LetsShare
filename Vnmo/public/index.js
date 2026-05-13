@@ -32,17 +32,22 @@ async function loadAllItems() {
     const response = await fetch('/api/items');
     if (response.ok) {
       const items = await response.json();
-      allItems = items; 
+      allItems = items;
       const user = JSON.parse(localStorage.getItem('user') || 'null');
       let filteredItems = [...items];
       if (user) {
         filteredItems = filteredItems.filter(item => Number(item.owner_id) !== Number(user.id));
       }
-      const newItems = filteredItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3);
-      if (newItems.length === 0 && items.length > 0) {
-        itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No new uploads from others yet.</p>';
+
+      if (items.length === 0) {
+        itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No Items Available</p>';
       } else {
-        displayItems(newItems);
+        const newItems = filteredItems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3);
+        if (newItems.length === 0) {
+          itemsContainer.innerHTML = '<p style="text-align: center; color: var(--muted); padding: 2rem;">No new uploads from others yet.</p>';
+        } else {
+          displayItems(newItems);
+        }
       }
     }
   } catch (error) {
@@ -51,13 +56,13 @@ async function loadAllItems() {
 }
 
 async function loadFeaturedCommunities() {
-    if (!featuredCommunitiesGrid) return;
-    try {
-        const res = await fetch('/api/communities');
-        if (res.ok) {
-            const communities = await res.json();
-            const featured = communities.slice(0, 3);
-            featuredCommunitiesGrid.innerHTML = featured.map(c => `
+  if (!featuredCommunitiesGrid) return;
+  try {
+    const res = await fetch('/api/communities');
+    if (res.ok) {
+      const communities = await res.json();
+      const featured = communities.slice(0, 3);
+      featuredCommunitiesGrid.innerHTML = featured.map(c => `
                 <div class="community-card" onclick="window.location.href='community_Home.html?id=${c.id}'" style="background: var(--card-bg); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
                     <h4 style="margin-top: 0; color: var(--accent);">${c.name}</h4>
                     <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem;">${c.description || 'A vibrant community of sharers.'}</p>
@@ -67,10 +72,10 @@ async function loadFeaturedCommunities() {
                     </div>
                 </div>
             `).join('');
-        }
-    } catch (err) {
-        console.error('Error loading featured communities:', err);
     }
+  } catch (err) {
+    console.error('Error loading featured communities:', err);
+  }
 }
 
 function filterAndDisplay() {
@@ -190,14 +195,14 @@ document.addEventListener('DOMContentLoaded', () => {
   statBorrows = document.getElementById('statBorrows');
   searchInput = document.getElementById('searchInput');
   searchResultsDropdown = document.getElementById('searchResultsDropdown');
-  
+
   if (logoLink) logoLink.addEventListener('click', handleLogoClick);
 
   initializeTheme();
   loadStats();
   loadAllItems();
   loadFeaturedCommunities();
-  
+
   const revealOnScroll = () => {
     document.querySelectorAll('.reveal, .card').forEach(el => {
       const rect = el.getBoundingClientRect();
