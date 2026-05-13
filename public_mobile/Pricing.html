@@ -317,4 +317,10 @@
         // Close modal when clicking outside
         if (upgradeModal) {
             upgradeModal.addEventListener('click', (e) => {
-                if (e.target
+                if (e.target === upgradeModal) upgradeModal.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+
+</html>

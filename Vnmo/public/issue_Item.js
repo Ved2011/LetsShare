@@ -119,4 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
         item.name.toLowerCase().includes(term) || 
         (item.description && item.description.toLowerCase().includes(term))
       );
-      display
+      displayItems(filtered);
+    });
+  }
+  
+  loadItems();
+});

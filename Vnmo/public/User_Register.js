@@ -69,4 +69,17 @@ if (registerForm) {
         grecaptcha.reset();
         window.showAlert('Registration successful. Please check your email for the verification code.', 'success');
         setTimeout(() => {
-          window.location.href = `verify.html?use
+          window.location.href = `verify.html?userId=${result.userId}`;
+        }, 1500);
+      } else {
+        window.showAlert(result.error || 'Registration failed', 'error');
+      }
+      grecaptcha.reset(); // Reset reCAPTCHA on failure
+    } catch (error) {
+      window.showAlert('Network error. Please try again.', 'error');
+      grecaptcha.reset(); // Reset reCAPTCHA on network error
+    }
+  });
+}
+
+initializeTheme();

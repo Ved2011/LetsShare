@@ -211,4 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
   if (token) {
-    const guestButtons 
+    const guestButtons = document.querySelectorAll('.auth-buttons a.btn');
+    guestButtons.forEach(btn => btn.style.display = 'none');
+  }
+});
