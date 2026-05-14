@@ -40,7 +40,7 @@ async function loadUserProfile() {
     if (response.ok) {
       const user = await response.json();
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       if (userName) userName.textContent = user.name;
       if (userEmail) userEmail.textContent = user.email;
 
@@ -59,7 +59,7 @@ async function loadUserProfile() {
       if (planBadge) {
         const plan = user.plan_type || 'Free';
         planBadge.textContent = plan;
-        
+
         // Color coding for plans
         if (plan === 'Pro') {
           planBadge.style.background = 'linear-gradient(135deg, #6366f1, #a855f7)';
@@ -128,7 +128,7 @@ async function loadUserProfile() {
       if (editAddress) editAddress.value = user.address || '';
       if (twoFactorToggle) {
         twoFactorToggle.checked = user.two_factor_enabled;
-        
+
         // Add listener for immediate save
         twoFactorToggle.onchange = async () => {
           const isEnabled = twoFactorToggle.checked;
@@ -137,12 +137,12 @@ async function loadUserProfile() {
           // But since the backend expects everything in the PUT /me route, we'll use a simpler approach if possible
           // or just reuse the save logic.
           // For now, let's just trigger a click on the save button if it exists, or fetch the API directly.
-          
+
           try {
             const updateRes = await fetch('/api/users/me', {
               method: 'PUT',
               headers: { 'Authorization': `Bearer ${token}` },
-              body: (function() {
+              body: (function () {
                 const fd = new FormData();
                 fd.append('name', user.name);
                 fd.append('email', user.email);
@@ -184,13 +184,13 @@ if (toggleProfileEditBtn && profileEditSection) {
   toggleProfileEditBtn.addEventListener('click', () => {
     const isHidden = profileEditSection.style.display === 'none';
     profileEditSection.style.display = isHidden ? 'block' : 'none';
-    
+
     if (profileDetailsSection) {
       profileDetailsSection.style.display = isHidden ? 'none' : 'block';
     }
-    
+
     toggleProfileEditBtn.innerHTML = isHidden ? '❌ Cancel Edit' : '✏️ Manage Profile';
-    
+
     if (isHidden) {
       profileEditSection.scrollIntoView({ behavior: 'smooth' });
     }
@@ -290,7 +290,7 @@ if (profileUpdateForm) {
   profileUpdateForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
-    
+
     const formData = new FormData();
     formData.append('name', document.getElementById('editName').value);
     formData.append('username', document.getElementById('editUsername').value || '');
@@ -298,7 +298,7 @@ if (profileUpdateForm) {
     formData.append('phone', document.getElementById('editPhone').value || '');
     formData.append('dob', document.getElementById('editDob').value || '');
     formData.append('address', document.getElementById('editAddress').value || '');
-    
+
     const oldPass = document.getElementById('oldPassword').value;
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmPassword').value;
@@ -330,12 +330,12 @@ if (profileUpdateForm) {
 
       if (response.ok) {
         window.showAlert('Profile updated successfully!');
-        
+
         // Hide edit section and show details
         if (profileEditSection) profileEditSection.style.display = 'none';
         if (profileDetailsSection) profileDetailsSection.style.display = 'block';
         if (toggleProfileEditBtn) toggleProfileEditBtn.innerHTML = '✏️ Manage Profile';
-        
+
         // Reset password fields
         const passwordFieldsContainer = document.getElementById('passwordFieldsContainer');
         const togglePasswordFieldsBtn = document.getElementById('togglePasswordFieldsBtn');
@@ -380,8 +380,8 @@ const upiVerificationStatus = document.getElementById('upiVerificationStatus');
 
 // Extensive list of common, valid Indian UPI handles (VPAs)
 const validUpiHandles = [
-  'okaxis', 'okhdfcbank', 'okicici', 'oksbi', 'paytm', 'ybl', 'upi', 'apl', 'ibl', 'axl', 
-  'postbank', 'yesbank', 'sbi', 'icici', 'hdfcbank', 'kotak', 'freecharge', 'ap', 'idfcbank', 
+  'okaxis', 'okhdfcbank', 'okicici', 'oksbi', 'paytm', 'ybl', 'upi', 'apl', 'ibl', 'axl',
+  'postbank', 'yesbank', 'sbi', 'icici', 'hdfcbank', 'kotak', 'freecharge', 'ap', 'idfcbank',
   'jupiter', 'sib', 'axisbank', 'icici', 'ikwik', 'navin', 'karurvysyabank', 'federal'
 ];
 
@@ -406,7 +406,7 @@ if (verifyUpiBtn) {
     }
 
     const handle = upiParts[1];
-    
+
     // Simulate network delay for verification
     verifyUpiBtn.disabled = true;
     verifyUpiBtn.textContent = 'Verifying...';
@@ -433,12 +433,12 @@ if (verifyUpiBtn) {
 // Reset verification status if user types
 const editUpiIdInput = document.getElementById('editUpiId');
 if (editUpiIdInput) {
-    editUpiIdInput.addEventListener('input', () => {
-        isUpiVerified = false;
-        if (upiVerificationStatus) {
-            upiVerificationStatus.style.display = 'none';
-        }
-    });
+  editUpiIdInput.addEventListener('input', () => {
+    isUpiVerified = false;
+    if (upiVerificationStatus) {
+      upiVerificationStatus.style.display = 'none';
+    }
+  });
 }
 
 if (savePayoutBtn) {
@@ -447,13 +447,13 @@ if (savePayoutBtn) {
     const token = localStorage.getItem('token');
 
     if (!upiId) {
-        window.showAlert('Please enter a UPI ID', 'error');
-        return;
+      window.showAlert('Please enter a UPI ID', 'error');
+      return;
     }
 
     if (!isUpiVerified) {
-        window.showAlert('Please click "Verify" to validate your UPI ID before saving.', 'error');
-        return;
+      window.showAlert('Please click "Verify" to validate your UPI ID before saving.', 'error');
+      return;
     }
 
     try {
