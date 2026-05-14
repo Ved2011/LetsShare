@@ -1,13 +1,21 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
+const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-});
+  database: process.env.DB_NAME,
+};
+
+// If running on GCP Cloud Run, use the Unix socket
+if (process.env.INSTANCE_CONNECTION_NAME) {
+  dbConfig.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
+} else {
+  dbConfig.host = process.env.DB_HOST;
+  dbConfig.port = process.env.DB_PORT;
+}
+
+const pool = new Pool(dbConfig);
 
 const createTables = async () => {
   const client = await pool.connect();
