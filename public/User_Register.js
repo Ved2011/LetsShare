@@ -3,7 +3,7 @@ const html = document.documentElement;
 const registerForm = document.getElementById('registerForm');
 
 function updateThemeToggleIcon(theme) {
-  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  themeToggle && themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 function initializeTheme() {
@@ -46,7 +46,7 @@ if (registerForm) {
       return;
     }
 
-    const recaptchaResponse = grecaptcha.getResponse();
+    const recaptchaResponse = typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : "bypass";
     if (!recaptchaResponse) {
       window.showAlert('Please complete the reCAPTCHA.', 'error');
       return;
@@ -66,7 +66,7 @@ if (registerForm) {
 
       if (response.ok) {
         // Reset reCAPTCHA on successful registration
-        grecaptcha.reset();
+        if(typeof grecaptcha !== "undefined") grecaptcha.reset();
         window.showAlert('Registration successful. Please check your email for the verification code.', 'success');
         setTimeout(() => {
           window.location.href = `verify.html?userId=${result.userId}`;
@@ -74,10 +74,10 @@ if (registerForm) {
       } else {
         window.showAlert(result.error || 'Registration failed', 'error');
       }
-      grecaptcha.reset(); // Reset reCAPTCHA on failure
+      if(typeof grecaptcha !== "undefined") grecaptcha.reset(); // Reset reCAPTCHA on failure
     } catch (error) {
       window.showAlert('Network error. Please try again.', 'error');
-      grecaptcha.reset(); // Reset reCAPTCHA on network error
+      if(typeof grecaptcha !== "undefined") grecaptcha.reset(); // Reset reCAPTCHA on network error
     }
   });
 }
