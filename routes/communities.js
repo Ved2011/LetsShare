@@ -1,13 +1,13 @@
 const express = require('express');
 const { pool } = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authenticateTokenOptional } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all public communities + user's communities
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateTokenOptional, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : null;
     const { city, state, locality, country } = req.query;
     
     let query = `
@@ -19,7 +19,8 @@ router.get('/', authenticateToken, async (req, res) => {
         EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member,
         EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
       FROM communities c
-      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1))
+      WHERE ($1::int IS NULL AND c.is_private = false)
+         OR ($1::int IS NOT NULL AND (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1)))
     `;
     const params = [userId];
 

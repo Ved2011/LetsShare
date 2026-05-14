@@ -117,7 +117,6 @@ function injectSidebar() {
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
             const logoSrc = '/assets/Logo1.jpeg';
-            const logoSrc = isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
 
             const headerRight = header.querySelector('.header-right');
             const preservedRight = headerRight ? headerRight.innerHTML : `

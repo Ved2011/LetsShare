@@ -3,7 +3,7 @@ const html = document.documentElement;
 const registerForm = document.getElementById('registerForm');
 
 function updateThemeToggleIcon(theme) {
-  themeToggle && themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (themeToggle) themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 function initializeTheme() {
