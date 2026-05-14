@@ -42,8 +42,8 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/communities', communitiesRoutes);
 
 // Static File Routing
-const publicStatic = express.static('public');
-const mobileStatic = express.static('public_mobile');
+const publicStatic = express.static('public', { index: 'welcome.html' });
+const mobileStatic = express.static('public_mobile', { index: 'welcome.html' });
 
 app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) {
