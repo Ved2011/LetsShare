@@ -1,6 +1,6 @@
 // sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -17,7 +17,7 @@ function injectSidebar() {
     mobileHeader.innerHTML = `
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
-            <a href="index.html" class="brand">
+            <a href="welcome.html" class="brand">
                 <img src="/assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             </a>
         </div>
@@ -111,6 +111,7 @@ function injectSidebar() {
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
             const logoSrc = '/assets/Logo1.jpeg';
+            const logoSrc = isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
 
             const headerRight = header.querySelector('.header-right');
             const preservedRight = headerRight ? headerRight.innerHTML : `
@@ -120,7 +121,7 @@ function injectSidebar() {
             header.innerHTML = `
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle">☰</button>
-                    <a href="index.html" class="brand">
+                    <a href="welcome.html" class="brand">
                         <img src="${logoSrc}" alt="Logo" class="header-logo">
                     </a>
                 </div>
@@ -183,6 +184,7 @@ function injectSidebar() {
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
             logo.src = '/assets/Logo1.jpeg';
+            logo.src = isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
         }
     });
 
@@ -193,7 +195,7 @@ function injectSidebar() {
             e.preventDefault();
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'index.html';
+            window.location.href = 'welcome.html';
         });
     }
 

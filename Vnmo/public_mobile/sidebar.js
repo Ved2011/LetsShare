@@ -1,6 +1,6 @@
 // sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
     
@@ -17,6 +17,7 @@ function injectSidebar() {
     sidebar.innerHTML = `
         <div class="sidebar-header">
             <img src="assets/Logo2.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+            <img src="/assets/Logo2.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             <span class="nav-text" style="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
@@ -114,7 +115,7 @@ function injectSidebar() {
             e.preventDefault();
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'index.html';
+            window.location.href = 'welcome.html';
         });
     }
 

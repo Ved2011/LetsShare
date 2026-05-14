@@ -61,9 +61,9 @@ app.use((req, res, next) => {
 // Root route
 app.get('/', (req, res) => {
   if (req.useragent.isMobile || (req.hostname && req.hostname.startsWith('mobile.'))) {
-    res.sendFile(__dirname + '/public_mobile/index.html');
+    res.sendFile(__dirname + '/public_mobile/welcome.html');
   } else {
-    res.sendFile(__dirname + '/public/index.html');
+    res.sendFile(__dirname + '/public/welcome.html');
   }
 });
 

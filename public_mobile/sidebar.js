@@ -1,6 +1,6 @@
 // sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -119,7 +119,7 @@ function injectSidebar() {
             e.preventDefault();
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'index.html';
+            window.location.href = 'welcome.html';
         });
     }
 
