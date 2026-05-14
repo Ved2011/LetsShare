@@ -191,4 +191,38 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// Resend Verification Code
+router.post('/resend-verification', async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const result = await pool.query('SELECT email, is_verified FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    
+    const user = result.rows[0];
+    if (user.is_verified) return res.status(400).json({ error: 'User is already verified' });
+
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    await pool.query('UPDATE users SET verification_code = $1 WHERE id = $2', [verificationCode, userId]);
+
+    // Send email
+    const { sendEmail } = require('../utils/email');
+    await sendEmail(
+      user.email,
+      'New Verification Code - LetsShare',
+      `Your new verification code is: ${verificationCode}`,
+      `<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2>New Verification Code</h2>
+        <p>You requested a new verification code for your LetsShare account:</p>
+        <h1 style="color: #4f7cde; letter-spacing: 5px;">${verificationCode}</h1>
+        <p>If you did not request this, you can safely ignore this email.</p>
+      </div>`
+    );
+
+    res.json({ message: 'A new verification code has been sent to your email.' });
+  } catch (err) {
+    console.error('Resend error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
