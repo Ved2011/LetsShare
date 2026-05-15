@@ -37,7 +37,8 @@ if (registerForm) {
       city: formData.get('city'),
       state: formData.get('state'),
       locality: formData.get('locality'),
-      country: formData.get('country')
+      country: formData.get('country'),
+      recaptchaToken: typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : null
     };
 
     // Validate password confirmation
@@ -46,8 +47,7 @@ if (registerForm) {
       return;
     }
 
-    const recaptchaResponse = typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : "bypass";
-    if (!recaptchaResponse) {
+    if (data.recaptchaToken === null && typeof grecaptcha !== "undefined") {
       window.showAlert('Please complete the reCAPTCHA.', 'error');
       return;
     }

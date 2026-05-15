@@ -31,7 +31,7 @@ function injectSidebar() {
             <h2>${pageTitle}</h2>
         </div>
         <div class="mobile-header-right">
-            ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar" style="width: 32px; height: 32px;">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
+            ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar" style="width: 32px; height: 32px;">${user?.name?.charAt(0).toUpperCase()}</a>` : (window.location.pathname.includes('login.html') || window.location.pathname.includes('User_Register.html') ? '' : `<a href="login.html" class="btn small outline">Login</a>`)}
         </div>
     `;
 
@@ -134,7 +134,7 @@ function injectSidebar() {
                     <h1 class="page-title">${pageTitle === 'LetsShare' ? '' : pageTitle}</h1>
                 </div>
                 <div class="header-right">
-                    ${isLoggedIn ? preservedRight : `<a href="login.html" class="btn small primary" style="text-decoration: none;">Login</a>`}
+                    ${isLoggedIn ? preservedRight : (window.location.pathname.includes('login.html') || window.location.pathname.includes('User_Register.html') ? '' : `<a href="login.html" class="btn small primary" style="text-decoration: none;">Login</a>`)}
                 </div>
             `;
         }

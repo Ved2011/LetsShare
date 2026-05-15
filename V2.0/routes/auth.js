@@ -2,13 +2,20 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
+const { verifyRecaptcha } = require('../utils/captcha');
 const https = require('https');
 
 const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
-  const { name, email, password, phone, dob, address, city, state, locality, country } = req.body;
+  const { name, email, password, phone, dob, address, city, state, locality, country, recaptchaToken } = req.body;
+
+  // Verify reCAPTCHA
+  const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+  if (!recaptchaResult.success) {
+    return res.status(400).json({ error: 'reCAPTCHA verification failed' });
+  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -76,24 +83,9 @@ router.post('/login', async (req, res) => {
   const { identifier, password, recaptchaToken } = req.body;
 
   // Verify reCAPTCHA
-  try {
-    const secret = process.env.RECAPTCHA_SECRET;
-    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${recaptchaToken}`;
-
-    const recaptchaResult = await new Promise((resolve, reject) => {
-      https.get(verifyUrl, (res) => {
-        let data = '';
-        res.on('data', (chunk) => data += chunk);
-        res.on('end', () => resolve(JSON.parse(data)));
-      }).on('error', (err) => reject(err));
-    });
-
-    if (!recaptchaResult.success) {
-      return res.status(400).json({ error: 'reCAPTCHA verification failed' });
-    }
-  } catch (err) {
-    console.error('reCAPTCHA error:', err);
-    // Continue if there's an error connecting to Google, to avoid locking out users
+  const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+  if (!recaptchaResult.success) {
+    return res.status(400).json({ error: 'reCAPTCHA verification failed' });
   }
 
   try {
