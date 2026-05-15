@@ -1,13 +1,13 @@
 const express = require('express');
 const { pool } = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authenticateTokenOptional } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all public communities + user's communities
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateTokenOptional, async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user ? req.user.id : null;
     const { city, state, locality, country } = req.query;
     
     let query = `
