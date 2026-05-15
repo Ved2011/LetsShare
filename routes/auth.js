@@ -147,7 +147,7 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     console.error('Login error:', err);
@@ -177,7 +177,7 @@ router.post('/verify-2fa', async (req, res) => {
     // Clear OTP
     await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL WHERE id = $1', [userId]);
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     console.error('2FA verification error:', err);
