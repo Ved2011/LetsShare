@@ -61,6 +61,10 @@ async function loadFeaturedCommunities() {
     const res = await fetch('/api/communities');
     if (res.ok) {
       const communities = await res.json();
+      if (communities.length === 0) {
+        featuredCommunitiesGrid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">No communities available</p>';
+        return;
+      }
       const featured = communities.slice(0, 3);
       featuredCommunitiesGrid.innerHTML = featured.map(c => `
                 <div class="community-card" onclick="window.location.href='community_Home.html?id=${c.id}'" style="background: var(--card-bg); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; cursor: pointer; transition: all 0.3s ease;">
