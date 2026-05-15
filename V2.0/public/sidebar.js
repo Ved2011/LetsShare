@@ -25,7 +25,7 @@ function injectSidebar() {
             <h2>${pageTitle}</h2>
         </div>
         <div class="mobile-header-right">
-            <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="header-avatar" style="width: 32px; height: 32px; text-decoration: none; font-size: 0.6rem;">${user?.name?.charAt(0).toUpperCase() || 'Login'}</a>
+            ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar" style="width: 32px; height: 32px;">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
         </div>
     `;
 
@@ -113,8 +113,8 @@ function injectSidebar() {
             const logoSrc = '/assets/Logo1.jpeg';
 
             const headerRight = header.querySelector('.header-right');
-            const preservedRight = headerRight ? headerRight.innerHTML : `
-                <a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase() || 'Login'}</a>
+            const preservedRight = headerRight && headerRight.innerHTML.trim() !== '?' ? headerRight.innerHTML : `
+                ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small primary" style="text-decoration: none;">Login</a>`}
             `;
 
             header.innerHTML = `
@@ -125,10 +125,10 @@ function injectSidebar() {
                     </a>
                 </div>
                 <div class="header-center">
-                    <h1 class="page-title">${pageTitle}</h1>
+                    <h1 class="page-title">${pageTitle === 'LetsShare' ? '' : pageTitle}</h1>
                 </div>
                 <div class="header-right">
-                    ${preservedRight}
+                    ${isLoggedIn ? preservedRight : `<a href="login.html" class="btn small primary" style="text-decoration: none;">Login</a>`}
                 </div>
             `;
         }
