@@ -97,7 +97,7 @@ html, body {
     position: sticky;
     top: 0;
     height: 100vh;
-    z-index: 2000;
+    z-index: 10000;
     overflow-y: auto;
     flex-shrink: 0;
     transform-origin: left;
@@ -131,7 +131,7 @@ html, body {
     height: 100%;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
-    z-index: 950;
+    z-index: 9999;
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease;

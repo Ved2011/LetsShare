@@ -106,7 +106,7 @@ function injectSidebar() {
         document.body.prepend(appContainer);
         appContainer.appendChild(sidebar);
         appContainer.appendChild(mainWrapper);
-        document.body.prepend(overlay);
+        document.body.appendChild(overlay);
 
         mainWrapper.prepend(mobileHeader);
 
