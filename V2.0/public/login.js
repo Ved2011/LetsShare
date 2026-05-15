@@ -67,8 +67,8 @@ if (loginForm) {
     event.preventDefault();
 
     if (validateLoginForm()) {
-      const recaptchaResponse = grecaptcha.getResponse();
-      if (!recaptchaResponse) {
+      const recaptchaToken = grecaptcha.getResponse();
+      if (!recaptchaToken) {
         window.showAlert('Please complete the reCAPTCHA.', 'error');
         return;
       }
@@ -82,7 +82,7 @@ if (loginForm) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ identifier, password, recaptchaToken: recaptchaResponse }),
+          body: JSON.stringify({ identifier, password, recaptchaToken }),
         });
 
         const data = await response.json();

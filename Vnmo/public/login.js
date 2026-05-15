@@ -71,12 +71,18 @@ if (validateLoginForm()) {
       const password = document.getElementById('password').value;
 
       try {
+        const recaptchaToken = grecaptcha.getResponse();
+        if (!recaptchaToken) {
+          window.showAlert('Please complete the reCAPTCHA verification.', 'error');
+          return;
+        }
+
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ identifier, password }),
+          body: JSON.stringify({ identifier, password, recaptchaToken }),
         });
 
         const data = await response.json();
