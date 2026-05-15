@@ -6,7 +6,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
-  password: abc123,
+  password: 'abc123',
 });
 
 const createTables = async () => {
