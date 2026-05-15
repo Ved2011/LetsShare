@@ -1,7 +1,6 @@
 const html = document.documentElement;
 let themeToggle;
 let dashboardItems;
-let dashboardUsers;
 let dashboardBorrows;
 let dashboardMyItems;
 let recentItemsContainer;
@@ -224,7 +223,6 @@ async function loadDashboard() {
     if (statsResponse.ok) {
       const stats = await statsResponse.json();
       dashboardItems.textContent = stats.total_items || 0;
-      dashboardUsers.textContent = stats.total_users || 0;
     }
 
     const itemsResponse = await fetch('/api/items');
@@ -682,7 +680,7 @@ async function declineRequest(requestId) {
 document.addEventListener('DOMContentLoaded', () => {
   themeToggle = document.getElementById('themeToggle');
   dashboardItems = document.getElementById('dashboardItems');
-  dashboardUsers = document.getElementById('dashboardUsers');
+
   dashboardBorrows = document.getElementById('dashboardBorrows');
   dashboardMyItems = document.getElementById('dashboardMyItems');
   joinedCommunitiesContainer = document.getElementById('joinedCommunitiesGrid');

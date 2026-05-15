@@ -147,8 +147,17 @@ function injectSidebar() {
     const toggleSidebar = () => {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('collapsed');
-        overlay.classList.toggle('active');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        } else {
+            sidebar.classList.add('collapsed');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
     };
 
     if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
@@ -188,9 +197,6 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
-            logo.src = '/assets/Logo1.jpeg'; // Ensure root-relative path
-            logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.jpeg';
-            logo.src = '/assets/Logo1.jpeg'; // Ensure root-relative path
             logo.src = isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
         }
     });

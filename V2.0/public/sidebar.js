@@ -14,6 +14,12 @@ function injectSidebar() {
     mobileHeader.className = 'mobile-header';
     const pageTitle = document.title.split(' - ')[0];
 
+    // Helper to determine the correct logo source
+    function getLogoSrc() {
+        const isMobile = window.innerWidth <= 1024;
+        return isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
+    }
+
     mobileHeader.innerHTML = `
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
@@ -69,7 +75,7 @@ function injectSidebar() {
             </a>
             <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem;">
                 <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
-                    <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || 'Login'}</div>
+                    <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
                     <span class="nav-text">My Profile</span>
                 </a>
                 <a href="#" class="nav-item" id="sidebarLogout">
@@ -114,7 +120,7 @@ function injectSidebar() {
 
             const headerRight = header.querySelector('.header-right');
             const preservedRight = headerRight && headerRight.innerHTML.trim() !== '?' ? headerRight.innerHTML : `
-                ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small primary" style="text-decoration: none;">Login</a>`}
+                ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
             `;
 
             header.innerHTML = `
@@ -141,8 +147,17 @@ function injectSidebar() {
     const toggleSidebar = () => {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('collapsed');
-        overlay.classList.toggle('active');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+        } else {
+            sidebar.classList.add('collapsed');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
     };
 
     if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
@@ -182,7 +197,6 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
-            logo.src = '/assets/Logo1.jpeg';
             logo.src = isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
         }
     });
