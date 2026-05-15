@@ -27,6 +27,13 @@ const createTables = async () => {
         last_borrow_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         wallet_balance DECIMAL DEFAULT 0,
         upi_id TEXT,
+        city TEXT,
+        state TEXT,
+        locality TEXT,
+        country TEXT,
+        verification_code TEXT,
+        is_verified BOOLEAN DEFAULT false,
+        username TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -192,6 +199,12 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS borrows_this_month INTEGER DEFAULT 0;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_borrow_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS city TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS state TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS locality TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
     `);
 
     console.log('Tables created successfully');
