@@ -258,7 +258,7 @@ html, body {
 
 .logo {
     height: auto;
-    max-height: 90px;
+    max-height: 120px;
     width: auto;
     max-width: 400px;
     object-fit: contain;
@@ -361,7 +361,7 @@ body {
 }
 
 .header-logo {
-    height: 55px;
+    height: 75px;
     width: auto;
     border-radius: 8px;
     object-fit: contain;
