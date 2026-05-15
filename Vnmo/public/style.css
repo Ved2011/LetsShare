@@ -97,7 +97,7 @@ html, body {
     position: sticky;
     top: 0;
     height: 100vh;
-    z-index: 1000;
+    z-index: 2000;
     overflow-y: auto;
     flex-shrink: 0;
     transform-origin: left;
@@ -361,7 +361,7 @@ body {
 }
 
 .header-logo {
-    height: 75px;
+    height: 45px;
     width: auto;
     border-radius: 8px;
     object-fit: contain;
