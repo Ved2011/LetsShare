@@ -23,7 +23,7 @@ function injectSidebar() {
     mobileHeader.innerHTML = `
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
-            <a href="welcome.html" class="brand">
+            <a href="user_Dashboard.html" class="brand">
                 <img src="/assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             </a>
         </div>
@@ -126,7 +126,7 @@ function injectSidebar() {
             header.innerHTML = `
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle">☰</button>
-                    <a href="welcome.html" class="brand">
+                    <a href="user_Dashboard.html" class="brand">
                         <img src="${logoSrc}" alt="Logo" class="header-logo">
                     </a>
                 </div>
