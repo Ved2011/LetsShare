@@ -17,7 +17,7 @@ function injectSidebar() {
     // Helper to determine the correct logo source
     function getLogoSrc() {
         const isMobile = window.innerWidth <= 1024;
-        return isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
+        return isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo2.jpeg';
     }
 
     mobileHeader.innerHTML = `
@@ -116,7 +116,7 @@ function injectSidebar() {
             const pageTitle = document.title.split(' - ')[0];
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
-            const logoSrc = '/assets/Logo1.jpeg';
+            const logoSrc = '/assets/Logo2.jpeg';
 
             const headerRight = header.querySelector('.header-right');
             const preservedRight = headerRight && headerRight.innerHTML.trim() !== '?' ? headerRight.innerHTML : `
@@ -197,7 +197,7 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
-            logo.src = isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo1.jpeg';
+            logo.src = isMobile ? '/assets/Logo2.jpeg' : '/assets/Logo2.jpeg';
         }
     });
 
