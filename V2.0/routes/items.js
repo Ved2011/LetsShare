@@ -19,13 +19,13 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     // Start transaction
     await pool.query('BEGIN');
 
-    // Get user's plan and balance
-    const userResult = await pool.query('SELECT plan_type, wallet_balance FROM users WHERE id = $1', [ownerId]);
+    // Get user's plan, balance, and admin status
+    const userResult = await pool.query('SELECT plan_type, wallet_balance, is_site_admin FROM users WHERE id = $1', [ownerId]);
     if (userResult.rows.length === 0) {
       await pool.query('ROLLBACK');
       return res.status(404).json({ error: 'User not found' });
     }
-    const { plan_type, wallet_balance } = userResult.rows[0];
+    const { plan_type, wallet_balance, is_site_admin } = userResult.rows[0];
 
     // Get current listing count
     const itemCountResult = await pool.query('SELECT COUNT(*) FROM items WHERE owner_id = $1', [ownerId]);
@@ -37,7 +37,7 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     if (plan_type === 'Premium') limit = 30;
 
     let fee = 0;
-    if (itemCount >= limit) {
+    if (itemCount >= limit && !is_site_admin) {
       fee = 20;
       if (wallet_balance < fee) {
         await pool.query('ROLLBACK');

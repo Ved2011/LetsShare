@@ -172,7 +172,14 @@ router.post('/:id/join', authenticateToken, async (req, res) => {
 
     const memberCountResult = await pool.query('SELECT COUNT(*) FROM community_members WHERE community_id = $1', [communityId]);
     const memberCount = parseInt(memberCountResult.rows[0].count);
-    if (memberCount >= community.max_limit) return res.status(400).json({ error: 'Community has reached its maximum limit.' });
+    
+    // Check admin status to bypass limit
+    const userResult = await pool.query('SELECT is_site_admin FROM users WHERE id = $1', [userId]);
+    const isSiteAdmin = userResult.rows[0]?.is_site_admin || false;
+
+    if (!isSiteAdmin && memberCount >= community.max_limit) {
+      return res.status(400).json({ error: 'Community has reached its maximum limit.' });
+    }
 
     await pool.query(
       'INSERT INTO community_members (community_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',

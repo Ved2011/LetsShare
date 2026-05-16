@@ -20,30 +20,32 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     await pool.query('BEGIN');
 
     // Get user's plan and balance
-    const userResult = await pool.query('SELECT plan_type, wallet_balance, free_credits, last_credit_added FROM users WHERE id = $1', [ownerId]);
+    const userResult = await pool.query('SELECT plan_type, wallet_balance, free_credits, last_credit_added, is_site_admin FROM users WHERE id = $1', [ownerId]);
     if (userResult.rows.length === 0) {
       await pool.query('ROLLBACK');
       return res.status(404).json({ error: 'User not found' });
     }
-    let { plan_type, wallet_balance, free_credits, last_credit_added } = userResult.rows[0];
+    let { plan_type, wallet_balance, free_credits, last_credit_added, is_site_admin } = userResult.rows[0];
 
-    // Check if we need to add new month's credits
-    const now = new Date();
-    const lastAdded = last_credit_added ? new Date(last_credit_added) : now;
-    let monthsPassed = (now.getFullYear() - lastAdded.getFullYear()) * 12 + (now.getMonth() - lastAdded.getMonth());
-    if (monthsPassed > 0) {
-      free_credits += 5 * monthsPassed;
-      await pool.query('UPDATE users SET free_credits = $1, last_credit_added = CURRENT_TIMESTAMP WHERE id = $2', [free_credits, ownerId]);
+    // Check if we need to add new month's credits (Skip for admin)
+    if (!is_site_admin) {
+        const now = new Date();
+        const lastAdded = last_credit_added ? new Date(last_credit_added) : now;
+        let monthsPassed = (now.getFullYear() - lastAdded.getFullYear()) * 12 + (now.getMonth() - lastAdded.getMonth());
+        if (monthsPassed > 0) {
+          free_credits += 5 * monthsPassed;
+          await pool.query('UPDATE users SET free_credits = $1, last_credit_added = CURRENT_TIMESTAMP WHERE id = $2', [free_credits, ownerId]);
+        }
+
+        // Enforce Early Bird free credits
+        if (free_credits <= 0) {
+          await pool.query('ROLLBACK');
+          return res.status(403).json({ error: 'You have used all your free credits for this month. Please wait for the next month for more credits!' });
+        }
+
+        // Deduct 1 credit
+        await pool.query('UPDATE users SET free_credits = free_credits - 1 WHERE id = $1', [ownerId]);
     }
-
-    // Enforce Early Bird free credits
-    if (free_credits <= 0) {
-      await pool.query('ROLLBACK');
-      return res.status(403).json({ error: 'You have used all your free credits for this month. Please wait for the next month for more credits!' });
-    }
-
-    // Deduct 1 credit
-    await pool.query('UPDATE users SET free_credits = free_credits - 1 WHERE id = $1', [ownerId]);
 
     // Get current listing count
     const itemCountResult = await pool.query('SELECT COUNT(*) FROM items WHERE owner_id = $1', [ownerId]);
