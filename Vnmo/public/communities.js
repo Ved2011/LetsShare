@@ -188,8 +188,8 @@ function renderCommunities(filter = '') {
     const myGrid = document.getElementById('myCommunitiesList');
     
     if (communities.length === 0) {
-        grid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">No communities around you yet.</p>';
-        myGrid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">You haven\'t joined any communities yet.</p>';
+        if (grid) grid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">No communities around you yet.</p>';
+        if (myGrid) myGrid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">You haven\'t joined any communities yet.</p>';
         return;
     }
 
@@ -224,8 +224,8 @@ function renderCommunities(filter = '') {
         </div>
     `;
 
-    myGrid.innerHTML = myComms.length ? myComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">No communities found.</p>';
-    grid.innerHTML = otherComms.length ? otherComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">No other communities found.</p>';
+    if (myGrid) myGrid.innerHTML = myComms.length ? myComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">No communities found.</p>';
+    if (grid) grid.innerHTML = otherComms.length ? otherComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">No other communities found.</p>';
 }
 
 async function openCommunity(c) {
