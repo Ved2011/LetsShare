@@ -68,7 +68,7 @@ async function loadUsers() {
                 <td>
                     <strong>${u.name}</strong>
                     ${u.is_site_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
-                    <br><small class="muted">@${u.username || '—'}</small>
+                    <br><small class="muted">${u.username ? '@' + u.username : ''}</small>
                 </td>
                 <td class="hide-xs" style="font-size:0.78rem">${u.email}</td>
                 <td><span class="badge ${u.plan_type === 'Pro' ? 'badge-pro' : 'badge-free'}">${u.plan_type || 'Free'}</span></td>
