@@ -12,7 +12,13 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
     const { city, state, locality, country } = req.query;
     
     let query = `
-      SELECT c.*, 0 as member_count, 0 as item_count, false as is_member, false as is_current_user_admin
+      SELECT c.*, 
+        (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as member_count,
+        (SELECT COUNT(*) FROM items i 
+         JOIN community_members cm ON i.owner_id = cm.user_id 
+         WHERE cm.community_id = c.id AND (i.exclusive_community_id IS NULL OR i.exclusive_community_id = c.id)) as item_count,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
       FROM communities c
       WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1))
     `;
@@ -114,6 +120,8 @@ router.post('/', authenticateToken, async (req, res) => {
     if (!name) return res.status(400).json({ error: 'Community name is required' });
 
     try {
+      const colCheck = await pool.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'communities'");
+      console.log('Server-side Communities columns:', colCheck.rows.map(r => r.column_name));
       await pool.query('BEGIN');
       
       // Community creation is free in Early Bird phase.
@@ -137,7 +145,7 @@ router.post('/', authenticateToken, async (req, res) => {
   } catch (err) {
     await pool.query('ROLLBACK');
     console.error('Error creating community:', err);
-    res.status(500).json({ error: 'Server error', details: err.message });
+    res.status(500).json({ error: 'Server error', details: err.message, stack: err.stack });
   }
 });
 

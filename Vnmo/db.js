@@ -214,6 +214,16 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
+      
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS city TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS state TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS locality TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS country TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS chat_enabled BOOLEAN DEFAULT false;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS latitude NUMERIC;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS longitude NUMERIC;
+
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS exclusive_community_id INTEGER REFERENCES communities(id) ON DELETE SET NULL;
     `);
 
     console.log('Tables created successfully');
