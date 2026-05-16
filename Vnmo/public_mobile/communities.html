@@ -99,11 +99,14 @@
 
     <div class="page-wrapper">
         <header class="header">
-            <div style="flex-grow: 1;">
-                <h2>Communities</h2>
-                <p>Join local sharing groups.</p>
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                <a href="user_Dashboard.html" class="brand" style="display: flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+                    <img src="assets/Logo1.jpeg" alt="Logo" style="height: 32px; border-radius: 4px;">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                </a>
+                <span style="font-weight: 600; color: var(--accent); flex-grow: 1; text-align: center;">Communities</span>
+                <button id="createCommunityBtn" class="btn primary small">Create</button>
             </div>
-                <button id="createCommunityBtn" class="btn primary">Create Community</button>
         </header>
 
         <section class="card" style="margin-bottom: 2rem;">

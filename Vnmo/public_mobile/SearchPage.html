@@ -75,14 +75,16 @@
 <body>
     <div class="page-wrapper">
         <div class="search-container">
-            <header class="header card" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <button class="menu-toggle" id="mobileMenuBtn" style="display: block !important;">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <h2 style="margin: 0; font-size: 1.25rem;">Global Search</h2>
-                </div>
-            </header>
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                <a href="user_Dashboard.html" class="brand" style="display: flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+                    <img src="assets/Logo1.jpeg" alt="Logo" style="height: 32px; border-radius: 4px;">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                </a>
+                <span style="font-weight: 600; color: var(--accent); flex-grow: 1; text-align: center;">Global Search</span>
+                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+            </div>
+        </header>
 
             <div class="search-box-wrapper">
                 <span class="search-icon-large">🔍</span>
@@ -236,5 +238,6 @@
             }
         }
     </script>
+    <script src="sidebar.js"></script>
 </body>
 </html>
