@@ -13,14 +13,14 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
     
     let query = `
       SELECT c.*, 
-        (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as member_count,
-        (SELECT COUNT(*) FROM items i 
-         JOIN community_members cm ON i.owner_id = cm.user_id 
+        (SELECT COUNT(*) FROM public.community_members WHERE community_id = c.id) as member_count,
+        (SELECT COUNT(*) FROM public.items i 
+         JOIN public.community_members cm ON i.owner_id = cm.user_id 
          WHERE cm.community_id = c.id AND (i.exclusive_community_id IS NULL OR i.exclusive_community_id = c.id)) as item_count,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
-      FROM communities c
-      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1))
+        EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1) as is_member,
+        EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
+      FROM public.communities c
+      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1))
     `;
     const params = [userId];
 
