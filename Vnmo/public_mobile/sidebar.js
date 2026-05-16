@@ -97,8 +97,10 @@ function injectSidebar() {
         let pageTitle = "LetsShare";
         const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
         const existingH2 = header.querySelector('h2');
+        const existingH1 = header.querySelector('h1');
         if (existingSpan) pageTitle = existingSpan.textContent;
         else if (existingH2) pageTitle = existingH2.textContent;
+        else if (existingH1) pageTitle = existingH1.textContent;
         else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
 
         header.innerHTML = `

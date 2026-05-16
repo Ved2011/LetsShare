@@ -77,22 +77,34 @@ function injectSidebar() {
         document.body.prepend(mainWrapper);
         document.body.prepend(overlay);
         document.body.prepend(sidebar);
+    }
 
-        // Auto-inject toggle button into header if missing
-        const header = document.querySelector('.header');
-        if (header && !document.getElementById('menuToggle')) {
-            const btn = document.createElement('button');
-            btn.id = 'menuToggle';
-            btn.className = 'menu-toggle';
-            btn.innerHTML = '☰';
-            btn.style.marginRight = '1rem';
-            btn.style.background = 'none';
-            btn.style.border = '1px solid var(--border)';
-            btn.style.padding = '0.5rem';
-            btn.style.borderRadius = '8px';
-            btn.style.cursor = 'pointer';
-            header.prepend(btn);
-        }
+    // Auto-unify Header
+    const header = document.querySelector('.header');
+    if (header) {
+        // Determine Page Title
+        let pageTitle = "LetsShare";
+        const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
+        const existingH2 = header.querySelector('h2');
+        const existingH1 = header.querySelector('h1');
+        if (existingSpan) pageTitle = existingSpan.textContent;
+        else if (existingH2) pageTitle = existingH2.textContent;
+        else if (existingH1) pageTitle = existingH1.textContent;
+        else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
+
+        header.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                <button class="menu-toggle" id="menuToggle" style="background: none; border: none; font-size: 1.5rem; color: var(--accent); padding: 0.5rem; margin-left: -0.5rem; cursor: pointer;">☰</button>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <img src="/assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
+                </div>
+                <h2 style="font-size: 1.1rem; margin: 0; color: var(--text); flex-grow: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pageTitle}</h2>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <a href="user_Profile.html" class="header-avatar" style="text-decoration: none; width: 32px; height: 32px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; background: var(--accent); color: white; border-radius: 50%;">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
+                </div>
+            </div>
+        `;
     }
 
     // Toggle logic
@@ -128,10 +140,6 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
-
-        
-        // Ensure main wrapper doesn't have padding
-        mainWrapper.style.paddingLeft = '0';
     }
 }
 
