@@ -9,72 +9,81 @@
     <style>
         .admin-tabs {
             display: flex;
-            gap: 0.4rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--border);
-            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 2px;
         }
+        .admin-tabs::-webkit-scrollbar { display: none; }
         .admin-tab {
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 0.85rem;
             border: none;
             background: none;
             cursor: pointer;
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
             color: var(--muted);
             border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
+            white-space: nowrap;
             transition: all 0.2s;
         }
-        .admin-tab:hover { color: #4f46e5; background: rgba(79,70,229,0.05); }
         .admin-tab.active { color: #4f46e5; border-bottom-color: #4f46e5; font-weight: 600; }
         .admin-section { display: none; }
         .admin-section.active { display: block; }
-        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
         .admin-table th {
-            background: rgba(79,70,229,0.07); color: #4f46e5; font-weight: 600;
-            text-align: left; padding: 0.65rem 0.75rem;
-            border-bottom: 1px solid rgba(79,70,229,0.15); white-space: nowrap;
+            background: rgba(79,70,229,0.05); color: #4f46e5; font-weight: 600;
+            text-align: left; padding: 0.6rem 0.6rem;
+            border-bottom: 1px solid rgba(79,70,229,0.1); white-space: nowrap;
         }
-        .admin-table td { padding: 0.65rem 0.75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        .admin-table tr:hover td { background: rgba(79,70,229,0.03); }
+        .admin-table td { padding: 0.6rem 0.6rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .badge { display: inline-block; padding: 0.18rem 0.5rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
-        .badge-admin   { background: rgba(79,70,229,0.12); color: #4f46e5; }
-        .badge-free    { background: rgba(100,116,139,0.12); color: #64748b; }
-        .badge-pro     { background: rgba(245,158,11,0.12); color: #d97706; }
-        .badge-ok      { background: rgba(16,185,129,0.12); color: #10b981; }
-        .badge-warn    { background: rgba(220,53,69,0.1); color: #dc3545; }
-        .badge-private { background: rgba(239,68,68,0.1); color: #ef4444; }
-        .badge-public  { background: rgba(16,185,129,0.1); color: #10b981; }
+        .badge { display: inline-block; padding: 0.15rem 0.4rem; border-radius: 999px; font-size: 0.68rem; font-weight: 600; }
+        .badge-admin   { background: rgba(79,70,229,0.1); color: #4f46e5; }
+        .badge-free    { background: rgba(100,116,139,0.1); color: #64748b; }
+        .badge-pro     { background: rgba(245,158,11,0.1); color: #d97706; }
+        .badge-ok      { background: rgba(16,185,129,0.1); color: #10b981; }
+        .badge-warn    { background: rgba(220,53,69,0.08); color: #dc3545; }
+        .badge-private { background: rgba(239,68,68,0.08); color: #ef4444; }
+        .badge-public  { background: rgba(16,185,129,0.08); color: #10b981; }
         .btn-del {
-            padding: 0.28rem 0.6rem; background: rgba(220,53,69,0.1); color: #dc3545;
-            border: 1px solid rgba(220,53,69,0.25); border-radius: 6px; cursor: pointer;
-            font-size: 0.78rem; font-weight: 500; transition: all 0.15s;
+            padding: 0.25rem 0.5rem; background: rgba(220,53,69,0.08); color: #dc3545;
+            border: 1px solid rgba(220,53,69,0.2); border-radius: 6px; cursor: pointer;
+            font-size: 0.75rem; font-weight: 500;
         }
-        .btn-del:hover { background: #dc3545; color: #fff; }
         .btn-view {
-            padding: 0.28rem 0.6rem; background: rgba(79,70,229,0.1); color: #4f46e5;
-            border: 1px solid rgba(79,70,229,0.25); border-radius: 6px; cursor: pointer;
-            font-size: 0.78rem; font-weight: 500; transition: all 0.15s; margin-right: 0.3rem;
+            padding: 0.25rem 0.5rem; background: rgba(79,70,229,0.08); color: #4f46e5;
+            border: 1px solid rgba(79,70,229,0.2); border-radius: 6px; cursor: pointer;
+            font-size: 0.75rem; font-weight: 500; margin-right: 0.2rem;
         }
-        .btn-view:hover { background: #4f46e5; color: #fff; }
-        .stat-bar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-        .stat-pill { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 0.65rem 1rem; display: flex; flex-direction: column; align-items: center; min-width: 80px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
-        .stat-pill strong { font-size: 1.35rem; color: #4f46e5; }
-        .stat-pill span { font-size: 0.7rem; color: var(--muted); margin-top: 0.15rem; }
-        .search-bar { width: 100%; max-width: 320px; padding: 0.5rem 0.9rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem; margin-bottom: 0.9rem; outline: none; }
-        .search-bar:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+        .stat-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1.25rem; }
+        .stat-pill { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 0.5rem; display: flex; flex-direction: column; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+        .stat-pill strong { font-size: 1.2rem; color: #4f46e5; }
+        .stat-pill span { font-size: 0.65rem; color: var(--muted); margin-top: 0.1rem; }
+        .search-bar { width: 100%; padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; margin-bottom: 0.75rem; outline: none; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: flex-end; justify-content: center; }
         .modal-overlay.active { display: flex; }
-        .modal-box { background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: 0 -8px 30px rgba(0,0,0,0.15); padding: 1.5rem 1.25rem; }
-        .modal-box h3 { color: #4f46e5; margin-bottom: 1rem; font-size: 1rem; }
-        .modal-close { float: right; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); }
-        .modal-close:hover { color: #dc3545; }
-        .detail-section { margin-bottom: 1.1rem; }
-        .detail-section h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
-        .table-scroll { overflow-x: auto; }
-        .empty-admin { text-align: center; color: var(--muted); padding: 1.5rem; font-size: 0.875rem; }
+        .modal-box { background: var(--card-bg); border-radius: 20px 20px 0 0; width: 100%; max-height: 85vh; overflow-y: auto; padding: 1.5rem 1.25rem; box-shadow: 0 -5px 25px rgba(0,0,0,0.1); }
+        .modal-box h3 { color: var(--accent); margin-bottom: 1rem; font-size: 1.1rem; }
+        .modal-close { float: right; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); }
+        .detail-section { margin-bottom: 1.25rem; }
+        .detail-section h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.6rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+        .table-scroll { overflow-x: auto; margin: 0 -1rem; padding: 0 1rem; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+        .empty-admin { text-align: center; color: var(--muted); padding: 2rem; font-size: 0.85rem; }
+
+        @media (max-width: 480px) {
+            .hide-xs { display: none; }
+            .header-center h1 { font-size: 0.9rem; }
+            .stat-pill strong { font-size: 1rem; }
+            .stat-pill span { font-size: 0.6rem; }
+            .admin-table th, .admin-table td { padding: 0.5rem 0.4rem; }
+        }
+        
+        .header-center { flex: 1; text-align: center; }
+        .header-title { font-size: 1rem; font-weight: 700; color: var(--accent); white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -113,7 +122,7 @@
                 <input class="search-bar" id="userSearch" placeholder="🔍 Search users…" oninput="filterTable('usersTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="usersTable">
-                        <thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Items</th><th>Comms</th><th>✓</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>Name</th><th class="hide-xs">Email</th><th>Plan</th><th class="hide-xs">Items</th><th class="hide-xs">Comms</th><th>✓</th><th>Actions</th></tr></thead>
                         <tbody id="usersBody"><tr><td colspan="7" class="empty-admin">Loading…</td></tr></tbody>
                     </table>
                 </div>
@@ -123,7 +132,7 @@
                 <input class="search-bar" id="itemSearch" placeholder="🔍 Search items…" oninput="filterTable('itemsTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="itemsTable">
-                        <thead><tr><th>Item</th><th>Owner</th><th>Status</th><th>Condition</th><th>Listed</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>Item</th><th class="hide-xs">Owner</th><th>Status</th><th class="hide-xs">Condition</th><th class="hide-xs">Listed</th><th>Actions</th></tr></thead>
                         <tbody id="itemsBody"><tr><td colspan="6" class="empty-admin">Loading…</td></tr></tbody>
                     </table>
                 </div>
@@ -133,7 +142,7 @@
                 <input class="search-bar" id="communitySearch" placeholder="🔍 Search communities…" oninput="filterTable('communitiesTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="communitiesTable">
-                        <thead><tr><th>Community</th><th>Admin</th><th>Members</th><th>Privacy</th><th>Created</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>Community</th><th class="hide-xs">Admin</th><th>Members</th><th>Privacy</th><th class="hide-xs">Created</th><th>Actions</th></tr></thead>
                         <tbody id="communitiesBody"><tr><td colspan="6" class="empty-admin">Loading…</td></tr></tbody>
                     </table>
                 </div>
@@ -142,7 +151,7 @@
             <div class="admin-section card" id="section-complaints">
                 <div class="table-scroll">
                     <table class="admin-table" id="complaintsTable">
-                        <thead><tr><th>Issue</th><th>Item</th><th>Complainant</th><th>Accused</th><th>Status</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>Issue</th><th class="hide-xs">Item</th><th>From</th><th class="hide-xs">To</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody id="complaintsBody"><tr><td colspan="6" class="empty-admin">Loading…</td></tr></tbody>
                     </table>
                 </div>

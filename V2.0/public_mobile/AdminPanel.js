@@ -70,10 +70,10 @@ async function loadUsers() {
                     ${u.is_site_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
                     <br><small class="muted">@${u.username || '—'}</small>
                 </td>
-                <td style="font-size:0.78rem">${u.email}</td>
+                <td class="hide-xs" style="font-size:0.78rem">${u.email}</td>
                 <td><span class="badge ${u.plan_type === 'Pro' ? 'badge-pro' : 'badge-free'}">${u.plan_type || 'Free'}</span></td>
-                <td>${u.item_count}</td>
-                <td>${u.community_count}</td>
+                <td class="hide-xs">${u.item_count}</td>
+                <td class="hide-xs">${u.community_count}</td>
                 <td>${u.is_verified ? '✅' : '❌'}</td>
                 <td>
                     <button class="btn-view" onclick="viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')">View</button>
@@ -148,10 +148,10 @@ async function loadItems() {
         tbody.innerHTML = items.map(i => `
             <tr>
                 <td><strong>${i.name}</strong>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
-                <td style="font-size:0.78rem">${i.owner_name}</td>
+                <td class="hide-xs" style="font-size:0.78rem">${i.owner_name}</td>
                 <td><span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status || '—'}</span></td>
-                <td>${i.condition || '—'}</td>
-                <td>${fmt(i.created_at)}</td>
+                <td class="hide-xs">${i.condition || '—'}</td>
+                <td class="hide-xs">${fmt(i.created_at)}</td>
                 <td><button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', loadItems)">Del</button></td>
             </tr>
         `).join('');
@@ -172,10 +172,10 @@ async function loadCommunities() {
         tbody.innerHTML = communities.map(c => `
             <tr>
                 <td><strong>${c.name}</strong><br><small class="muted">${(c.description || '').slice(0,40)}${c.description?.length > 40 ? '…' : ''}</small></td>
-                <td style="font-size:0.78rem">${c.admin_name || '—'}</td>
+                <td class="hide-xs" style="font-size:0.78rem">${c.admin_name || '—'}</td>
                 <td>${c.member_count}/${c.max_limit}</td>
                 <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '🔒' : '🌐'}</span></td>
-                <td>${fmt(c.created_at)}</td>
+                <td class="hide-xs">${fmt(c.created_at)}</td>
                 <td><button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}', 'community', loadCommunities)">Del</button></td>
             </tr>
         `).join('');
@@ -197,9 +197,9 @@ async function loadComplaints() {
         tbody.innerHTML = complaints.map(c => `
             <tr>
                 <td><strong>${c.issue_type || 'General'}</strong></td>
-                <td>${c.actual_item_name || '—'}</td>
+                <td class="hide-xs">${c.actual_item_name || '—'}</td>
                 <td>${c.complainant_name}</td>
-                <td>${c.accused_name}</td>
+                <td class="hide-xs">${c.accused_name}</td>
                 <td><span class="badge ${c.status === 'open' ? 'badge-warn' : 'badge-ok'}">${c.status.toUpperCase()}</span></td>
                 <td>${c.status === 'open' ? `<button class="btn-view" onclick="resolveComplaint(${c.id})">Resolve</button>` : ''}</td>
             </tr>
