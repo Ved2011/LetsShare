@@ -46,8 +46,8 @@ if (registerForm) {
       return;
     }
 
-    const recaptchaResponse = typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : "bypass";
-    if (!recaptchaResponse) {
+    const recaptchaToken = typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : "bypass";
+    if (!recaptchaToken) {
       window.showAlert('Please complete the reCAPTCHA.', 'error');
       return;
     }
@@ -58,7 +58,7 @@ if (registerForm) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, recaptchaToken }),
       });
 
       

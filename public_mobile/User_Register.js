@@ -46,27 +46,36 @@ if (registerForm) {
       return;
     }
 
+    const recaptchaToken = typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : "bypass";
+    if (!recaptchaToken) {
+      window.showAlert('Please complete the reCAPTCHA.', 'error');
+      return;
+    }
+
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, recaptchaToken }),
       });
 
       const result = await response.json();
 
       if (response.ok) {
+        if (typeof grecaptcha !== "undefined") grecaptcha.reset();
         window.showAlert('Registration successful. Please check your email for the verification code.', 'success');
         setTimeout(() => {
           window.location.href = `verify.html?userId=${result.userId}`;
         }, 1500);
       } else {
         window.showAlert(result.error || 'Registration failed', 'error');
+        if (typeof grecaptcha !== "undefined") grecaptcha.reset();
       }
     } catch (error) {
       window.showAlert('Network error. Please try again.', 'error');
+      if (typeof grecaptcha !== "undefined") grecaptcha.reset();
     }
   });
 }

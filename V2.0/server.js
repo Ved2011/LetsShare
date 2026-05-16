@@ -23,6 +23,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(useragent.express());
 
+// Content Security Policy — allow Google reCAPTCHA + self resources
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com",
+      "frame-src 'self' https://www.google.com https://www.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: https:",
+      "connect-src 'self' https://www.google.com",
+    ].join('; ')
+  );
+  next();
+});
+
+// Ensure all /api/* routes return JSON (prevents CORB on error responses)
+app.use('/api', (req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
+
 // Request Logging
 app.use((req, res, next) => {
   console.log('--- Incoming Request ---');
