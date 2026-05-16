@@ -111,7 +111,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // Create a community
 router.post('/', authenticateToken, async (req, res) => {
-    const { name, address, description, max_limit, is_private, city, state, locality } = req.body;
+    const { name, address, description, max_limit, is_private, city, state, locality, country } = req.body;
     const userId = req.user.id;
 
     if (!name) return res.status(400).json({ error: 'Community name is required' });

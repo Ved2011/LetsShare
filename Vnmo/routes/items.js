@@ -85,10 +85,15 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
           SELECT i.*, d.brand, d.category, d.age, d.condition, d.description, d.image
           FROM items i
           LEFT JOIN item_details d ON i.id = d.item_id
-          WHERE $1::int IS NULL OR i.owner_id = $1 OR EXISTS (
+          WHERE $1::int IS NULL OR i.owner_id = $1 
+          OR EXISTS (
             SELECT 1 FROM community_members cm1
             JOIN community_members cm2 ON cm1.community_id = cm2.community_id
             WHERE cm1.user_id = i.owner_id AND cm2.user_id = $1
+          )
+          OR EXISTS (
+            SELECT 1 FROM follows f
+            WHERE f.follower_id = $1 AND f.followed_user_id = i.owner_id
           )
         `;
         params = [userId];
@@ -132,6 +137,15 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
           JOIN community_members cm2 ON cm1.community_id = cm2.community_id
           WHERE cm1.user_id = i.owner_id AND cm2.user_id = $2
         ))
+        OR
+        -- Case 3: Item is visible if the viewer follows the owner
+        EXISTS (
+          SELECT 1 FROM follows f
+          WHERE f.follower_id = $2 AND f.followed_user_id = i.owner_id
+        )
+        OR
+        -- Case 4: Owner is the viewer themselves
+        i.owner_id = $2
       )
       ORDER BY i.created_at DESC
     `;

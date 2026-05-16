@@ -324,7 +324,7 @@ body {
     z-index: 1001;
     box-shadow: var(--shadow);
     backdrop-filter: blur(12px);
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.7);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -683,7 +683,7 @@ html[data-theme="dark"] .header {
     height: 100%;
     background: rgba(0,0,0,0.5);
     backdrop-filter: blur(4px);
-    z-index: 1000;
+    z-index: 10000;
     display: none;
 }
 
