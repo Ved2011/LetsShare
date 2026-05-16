@@ -7,7 +7,8 @@ const router = express.Router();
 // Get all public communities + user's communities
 router.get('/', authenticateTokenOptional, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : null;
+    let userId = req.user?.id ? parseInt(req.user.id) : null;
+    if (userId && isNaN(userId)) userId = null;
     const { city, state, locality, country } = req.query;
     
     let query = `
@@ -16,10 +17,10 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
         (SELECT COUNT(*) FROM items i 
          JOIN community_members cm ON i.owner_id = cm.user_id 
          WHERE cm.community_id = c.id AND (i.exclusive_community_id IS NULL OR i.exclusive_community_id = c.id)) as item_count,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1::int) as is_member,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1::int AND is_admin = true) as is_current_user_admin
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
       FROM communities c
-      WHERE (c.is_private = false OR c.admin_id = $1::int OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1::int))
+      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1))
     `;
     const params = [userId];
 
@@ -42,6 +43,7 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
 
     query += ` ORDER BY c.created_at DESC`;
     
+    console.log('Fetching communities with:', params);
     const result = await pool.query(query, params);
     
     res.json(result.rows);
@@ -112,7 +114,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Create a community
 router.post('/', authenticateToken, async (req, res) => {
     const { name, address, description, max_limit, is_private, city, state, locality, country } = req.body;
-    const userId = req.user.id;
+    const userId = parseInt(req.user.id);
+    if (isNaN(userId)) return res.status(401).json({ error: 'Invalid user ID in token' });
 
     if (!name) return res.status(400).json({ error: 'Community name is required' });
 
@@ -124,7 +127,7 @@ router.post('/', authenticateToken, async (req, res) => {
 
       const communityResult = await pool.query(
         'INSERT INTO communities (name, address, description, max_limit, is_private, admin_id, city, state, locality, country) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
-        [name, address || '', description || '', max_limit || 100, is_private || false, userId, city || null, state || null, locality || null, country || 'India']
+        [name, address || '', description || '', parseInt(max_limit) || 100, is_private || false, userId, city || null, state || null, locality || null, country || 'India']
       );
     
     const newCommunity = communityResult.rows[0];
@@ -140,7 +143,7 @@ router.post('/', authenticateToken, async (req, res) => {
   } catch (err) {
     await pool.query('ROLLBACK');
     console.error('Error creating community:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
