@@ -10,6 +10,7 @@ const returnRoutes = require('./routes/returns');
 const complaintRoutes = require('./routes/complaints');
 const statsRoutes = require('./routes/stats');
 const communitiesRoutes = require('./routes/communities');
+const adminRoutes = require('./routes/admin');
 
 const useragent = require('express-useragent');
 
@@ -40,6 +41,7 @@ app.use('/api/returns', returnRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/communities', communitiesRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Static File Routing
 const publicStatic = express.static('public', { index: 'welcome.html' });

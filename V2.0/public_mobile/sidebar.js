@@ -41,6 +41,10 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i>⚠️</i> <span class="nav-text">Complaints</span>
             </a>
+            ${user?.is_site_admin ? `
+            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}" style="color: #4f46e5;">
+                <i>🛡️</i> <span class="nav-text">Admin Panel</span>
+            </a>` : ''}
             <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
                 <i>💎</i> <span class="nav-text">Upgrade Plan</span>
             </a>

@@ -15,6 +15,7 @@ async function fixSchema() {
             ALTER TABLE community_members ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS free_credits INTEGER DEFAULT 5;
             ALTER TABLE users ADD COLUMN IF NOT EXISTS last_credit_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS is_site_admin BOOLEAN DEFAULT false;
         `);
         console.log('Schema fixed successfully');
         process.exit(0);
