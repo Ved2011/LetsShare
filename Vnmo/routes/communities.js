@@ -21,6 +21,7 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
         EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
       FROM public.communities c
       WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1))
+      AND ($1::int IS NULL OR c.city = (SELECT city FROM users WHERE id = $1))
     `;
     const params = [userId];
 

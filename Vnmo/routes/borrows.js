@@ -40,15 +40,25 @@ router.post('/', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Return date must be in the future' });
     }
 
-    // Get borrower details to check plan limits
-    const borrowerResult = await pool.query('SELECT plan_type, borrows_this_month, wallet_balance FROM users WHERE id = $1', [borrowerId]);
-    const borrower = borrowerResult.rows[0];
+    // Get borrower details
+    const borrowerResult = await pool.query('SELECT plan_type, free_credits, last_credit_added FROM users WHERE id = $1', [borrowerId]);
+    let borrower = borrowerResult.rows[0];
     
-    let limit = 999; // Unlimited in Early Bird
-    const currentBorrows = borrower.borrows_this_month + 1;
+    // Check if we need to add new month's credits
+    const nowCheck = new Date();
+    const lastAdded = borrower.last_credit_added ? new Date(borrower.last_credit_added) : nowCheck;
+    let monthsPassed = (nowCheck.getFullYear() - lastAdded.getFullYear()) * 12 + (nowCheck.getMonth() - lastAdded.getMonth());
+    if (monthsPassed > 0) {
+      borrower.free_credits += 5 * monthsPassed;
+      await pool.query('UPDATE users SET free_credits = $1, last_credit_added = CURRENT_TIMESTAMP WHERE id = $2', [borrower.free_credits, borrowerId]);
+    }
+
+    // Enforce Early Bird free credits
+    if (borrower.free_credits <= 0) {
+      return res.status(403).json({ error: 'You have used all your free credits for this month. Please wait for the next month for more credits!' });
+    }
+
     let message = 'Borrow request sent successfully';
-    let extraFee = 0;
-    // Borrowing is free for everyone during Early Bird phase.
 
     // Generate borrow_id
     const borrowId = 'BR-' + Date.now();
@@ -56,14 +66,8 @@ router.post('/', authenticateToken, async (req, res) => {
     // Start transaction
     await pool.query('BEGIN');
     
-    // Deduct fee if over limit
-    if (extraFee > 0) {
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [extraFee, borrowerId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [borrowerId, extraFee, 'debit', 'borrow_fee', `Extra borrow fee for item ${itemId}`]
-      );
-    }
+    // Deduct 1 credit
+    await pool.query('UPDATE users SET free_credits = free_credits - 1 WHERE id = $1', [borrowerId]);
 
     const result = await pool.query(
       'INSERT INTO borrows (borrow_id, item_id, borrower_id, status, due_date, duration_days) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',

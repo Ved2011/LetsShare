@@ -13,6 +13,8 @@ async function fixSchema() {
             ALTER TABLE communities ADD COLUMN IF NOT EXISTS longitude NUMERIC;
             ALTER TABLE items ADD COLUMN IF NOT EXISTS exclusive_community_id INTEGER REFERENCES communities(id) ON DELETE SET NULL;
             ALTER TABLE community_members ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS free_credits INTEGER DEFAULT 5;
+            ALTER TABLE users ADD COLUMN IF NOT EXISTS last_credit_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
         `);
         console.log('Schema fixed successfully');
         process.exit(0);

@@ -373,7 +373,6 @@ function displayItems(container, items, isMyItems = false) {
     <div class="item-card" onclick="window.location.href='item_View.html?id=${item.id}'">
       <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}">
       <div class="item-info">
-      <div class="item-info"> 
         <h3>${item.name}</h3>
         <span class="status ${item.status}">${item.status}</span>
         ${isMyItems ? `<button onclick="event.stopPropagation(); window.location.href='ItemForm.html?id=${item.id}'" class="btn outline" style="width:100%; margin-top:0.5rem; padding: 0.5rem;">Edit Item</button>` : ''}
