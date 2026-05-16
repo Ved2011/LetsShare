@@ -215,6 +215,7 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
       
+      -- Explicitly fix communities table
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS city TEXT;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS state TEXT;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS locality TEXT;
@@ -222,6 +223,9 @@ const createTables = async () => {
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS chat_enabled BOOLEAN DEFAULT false;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS latitude NUMERIC;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS longitude NUMERIC;
+
+      -- Explicitly fix community_members table
+      ALTER TABLE community_members ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
 
       ALTER TABLE items ADD COLUMN IF NOT EXISTS exclusive_community_id INTEGER REFERENCES communities(id) ON DELETE SET NULL;
     `);
