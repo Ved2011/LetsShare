@@ -123,24 +123,25 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
+    // Check if it's a first-ever login (no last_login recorded)
+    const isFirstLogin = !user.last_login;
+
+    // Check device trust
     const { deviceId } = req.body;
-    
-    // Check if device is trusted
-    const deviceResult = await pool.query(
-      'SELECT * FROM user_devices WHERE user_id = $1 AND device_id = $2',
-      [user.id, deviceId]
-    );
-    const isTrustedDevice = deviceResult.rows.length > 0;
+    let isTrustedDevice = false;
+    if (deviceId) {
+      const deviceResult = await pool.query(
+        'SELECT 1 FROM user_devices WHERE user_id = $1 AND device_id = $2',
+        [user.id, deviceId]
+      );
+      isTrustedDevice = deviceResult.rows.length > 0;
+    }
 
-    // Check if login is after 30 days
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const isOldLogin = user.last_login && new Date(user.last_login) < thirtyDaysAgo;
-    
-    // Check if it's a new account (no last_login)
-    const isNewAccount = !user.last_login;
+    // Check if user has 2FA enabled and hasn't logged in for 7+ days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const isLongAbsenceWith2FA = user.two_factor_enabled && user.last_login && new Date(user.last_login) < sevenDaysAgo;
 
-    if (user.two_factor_enabled || !isTrustedDevice || isOldLogin || isNewAccount) {
-      // ... (existing OTP generation logic)
+    if (isFirstLogin || !isTrustedDevice || isLongAbsenceWith2FA) {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
@@ -174,11 +175,8 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // If no OTP required, update last_login and device usage
+    // No OTP required — update last_login
     await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
-    if (deviceId) {
-      await pool.query('UPDATE user_devices SET last_used = CURRENT_TIMESTAMP WHERE user_id = $1 AND device_id = $2', [user.id, deviceId]);
-    }
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin } });

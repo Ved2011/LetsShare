@@ -61,8 +61,9 @@ function injectSidebar() {
     `;
 
     // Improved Wrapping: Wrap EVERYTHING in the body except scripts and sidebar elements
-    if (!document.getElementById('mainWrapper')) {
-        const mainWrapper = document.createElement('div');
+    let mainWrapper = document.getElementById('mainWrapper');
+    if (!mainWrapper) {
+        mainWrapper = document.createElement('div');
         mainWrapper.className = 'main-wrapper';
         mainWrapper.id = 'mainWrapper';
 

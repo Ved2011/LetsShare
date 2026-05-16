@@ -123,8 +123,25 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    if (user.two_factor_enabled) {
-      // Generate OTP
+    // Check if it's a first-ever login (no last_login recorded)
+    const isFirstLogin = !user.last_login;
+
+    // Check device trust
+    const { deviceId } = req.body;
+    let isTrustedDevice = false;
+    if (deviceId) {
+      const deviceResult = await pool.query(
+        'SELECT 1 FROM user_devices WHERE user_id = $1 AND device_id = $2',
+        [user.id, deviceId]
+      );
+      isTrustedDevice = deviceResult.rows.length > 0;
+    }
+
+    // Check if user has 2FA enabled and hasn't logged in for 7+ days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const isLongAbsenceWith2FA = user.two_factor_enabled && user.last_login && new Date(user.last_login) < sevenDaysAgo;
+
+    if (isFirstLogin || !isTrustedDevice || isLongAbsenceWith2FA) {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
@@ -133,7 +150,6 @@ router.post('/login', async (req, res) => {
         [otp, expires, user.id]
       );
 
-      // Send OTP via email
       try {
         const { sendEmail } = require('../utils/email');
         await sendEmail(
@@ -157,6 +173,9 @@ router.post('/login', async (req, res) => {
         message: 'Please enter the OTP sent to your registered email.' 
       });
     }
+
+    // No OTP required — update last_login
+    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin } });
@@ -185,8 +204,17 @@ router.post('/verify-2fa', async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
-    // Clear OTP
-    await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL WHERE id = $1', [userId]);
+    // Clear OTP and update last_login
+    await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL, last_login = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
+
+    // Trust the device so future logins from it skip OTP
+    const { deviceId } = req.body;
+    if (deviceId) {
+      await pool.query(
+        'INSERT INTO user_devices (user_id, device_id, last_used) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (user_id, device_id) DO UPDATE SET last_used = CURRENT_TIMESTAMP',
+        [userId, deviceId]
+      );
+    }
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin } });

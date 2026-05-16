@@ -1,91 +1,223 @@
+const token = localStorage.getItem('token');
+
 document.addEventListener('DOMContentLoaded', async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'login.html';
+    if (!token) { window.location.href = 'login.html'; return; }
+
+    const check = await fetch('/api/admin/complaints', { headers: { 'Authorization': `Bearer ${token}` } });
+    if (check.status === 403) {
+        document.querySelector('.container').innerHTML = `
+            <div class="card" style="text-align:center;padding:3rem;">
+                <h2>Access Denied</h2>
+                <p class="muted">You must be a Site Administrator to view this page.</p>
+            </div>`;
         return;
     }
 
-    try {
-        const response = await fetch('/api/admin/complaints', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        if (response.status === 403) {
-            document.querySelector('.container').innerHTML = `
-                <div class="card" style="text-align: center; padding: 3rem;">
-                    <h2>Access Denied</h2>
-                    <p class="muted">You must be a Site Administrator to view this page.</p>
-                </div>
-            `;
-            return;
-        }
-
-        if (response.ok) {
-            const complaints = await response.json();
-            displayAdminComplaints(complaints);
-        } else {
-            console.error('Failed to load complaints');
-        }
-    } catch (err) {
-        console.error('Error:', err);
-    }
+    loadUsers();
+    loadItems();
+    loadCommunities();
+    loadComplaints();
 });
 
-function displayAdminComplaints(complaints) {
-    const list = document.getElementById('adminComplaintsList');
-    if (!list) return;
+function switchTab(name, btn) {
+    document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    btn.classList.add('active');
+}
 
-    if (complaints.length === 0) {
-        list.innerHTML = '<p class="empty-state">No complaints found on the platform.</p>';
-        return;
+function fmt(dateStr) {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function filterTable(tableId, query) {
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+    const q = query.toLowerCase();
+    rows.forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+
+async function adminDelete(endpoint, label, reloadFn) {
+    if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+    try {
+        const res = await fetch(endpoint, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) { reloadFn(); }
+        else { alert(data.error || `Failed to delete ${label}.`); }
+    } catch (err) {
+        alert('Network error. Please try again.');
     }
+}
 
-    list.innerHTML = complaints.map(c => `
-        <div class="item-card" style="background: #fff; border: 1px solid rgba(79, 70, 229, 0.2);">
-            <div class="card-info">
-                <h4 style="color: #4f46e5; margin: 0 0 0.5rem 0;">Issue: ${c.issue_type || 'General'} - Item: ${c.actual_item_name || 'N/A'}</h4>
-                <p style="font-size: 0.85rem; margin-bottom: 0.25rem;">
-                    <strong>Complainant:</strong> ${c.complainant_name}
-                    <br>
-                    <strong>Accused:</strong> ${c.accused_name}
+async function loadUsers() {
+    try {
+        const res = await fetch('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } });
+        const users = await res.json();
+        document.getElementById('statUsers').textContent = users.length;
+
+        const tbody = document.getElementById('usersBody');
+        if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-admin">No users found.</td></tr>'; return; }
+
+        tbody.innerHTML = users.map(u => `
+            <tr>
+                <td>
+                    <strong>${u.name}</strong>
+                    ${u.is_site_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
+                    <br><small class="muted">@${u.username || '—'}</small>
+                </td>
+                <td style="font-size:0.78rem">${u.email}</td>
+                <td><span class="badge ${u.plan_type === 'Pro' ? 'badge-pro' : 'badge-free'}">${u.plan_type || 'Free'}</span></td>
+                <td>${u.item_count}</td>
+                <td>${u.community_count}</td>
+                <td>${u.is_verified ? '✅' : '❌'}</td>
+                <td>
+                    <button class="btn-view" onclick="viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')">View</button>
+                    ${!u.is_site_admin ? `<button class="btn-del" onclick="adminDelete('/api/admin/users/${u.id}', 'user', loadUsers)">Del</button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('usersBody').innerHTML = '<tr><td colspan="7" class="empty-admin">Failed to load users.</td></tr>';
+    }
+}
+
+async function viewUser(id, name) {
+    document.getElementById('modalUserName').textContent = '👤 ' + name;
+    document.getElementById('modalContent').innerHTML = '<p class="muted" style="text-align:center;padding:1rem">Loading…</p>';
+    document.getElementById('userModal').classList.add('active');
+
+    try {
+        const res = await fetch(`/api/admin/users/${id}/details`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const u = data.user;
+
+        document.getElementById('modalContent').innerHTML = `
+            <div class="detail-section">
+                <h4>Profile</h4>
+                <p style="font-size:0.82rem;line-height:1.8">
+                    <strong>Email:</strong> ${u.email}<br>
+                    <strong>Plan:</strong> ${u.plan_type || 'Free'} &nbsp;|&nbsp; <strong>Verified:</strong> ${u.is_verified ? '✅' : '❌'}<br>
+                    <strong>Location:</strong> ${[u.city, u.state, u.country].filter(Boolean).join(', ') || '—'}<br>
+                    <strong>Joined:</strong> ${fmt(u.created_at)} &nbsp;|&nbsp; <strong>Last Login:</strong> ${fmt(u.last_login)}
                 </p>
-                <p style="font-style: italic; color: var(--muted); margin: 0.5rem 0;">"${c.description}"</p>
-                ${c.before_image ? `<span style="font-size: 0.8rem; color: #10b981;">📸 Includes Before Image</span>` : ''}
-                ${c.after_image ? `<span style="font-size: 0.8rem; color: #10b981; margin-left: 0.5rem;">📸 Includes After Image</span>` : ''}
             </div>
-            <div class="item-meta" style="flex-direction: column; gap: 0.5rem;">
-                <span class="status ${c.status === 'open' ? 'error' : 'success'}" style="${c.status === 'open' ? 'background: rgba(220,53,69,0.1); color: #dc3545;' : 'background: rgba(16,185,129,0.1); color: #10b981;'}">
-                    ${c.status.toUpperCase()}
-                </span>
-                ${c.status === 'open' ? `
-                    <button class="btn small primary" onclick="resolveComplaint(${c.id})">Mark Resolved</button>
-                ` : ''}
+            <div class="detail-section">
+                <h4>Items (${data.items.length})</h4>
+                ${data.items.length ? data.items.map(i => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+                        <span style="font-size:0.82rem"><strong>${i.name}</strong> <span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status}</span></span>
+                        <button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Del</button>
+                    </div>`).join('') : '<p class="empty-admin">No items listed.</p>'}
             </div>
-        </div>
-    `).join('');
+            <div class="detail-section">
+                <h4>Communities (${data.communities.length})</h4>
+                ${data.communities.length ? data.communities.map(c => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+                        <span style="font-size:0.82rem"><strong>${c.name}</strong> <span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? 'Private' : 'Public'}</span></span>
+                        <button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}/members/${u.id}', 'member', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Remove</button>
+                    </div>`).join('') : '<p class="empty-admin">No communities.</p>'}
+            </div>
+        `;
+    } catch (err) {
+        document.getElementById('modalContent').innerHTML = '<p class="empty-admin">Failed to load user details.</p>';
+    }
+}
+
+function closeModal() {
+    document.getElementById('userModal').classList.remove('active');
+}
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('userModal');
+    if (e.target === modal) closeModal();
+});
+
+async function loadItems() {
+    try {
+        const res = await fetch('/api/admin/items', { headers: { 'Authorization': `Bearer ${token}` } });
+        const items = await res.json();
+        document.getElementById('statItems').textContent = items.length;
+
+        const tbody = document.getElementById('itemsBody');
+        if (!items.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-admin">No items found.</td></tr>'; return; }
+
+        tbody.innerHTML = items.map(i => `
+            <tr>
+                <td><strong>${i.name}</strong>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
+                <td style="font-size:0.78rem">${i.owner_name}</td>
+                <td><span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status || '—'}</span></td>
+                <td>${i.condition || '—'}</td>
+                <td>${fmt(i.created_at)}</td>
+                <td><button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', loadItems)">Del</button></td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('itemsBody').innerHTML = '<tr><td colspan="6" class="empty-admin">Failed to load items.</td></tr>';
+    }
+}
+
+async function loadCommunities() {
+    try {
+        const res = await fetch('/api/admin/communities', { headers: { 'Authorization': `Bearer ${token}` } });
+        const communities = await res.json();
+        document.getElementById('statCommunities').textContent = communities.length;
+
+        const tbody = document.getElementById('communitiesBody');
+        if (!communities.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-admin">No communities found.</td></tr>'; return; }
+
+        tbody.innerHTML = communities.map(c => `
+            <tr>
+                <td><strong>${c.name}</strong><br><small class="muted">${(c.description || '').slice(0,40)}${c.description?.length > 40 ? '…' : ''}</small></td>
+                <td style="font-size:0.78rem">${c.admin_name || '—'}</td>
+                <td>${c.member_count}/${c.max_limit}</td>
+                <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '🔒' : '🌐'}</span></td>
+                <td>${fmt(c.created_at)}</td>
+                <td><button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}', 'community', loadCommunities)">Del</button></td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('communitiesBody').innerHTML = '<tr><td colspan="6" class="empty-admin">Failed to load communities.</td></tr>';
+    }
+}
+
+async function loadComplaints() {
+    try {
+        const res = await fetch('/api/admin/complaints', { headers: { 'Authorization': `Bearer ${token}` } });
+        const complaints = await res.json();
+        const open = complaints.filter(c => c.status === 'open').length;
+        document.getElementById('statComplaints').textContent = open;
+
+        const tbody = document.getElementById('complaintsBody');
+        if (!complaints.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-admin">No complaints found.</td></tr>'; return; }
+
+        tbody.innerHTML = complaints.map(c => `
+            <tr>
+                <td><strong>${c.issue_type || 'General'}</strong></td>
+                <td>${c.actual_item_name || '—'}</td>
+                <td>${c.complainant_name}</td>
+                <td>${c.accused_name}</td>
+                <td><span class="badge ${c.status === 'open' ? 'badge-warn' : 'badge-ok'}">${c.status.toUpperCase()}</span></td>
+                <td>${c.status === 'open' ? `<button class="btn-view" onclick="resolveComplaint(${c.id})">Resolve</button>` : ''}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        document.getElementById('complaintsBody').innerHTML = '<tr><td colspan="6" class="empty-admin">Failed to load complaints.</td></tr>';
+    }
 }
 
 async function resolveComplaint(id) {
-    if (!confirm('Are you sure you want to mark this complaint as resolved?')) return;
-    
-    const token = localStorage.getItem('token');
+    if (!confirm('Mark this complaint as resolved?')) return;
     try {
-        const response = await fetch(`/api/admin/complaints/${id}/status`, {
+        const res = await fetch(`/api/admin/complaints/${id}/status`, {
             method: 'PUT',
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: 'resolved' })
         });
-        
-        if (response.ok) {
-            alert('Complaint resolved successfully.');
-            window.location.reload();
-        } else {
-            alert('Failed to resolve complaint.');
-        }
-    } catch (err) {
-        console.error('Error resolving:', err);
-    }
+        if (res.ok) { loadComplaints(); }
+        else { alert('Failed to resolve complaint.'); }
+    } catch (err) { alert('Network error.'); }
 }
