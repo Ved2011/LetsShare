@@ -148,7 +148,11 @@ router.get('/global-search', authenticateToken, async (req, res) => {
        WHERE name ILIKE $1 OR address ILIKE $1 OR city ILIKE $1 OR state ILIKE $1 OR locality ILIKE $1 
        LIMIT 10)
       UNION ALL
-      (SELECT id, name, 'Item' as category, 'Item' as subtext FROM items WHERE name ILIKE $1 LIMIT 10)
+      (SELECT i.id, i.name, 'Item' as category, COALESCE(d.category, 'Item') as subtext 
+       FROM items i 
+       LEFT JOIN item_details d ON i.id = d.item_id 
+       WHERE i.name ILIKE $1 OR d.category ILIKE $1 OR d.brand ILIKE $1 
+       LIMIT 10)
       UNION ALL
       (SELECT id, name, 'User' as category, email as subtext FROM users WHERE (name ILIKE $1 OR email ILIKE $1) AND id <> $2 LIMIT 10)
       ORDER BY category, name

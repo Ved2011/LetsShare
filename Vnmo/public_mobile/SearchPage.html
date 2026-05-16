@@ -89,6 +89,80 @@
                 <input type="text" id="globalSearchInput" class="search-box" placeholder="Search communities, items, or users..." autofocus>
             </div>
 
+            <div class="search-categories" style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text);">Browse by Category</h3>
+                <div class="category-grid" style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 1rem; scrollbar-width: none;">
+                    <style>
+                        .category-grid::-webkit-scrollbar { display: none; }
+                        .category-btn {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 0.75rem;
+                            background: none;
+                            border: none;
+                            cursor: pointer;
+                            min-width: 80px;
+                        }
+                        .category-circle {
+                            width: 64px;
+                            height: 64px;
+                            border-radius: 50%;
+                            background: var(--card-bg);
+                            border: 2px solid var(--border);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 1.8rem;
+                            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                        }
+                        .category-btn:hover .category-circle {
+                            border-color: var(--accent);
+                            transform: translateY(-3px) scale(1.05);
+                            box-shadow: 0 5px 15px rgba(79, 124, 222, 0.2);
+                        }
+                        .category-btn span {
+                            font-size: 0.85rem;
+                            color: var(--text);
+                            font-weight: 500;
+                        }
+                    </style>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Electronics'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">💻</div>
+                        <span>Electronics</span>
+                    </button>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Books'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">📚</div>
+                        <span>Books</span>
+                    </button>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Sports'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">🎾</div>
+                        <span>Sports</span>
+                    </button>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Tools'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">🔨</div>
+                        <span>Tools</span>
+                    </button>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Clothing'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">👕</div>
+                        <span>Clothing</span>
+                    </button>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Vehicles'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">🚗</div>
+                        <span>Vehicles</span>
+                    </button>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Home'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">🏡</div>
+                        <span>Home</span>
+                    </button>
+                    <button class="category-btn" onclick="document.getElementById('globalSearchInput').value='Games'; document.getElementById('globalSearchInput').dispatchEvent(new Event('input'))">
+                        <div class="category-circle">🎮</div>
+                        <span>Games</span>
+                    </button>
+                </div>
+            </div>
+
             <div id="searchResults" class="card" style="padding: 0; min-height: 200px;">
                 <p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>
             </div>
