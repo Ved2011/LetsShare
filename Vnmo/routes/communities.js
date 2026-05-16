@@ -119,22 +119,8 @@ router.post('/', authenticateToken, async (req, res) => {
     try {
       await pool.query('BEGIN');
       
-      // Check wallet balance
-      const userResult = await pool.query('SELECT wallet_balance FROM users WHERE id = $1', [userId]);
-      const walletBalance = Number(userResult.rows[0].wallet_balance);
-      const creationCost = 200;
-
-      if (walletBalance < creationCost) {
-        await pool.query('ROLLBACK');
-        return res.status(400).json({ error: `Insufficient balance. Creating a community costs Rs. ${creationCost}.` });
-      }
-
-      // Deduct cost and log transaction
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [creationCost, userId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [userId, creationCost, 'debit', 'platform_fee', `Community creation fee for ${name}`]
-      );
+      // Community creation is free in Early Bird phase.
+      const creationCost = 0;
 
       const communityResult = await pool.query(
         'INSERT INTO communities (name, address, description, max_limit, is_private, admin_id, city, state, locality, country) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
@@ -295,12 +281,7 @@ router.put('/:id/chat', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const userResult = await pool.query('SELECT plan_type FROM users WHERE id = $1', [userId]);
-    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    
-    if (userResult.rows[0].plan_type !== 'Premium') {
-      return res.status(403).json({ error: 'Only admins with a Premium plan can enable or disable chat.' });
-    }
+    // Plan type check removed for Early Bird phase.
 
     // Check if user is an admin in this community
     const adminCheck = await pool.query('SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2 AND is_admin = true', [communityId, userId]);

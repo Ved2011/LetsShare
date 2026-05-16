@@ -280,35 +280,10 @@ router.post('/upgrade-plan', authenticateToken, async (req, res) => {
     return res.status(400).json({ error: 'Invalid plan type' });
   }
 
-  const cost = planCosts[planType];
-
   try {
+    // Plan upgrades are free in Early Bird phase.
+    const cost = 0;
     await pool.query('BEGIN');
-
-    // Get current user data
-    const userResult = await pool.query('SELECT wallet_balance, plan_type FROM users WHERE id = $1', [userId]);
-    const user = userResult.rows[0];
-
-    if (user.plan_type === planType && planType !== 'Free') {
-      await pool.query('ROLLBACK');
-      return res.status(400).json({ error: `You are already on the ${planType} plan.` });
-    }
-
-    if (cost > 0) {
-      if (Number(user.wallet_balance) < cost) {
-        await pool.query('ROLLBACK');
-        return res.status(400).json({ error: `Insufficient balance. ${planType} plan costs Rs. ${cost}.` });
-      }
-
-      // Deduct balance
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [cost, userId]);
-      
-      // Log transaction
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [userId, cost, 'debit', 'subscription', `Upgrade to ${planType} plan`]
-      );
-    }
 
     // Update user plan and set expiry to 30 days from now
     const expiryDate = new Date();

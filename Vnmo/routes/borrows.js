@@ -44,21 +44,11 @@ router.post('/', authenticateToken, async (req, res) => {
     const borrowerResult = await pool.query('SELECT plan_type, borrows_this_month, wallet_balance FROM users WHERE id = $1', [borrowerId]);
     const borrower = borrowerResult.rows[0];
     
-    let limit = 5;
-    if (borrower.plan_type === 'Pro') limit = 15;
-    if (borrower.plan_type === 'Premium') limit = 30;
-
+    let limit = 999; // Unlimited in Early Bird
     const currentBorrows = borrower.borrows_this_month + 1;
     let message = 'Borrow request sent successfully';
     let extraFee = 0;
-
-    if (currentBorrows > limit) {
-      extraFee = 5;
-      if (Number(borrower.wallet_balance) < extraFee) {
-        return res.status(400).json({ error: `Insufficient balance. Extra borrows cost Rs. 5. Your balance: Rs. ${borrower.wallet_balance}` });
-      }
-      message = `Borrow request sent! Rs. 5 has been deducted for exceeding your ${borrower.plan_type} limit.`;
-    }
+    // Borrowing is free for everyone during Early Bird phase.
 
     // Generate borrow_id
     const borrowId = 'BR-' + Date.now();
@@ -158,47 +148,9 @@ router.put('/:id/approve', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Request has already been processed' });
     }
 
-    // Get item price
-    const itemInfo = await pool.query('SELECT price_per_day, name FROM items WHERE id = $1', [itemId]);
-    const pricePerDay = Number(itemInfo.rows[0].price_per_day || 0);
-    const itemName = itemInfo.rows[0].name;
-    const totalPrice = pricePerDay * Number(duration || 1);
-
-    // Get borrower balance
-    const borrowerInfo = await pool.query('SELECT wallet_balance FROM users WHERE id = $1', [borrowerId]);
-    const borrowerBalance = Number(borrowerInfo.rows[0].wallet_balance || 0);
-
-    if (totalPrice > 0 && borrowerBalance < totalPrice) {
-      return res.status(400).json({ error: `Borrower has insufficient balance (Rs. ${borrowerBalance}) for this rental (Total: Rs. ${totalPrice}).` });
-    }
-
-    // Start transaction for payment
+    // Rental is free for all members in Early Bird phase.
+    const totalPrice = 0;
     await pool.query('BEGIN');
-
-    if (totalPrice > 0) {
-      const platformFee = totalPrice * 0.10;
-      const ownerEarning = totalPrice - platformFee;
-
-      // Deduct from borrower
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [totalPrice, borrowerId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [borrowerId, totalPrice, 'debit', 'borrow_fee', `Rental payment for ${itemName}`]
-      );
-
-      // Add to owner
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance + $1 WHERE id = $2', [ownerEarning, userId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [userId, ownerEarning, 'credit', 'earning', `Earning from ${itemName} rental`]
-      );
-
-      // Log platform fee
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [null, platformFee, 'credit', 'platform_fee', `10% commission from ${itemName} rental`]
-      );
-    }
 
     // Update borrow with details and status
     await pool.query(

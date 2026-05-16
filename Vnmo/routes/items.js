@@ -31,28 +31,8 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     const itemCountResult = await pool.query('SELECT COUNT(*) FROM items WHERE owner_id = $1', [ownerId]);
     const itemCount = parseInt(itemCountResult.rows[0].count);
 
-    // Determine limit
-    let limit = 5;
-    if (plan_type === 'Pro') limit = 15;
-    if (plan_type === 'Premium') limit = 30;
-
     let fee = 0;
-    if (itemCount >= limit) {
-      fee = 20;
-      if (wallet_balance < fee) {
-        await pool.query('ROLLBACK');
-        return res.status(400).json({ error: `Listing limit reached for ${plan_type} plan (${limit} items). You need Rs. 20 in your wallet for additional listings.` });
-      }
-
-      // Deduct fee
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [fee, ownerId]);
-      
-      // Record transaction
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [ownerId, fee, 'debit', 'listing_fee', `Extra listing fee beyond ${limit} items limit`]
-      );
-    }
+    // Listing is free for all members in Early Bird phase.
 
     // Enforce max price
     const price = Math.min(parseFloat(price_per_day) || 0, 100);

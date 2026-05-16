@@ -60,7 +60,7 @@ function displayItems(items) {
         <div class="item-name">${item.name}</div>
         <div class="item-name">${item.name}</div> 
         <div class="item-category">${item.category || 'Miscellaneous'}</div>
-        <div style="color: var(--accent); font-weight: 700; margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)}/day</div>
+
     </div>
   `).join('');
 }

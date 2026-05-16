@@ -140,7 +140,7 @@
                 resultsContainer.innerHTML = results.map(r => {
                     let link = '#';
                     if (r.category === 'Community') link = `community_Home.html?id=${r.id}`;
-                    else if (r.category === 'Item') link = `item_Details.html?id=${r.id}`;
+                    else if (r.category === 'Item') link = `item_View.html?id=${r.id}`;
                     else if (r.category === 'User') link = `user_View.html?id=${r.id}`; 
 
                     return `
