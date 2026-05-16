@@ -54,7 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (modal) modal.classList.remove('active');
                     fetchCommunities();
                 } else {
-                    window.showAlert(data.error, 'error');
+                    const errorData = await res.json();
+                    console.error('Community Creation Error:', errorData);
+                    window.showAlert(errorData.error || 'Failed to create community', 'error');
                 }
             } catch (err) {
                 window.showAlert('Server error', 'error');

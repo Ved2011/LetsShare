@@ -50,11 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (res.ok) {
                     window.showAlert('Community created successfully!');
-                    const modal = document.getElementById('createCommunityModal');
-                    if (modal) modal.classList.remove('active');
+                    document.getElementById('createCommunityModal').classList.remove('active');
                     fetchCommunities();
                 } else {
-                    window.showAlert(data.error, 'error');
+                    const errorData = await res.json();
+                    console.error('Community Creation Error:', errorData);
+                    window.showAlert(errorData.error || 'Failed to create community', 'error');
                 }
             } catch (err) {
                 window.showAlert('Server error', 'error');
@@ -131,6 +132,9 @@ async function fetchCommunities() {
     if (res.ok) {
         communities = await res.json();
         renderCommunities();
+    } else {
+        const errorData = await res.json();
+        console.error('Communities Fetch Error:', errorData);
     }
 }
 
