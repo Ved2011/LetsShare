@@ -1,8 +1,17 @@
 // sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
+    const path = window.location.pathname;
+    const isLandingPage = path.endsWith('welcome.html') || path === '/' || path === '';
+    const isPublicPage = isLandingPage || path.endsWith('login.html') || path.endsWith('User_Register.html');
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
+
+    // Redirect logged-in users away from public pages to dashboard
+    if (isLoggedIn && isPublicPage) {
+        window.location.href = 'user_Dashboard.html';
+        return;
+    }
+
 
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');

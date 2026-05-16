@@ -1,7 +1,19 @@
 // sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
+    const path = window.location.pathname;
+    const isLandingPage = path.endsWith('welcome.html') || path === '/' || path === '';
+    const isPublicPage = isLandingPage || path.endsWith('login.html') || path.endsWith('User_Register.html');
     const isLoggedIn = !!localStorage.getItem('token');
+
+    // Don't inject sidebar at all on the landing page if not logged in
+    if (isLandingPage && !isLoggedIn) return;
+
+    // Redirect logged-in users away from public pages to dashboard
+    if (isLoggedIn && isPublicPage) {
+        window.location.href = 'user_Dashboard.html';
+        return;
+    }
+
     const user = JSON.parse(localStorage.getItem('user'));
     
     // Create Sidebar HTML
