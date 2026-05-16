@@ -58,21 +58,9 @@ function renderItem(item) {
             <h1>${item.name}</h1>
             <div style="display: flex; align-items: center; gap: 1rem; margin: 1rem 0;">
                 <span class="status ${item.status}">${item.status}</span>
-                <span style="font-size: 1.5rem; font-weight: 800; color: var(--accent);">Rs. ${Number(item.price_per_day || 0).toFixed(2)} <small style="font-size: 0.8rem; color: var(--muted); font-weight: 400;">/ day</small></span>
             </div>
             
-            ${isOwner && item.price_per_day > 0 ? `
-                <div style="padding: 1rem; background: rgba(79, 124, 222, 0.05); border-radius: 16px; margin: 1rem 0; font-size: 0.9rem;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Platform Fee (10%):</span>
-                        <span>Rs. ${(item.price_per_day * 0.10).toFixed(2)}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--accent);">
-                        <span>Your daily earnings:</span>
-                        <span>Rs. ${(item.price_per_day * 0.90).toFixed(2)}</span>
-                    </div>
-                </div>
-            ` : ''}
+
             
             <div class="item-description-box">
                 <p>${item.description || 'No description provided for this item.'}</p>
@@ -104,7 +92,6 @@ function renderItem(item) {
                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 700; font-size: 0.9rem;">When will you return it?</label>
                         <input type="date" id="returnDate" class="btn outline" style="width: 100%; margin-bottom: 1rem; background: white; color: var(--text); padding: 0.75rem;">
                         <button class="btn primary" style="width: 100%;" onclick="borrowItem(${item.id})">Request to Borrow</button>
-                        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; text-align: center;">Total rental cost will be calculated based on duration.</p>
                     </div>
                 ` : actionButton}
                </div>

@@ -18,12 +18,18 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // Server-side password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ error: 'Password does not meet strength requirements.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     
     const result = await pool.query(
-      'INSERT INTO users (name, email, password, phone, dob, address, city, state, locality, country, verification_code, is_verified) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id',
-      [name, email, hashedPassword, phone, dob || null, address || null, city || null, state || null, locality || null, country || 'India', verificationCode, false]
+      'INSERT INTO users (name, email, password, phone, dob, address, city, state, locality, country, verification_code, is_verified, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id',
+      [name, email, hashedPassword, phone, dob || null, address || null, city || null, state || null, locality || null, country || 'India', verificationCode, false, name]
     );
 
     // Send verification email
@@ -51,7 +57,12 @@ router.post('/register', async (req, res) => {
   } catch (err) {
     console.error('Register error:', err);
     if (err.code === '23505') {
-      return res.status(400).json({ error: 'Email already exists' });
+      if (err.detail.includes('email')) {
+        return res.status(400).json({ error: 'Email already exists' });
+      } else if (err.detail.includes('username')) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      return res.status(400).json({ error: 'User already exists' });
     }
     res.status(500).json({ error: 'Server error' });
   }

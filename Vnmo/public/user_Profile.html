@@ -17,7 +17,6 @@
                 <h2>My Profile</h2>
                 <p>Manage your account settings and preferences.</p>
             </div>
-            <a href="Pricing.html" class="btn primary small">Upgrade Plan</a>
         </div>
     <!-- MAIN CONTAINER -->
     <div class="container">
@@ -31,11 +30,8 @@
                     <p style="color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">@<span id="displayUsernameMain">username</span></p>
                     <p class="muted" id="userEmail">no email</p>
                 </div>
-                <div id="planBadgeContainer" style="text-align: right;">
-                    <div id="currentPlanBadge" style="display: inline-block; padding: 0.5rem 1.25rem; border-radius: 99px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">FREE</div>
-                    <br>
-                    <a href="Pricing.html" class="btn small" style="font-size: 0.75rem; background: var(--accent); color: white;">Manage Plan</a>
                 </div>
+            </div>
             </div>
         </div>
 
@@ -170,33 +166,7 @@
                 </form>
             </div>
 
-            <h3 class="section-title" style="margin-top: 3rem;">Payouts & Wallet</h3>
-            <div class="options-card">
-                <div class="option-row">
-                    <div class="option-info">
-                        <strong>Wallet Balance</strong>
-                        <p>Total earnings from lending your items.</p>
-                    </div>
-                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
-                        <span id="walletBalance" style="font-size: 1.5rem; font-weight: 800; color: var(--accent);">Rs. 0.00</span>
-                        <button id="addMoneyBtn" class="btn small outline" style="font-size: 0.7rem; padding: 0.25rem 0.75rem;">+ Add Money</button>
-                    </div>
-                </div>
-                <div class="option-row">
-                    <div class="option-info" style="width: 100%;">
-                        <strong>UPI ID for Payouts</strong>
-                        <p>Earnings will be transferred to this ID.</p>
-                        <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; width: 100%;">
-                            <input type="text" id="editUpiId" class="input-minimal" placeholder="yourname@upi" style="flex: 1; margin: 0;">
-                            <button id="verifyUpiBtn" class="btn small outline" type="button" style="margin: 0; white-space: nowrap;">Verify</button>
-                        </div>
-                        <p id="upiVerificationStatus" style="font-size: 0.85rem; margin-top: 0.5rem; display: none;"></p>
-                    </div>
-                </div>
-                <div class="option-row" style="justify-content: flex-end; border: none;">
-                    <button id="savePayoutBtn" class="btn primary small">Update Payout Info</button>
-                </div>
-            </div>
+
 
             <h3 class="section-title" style="margin-top: 3rem;">Security & Appearance</h3>
             <div class="options-card">
@@ -233,21 +203,7 @@
                 </div>
             </div>
         </div>
-        <!-- Add Money Modal -->
-        <div class="modal-overlay" id="addMoneyModal">
-            <div class="modal-content" style="max-width: 400px;">
-                <h3 style="margin-top: 0;">Add Money to Wallet</h3>
-                <p style="color: var(--muted); margin-bottom: 1.5rem;">Enter the amount you wish to add to your LetsShare wallet.</p>
-                <div class="form-group">
-                    <label>Amount (Rs.)</label>
-                    <input type="number" id="addMoneyAmount" placeholder="100" min="1" step="1">
-                </div>
-                <div style="display: grid; gap: 1rem; margin-top: 2rem;">
-                    <button id="confirmAddMoneyBtn" class="btn primary">Add Money</button>
-                    <button id="cancelAddMoneyBtn" class="btn outline">Cancel</button>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <script src="notifications.js"></script>

@@ -41,7 +41,7 @@ const createTables = async () => {
         country TEXT,
         verification_code TEXT,
         is_verified BOOLEAN DEFAULT false,
-        username TEXT,
+        username TEXT UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -172,6 +172,15 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+
+      CREATE TABLE IF NOT EXISTS user_devices (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        device_id TEXT NOT NULL,
+        last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, device_id)
+      );
       ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_code TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires TIMESTAMP;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS image BYTEA;

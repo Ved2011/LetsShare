@@ -18,12 +18,18 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // Server-side password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ error: 'Password does not meet strength requirements.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     
     const result = await pool.query(
-      'INSERT INTO users (name, email, password, phone, dob, address, city, state, locality, country, verification_code, is_verified) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id',
-      [name, email, hashedPassword, phone, dob || null, address || null, city || null, state || null, locality || null, country || 'India', verificationCode, false]
+      'INSERT INTO users (name, email, password, phone, dob, address, city, state, locality, country, verification_code, is_verified, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id',
+      [name, email, hashedPassword, phone, dob || null, address || null, city || null, state || null, locality || null, country || 'India', verificationCode, false, name]
     );
 
     // Send verification email
@@ -51,7 +57,12 @@ router.post('/register', async (req, res) => {
   } catch (err) {
     console.error('Register error:', err);
     if (err.code === '23505') {
-      return res.status(400).json({ error: 'Email already exists' });
+      if (err.detail.includes('email')) {
+        return res.status(400).json({ error: 'Email already exists' });
+      } else if (err.detail.includes('username')) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      return res.status(400).json({ error: 'User already exists' });
     }
     res.status(500).json({ error: 'Server error' });
   }
@@ -112,7 +123,23 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    if (user.two_factor_enabled) {
+    const { deviceId } = req.body;
+    
+    // Check if device is trusted
+    const deviceResult = await pool.query(
+      'SELECT * FROM user_devices WHERE user_id = $1 AND device_id = $2',
+      [user.id, deviceId]
+    );
+    const isTrustedDevice = deviceResult.rows.length > 0;
+
+    // Check if login is after 30 days
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const isOldLogin = user.last_login && new Date(user.last_login) < thirtyDaysAgo;
+    
+    // Check if it's a new account (no last_login)
+    const isNewAccount = !user.last_login;
+
+    if (user.two_factor_enabled || !isTrustedDevice || isOldLogin || isNewAccount) {
       // Generate OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
@@ -175,7 +202,16 @@ router.post('/verify-2fa', async (req, res) => {
     }
 
     // Clear OTP
-    await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL WHERE id = $1', [userId]);
+    await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL, last_login = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
+
+    // Trust the device if provided
+    const { deviceId } = req.body;
+    if (deviceId) {
+      await pool.query(
+        'INSERT INTO user_devices (user_id, device_id, last_used) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (user_id, device_id) DO UPDATE SET last_used = CURRENT_TIMESTAMP',
+        [userId, deviceId]
+      );
+    }
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email } });

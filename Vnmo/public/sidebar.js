@@ -70,9 +70,6 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i>⚠️</i> <span class="nav-text">Complaints</span>
             </a>
-            <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
-                <i>💎</i> <span class="nav-text">Upgrade Plan</span>
-            </a>
             <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem;">
                 <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
                     <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.7rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>

@@ -55,23 +55,7 @@ async function loadUserProfile() {
         }
       }
 
-      const planBadge = document.getElementById('currentPlanBadge');
-      if (planBadge) {
-        const plan = user.plan_type || 'Free';
-        planBadge.textContent = plan;
-        
-        // Color coding for plans
-        if (plan === 'Pro') {
-          planBadge.style.background = 'linear-gradient(135deg, #6366f1, #a855f7)';
-          planBadge.style.color = 'white';
-        } else if (plan === 'Premium') {
-          planBadge.style.background = 'linear-gradient(135deg, #f59e0b, #ef4444)';
-          planBadge.style.color = 'white';
-        } else {
-          planBadge.style.background = 'rgba(79, 124, 222, 0.1)';
-          planBadge.style.color = 'var(--accent)';
-        }
-      }
+
 
       const headerAvatar = document.getElementById('headerAvatar');
       if (headerAvatar) {
@@ -106,10 +90,7 @@ async function loadUserProfile() {
       }
       if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
 
-      const walletBalance = document.getElementById('walletBalance');
-      const editUpiId = document.getElementById('editUpiId');
-      if (walletBalance) walletBalance.textContent = `Rs. ${Number(user.wallet_balance || 0).toFixed(2)}`;
-      if (editUpiId) editUpiId.value = user.upi_id || '';
+
 
     const displayBio = document.getElementById('displayBio');
     if (displayBio) displayBio.textContent = user.bio || 'Sharing is caring! Looking forward to connecting with the community.';
@@ -379,171 +360,7 @@ if (mainLogoutBtn) {
   });
 }
 
-// Save payout info
-const savePayoutBtn = document.getElementById('savePayoutBtn');
-const verifyUpiBtn = document.getElementById('verifyUpiBtn');
-const upiVerificationStatus = document.getElementById('upiVerificationStatus');
 
-// Extensive list of common, valid Indian UPI handles (VPAs)
-const validUpiHandles = [
-  'okaxis', 'okhdfcbank', 'okicici', 'oksbi', 'paytm', 'ybl', 'upi', 'apl', 'ibl', 'axl', 
-  'postbank', 'yesbank', 'sbi', 'icici', 'hdfcbank', 'kotak', 'freecharge', 'ap', 'idfcbank', 
-  'jupiter', 'sib', 'axisbank', 'icici', 'ikwik', 'navin', 'karurvysyabank', 'federal'
-];
-
-let isUpiVerified = false;
-
-if (verifyUpiBtn) {
-  verifyUpiBtn.addEventListener('click', () => {
-    const upiId = document.getElementById('editUpiId').value.trim().toLowerCase();
-    upiVerificationStatus.style.display = 'block';
-
-    if (!upiId) {
-      upiVerificationStatus.textContent = 'Please enter a UPI ID first.';
-      upiVerificationStatus.style.color = '#dc3545';
-      return;
-    }
-
-    const upiParts = upiId.split('@');
-    if (upiParts.length !== 2 || !upiParts[0] || !upiParts[1]) {
-      upiVerificationStatus.textContent = 'Invalid format. Use username@bankname';
-      upiVerificationStatus.style.color = '#dc3545';
-      return;
-    }
-
-    const handle = upiParts[1];
-    
-    // Simulate network delay for verification
-    verifyUpiBtn.disabled = true;
-    verifyUpiBtn.textContent = 'Verifying...';
-    upiVerificationStatus.textContent = 'Checking banking network...';
-    upiVerificationStatus.style.color = 'var(--muted)';
-
-    setTimeout(() => {
-      verifyUpiBtn.disabled = false;
-      verifyUpiBtn.textContent = 'Verify';
-
-      if (validUpiHandles.includes(handle)) {
-        isUpiVerified = true;
-        upiVerificationStatus.innerHTML = '✅ <strong>Verified:</strong> Valid UPI Provider detected.';
-        upiVerificationStatus.style.color = '#10b981';
-      } else {
-        isUpiVerified = false;
-        upiVerificationStatus.innerHTML = '❌ <strong>Unrecognized Provider:</strong> The bank handle (@' + handle + ') is not recognized.';
-        upiVerificationStatus.style.color = '#dc3545';
-      }
-    }, 1500);
-  });
-}
-
-// Reset verification status if user types
-const editUpiIdInput = document.getElementById('editUpiId');
-if (editUpiIdInput) {
-    editUpiIdInput.addEventListener('input', () => {
-        isUpiVerified = false;
-        if (upiVerificationStatus) {
-            upiVerificationStatus.style.display = 'none';
-        }
-    });
-}
-
-if (savePayoutBtn) {
-  savePayoutBtn.addEventListener('click', async () => {
-    const upiId = document.getElementById('editUpiId').value.trim();
-    const token = localStorage.getItem('token');
-
-    if (!upiId) {
-        window.showAlert('Please enter a UPI ID', 'error');
-        return;
-    }
-
-    if (!isUpiVerified) {
-        window.showAlert('Please click "Verify" to validate your UPI ID before saving.', 'error');
-        return;
-    }
-
-    try {
-      const response = await fetch('/api/users/me', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ upi_id: upiId })
-      });
-
-      if (response.ok) {
-        window.showAlert('Payout information updated successfully!');
-      } else {
-        window.showAlert('Failed to update payout information.', 'error');
-      }
-    } catch (err) {
-      console.error('Update payout error:', err);
-      window.showAlert('An error occurred.', 'error');
-    }
-  });
-}
-
-// Add money
-const addMoneyBtn = document.getElementById('addMoneyBtn');
-const addMoneyModal = document.getElementById('addMoneyModal');
-const confirmAddMoneyBtn = document.getElementById('confirmAddMoneyBtn');
-const cancelAddMoneyBtn = document.getElementById('cancelAddMoneyBtn');
-const addMoneyAmountInput = document.getElementById('addMoneyAmount');
-
-if (addMoneyBtn && addMoneyModal) {
-  addMoneyBtn.addEventListener('click', () => {
-    addMoneyModal.style.display = 'flex';
-    if (addMoneyAmountInput) addMoneyAmountInput.value = '100';
-  });
-}
-
-if (cancelAddMoneyBtn) {
-  cancelAddMoneyBtn.addEventListener('click', () => {
-    addMoneyModal.style.display = 'none';
-  });
-}
-
-if (confirmAddMoneyBtn) {
-  confirmAddMoneyBtn.addEventListener('click', async () => {
-    const amount = addMoneyAmountInput.value;
-    if (!amount || isNaN(amount) || amount <= 0) {
-      window.showAlert('Please enter a valid amount.', 'error');
-      return;
-    }
-
-    addMoneyModal.style.display = 'none';
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch('/api/users/add-money', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ amount: parseFloat(amount) })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        window.showAlert(data.message);
-        loadUserProfile();
-      } else {
-        window.showAlert('Failed to add money.', 'error');
-      }
-    } catch (err) {
-      console.error('Add money error:', err);
-      window.showAlert('An error occurred.', 'error');
-    }
-  });
-}
-
-// Close modal when clicking outside
-if (addMoneyModal) {
-  addMoneyModal.addEventListener('click', (e) => {
-    if (e.target === addMoneyModal) addMoneyModal.style.display = 'none';
-  });
-}
 
 function displayItems(container, items, isMyItems = false) {
   if (!container) return;
@@ -558,7 +375,6 @@ function displayItems(container, items, isMyItems = false) {
       <div class="item-info">
       <div class="item-info"> 
         <h3>${item.name}</h3>
-        <p class="item-price">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
         <span class="status ${item.status}">${item.status}</span>
         ${isMyItems ? `<button onclick="event.stopPropagation(); window.location.href='ItemForm.html?id=${item.id}'" class="btn outline" style="width:100%; margin-top:0.5rem; padding: 0.5rem;">Edit Item</button>` : ''}
       </div>

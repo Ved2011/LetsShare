@@ -47,6 +47,13 @@ if (registerForm) {
       return;
     }
 
+    // Password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(data.password)) {
+      window.showAlert('Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.', 'error');
+      return;
+    }
+
     if (data.recaptchaToken === null && typeof grecaptcha !== "undefined") {
       window.showAlert('Please complete the reCAPTCHA.', 'error');
       return;

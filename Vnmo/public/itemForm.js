@@ -3,7 +3,7 @@
 // ============= DARK MODE THEME TOGGLE =============
 const html = document.documentElement;
 
-let themeToggle, nameInput, itemNameInput, itemImageInput, brandInput, categorySelect, ageSelect, conditionSelect, descriptionInput, pricePerDayInput, visibilitySelect;
+let themeToggle, nameInput, itemNameInput, itemImageInput, brandInput, categorySelect, ageSelect, conditionSelect, descriptionInput, visibilitySelect;
 let submitButton, clearButton, confirmationMessage, errorMessage, itemDetails, previewImage, imagePreviewContainer;
 let currentImageUrl = null;
 
@@ -87,8 +87,8 @@ function isAllFieldsFilled() {
     categorySelect?.value !== '' &&
     ageSelect?.value !== '' &&
     conditionSelect?.value !== '' &&
-    descriptionInput?.value.trim() !== '' &&
-    pricePerDayInput?.value.trim() !== ''
+    descriptionInput?.value.trim() !== ''
+
   );
 }
 
@@ -104,7 +104,7 @@ async function loadItemForEdit(id) {
       ageSelect.value = item.age || '';
       conditionSelect.value = item.condition || '';
       descriptionInput.value = item.description || '';
-      pricePerDayInput.value = item.price_per_day || 0;
+
       if (visibilitySelect) visibilitySelect.value = item.exclusive_community_id || '';
       
       if (item.imageBase64) {
@@ -112,8 +112,7 @@ async function loadItemForEdit(id) {
         imagePreviewContainer.style.display = 'block';
       }
       
-      const event = new Event('input');
-      pricePerDayInput.dispatchEvent(event);
+
     }
   } catch (err) {
     console.error('Error loading item for edit:', err);
@@ -142,7 +141,7 @@ async function submitForm(editId = null) {
   formData.append('age', ageSelect.value);
   formData.append('condition', conditionSelect.value);
   formData.append('description', descriptionInput.value.trim());
-  formData.append('price_per_day', pricePerDayInput.value);
+  formData.append('price_per_day', 0);
   if (visibilitySelect && visibilitySelect.value) {
     formData.append('exclusive_community_id', visibilitySelect.value);
   }
@@ -188,7 +187,7 @@ function initializePage() {
   ageSelect = document.getElementById('Age');
   conditionSelect = document.getElementById('itemCondition');
   descriptionInput = document.getElementById('itemDescription');
-  pricePerDayInput = document.getElementById('pricePerDay');
+
   visibilitySelect = document.getElementById('itemVisibility');
   
   submitButton = document.querySelector('button[type="submit"]');
@@ -199,24 +198,7 @@ function initializePage() {
   imagePreviewContainer = document.getElementById('imagePreview');
   previewImage = document.getElementById('preview');
 
-  const priceBreakdown = document.getElementById('priceBreakdown');
-  const platformFee = document.getElementById('platformFee');
-  const ownerEarnings = document.getElementById('ownerEarnings');
 
-  if (pricePerDayInput) {
-    pricePerDayInput.addEventListener('input', () => {
-      const price = parseFloat(pricePerDayInput.value) || 0;
-      if (price > 100) { pricePerDayInput.value = 100; return; }
-      if (price > 0) {
-        priceBreakdown.style.display = 'block';
-        const fee = price * 0.10;
-        platformFee.textContent = `Rs. ${fee.toFixed(2)}`;
-        ownerEarnings.textContent = `Rs. ${ (price - fee).toFixed(2)}`;
-      } else {
-        priceBreakdown.style.display = 'none';
-      }
-    });
-  }
 
   if (themeToggle) themeToggle.addEventListener('click', safeToggleTheme);
   if (clearButton) clearButton.addEventListener('click', () => { window.location.reload(); });
@@ -267,7 +249,7 @@ function initializePage() {
   }
 
   // Handle Enter key for all inputs
-  [nameInput, itemNameInput, brandInput, descriptionInput, pricePerDayInput].forEach(el => {
+  [nameInput, itemNameInput, brandInput, descriptionInput].forEach(el => {
     if (el) {
       el.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {

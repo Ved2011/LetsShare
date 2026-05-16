@@ -7,6 +7,15 @@ function initializeTheme() {
   html.setAttribute('data-theme', savedTheme);
 }
 
+function getDeviceId() {
+  let deviceId = localStorage.getItem('deviceId');
+  if (!deviceId) {
+    deviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    localStorage.setItem('deviceId', deviceId);
+  }
+  return deviceId;
+}
+
 function getCachedAuth() {
   return {
     token: localStorage.getItem('token'),
@@ -77,12 +86,14 @@ if (validateLoginForm()) {
           return;
         }
 
+        const deviceId = getDeviceId();
+
         const response = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ identifier, password, recaptchaToken }),
+          body: JSON.stringify({ identifier, password, recaptchaToken, deviceId }),
         });
 
         const data = await response.json();
@@ -127,12 +138,13 @@ if (otpForm) {
     const otpCode = document.getElementById('otpCode').value.trim();
 
     try {
+      const deviceId = getDeviceId();
       const response = await fetch('/api/auth/verify-2fa', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: pendingUserId, otpCode }),
+        body: JSON.stringify({ userId: pendingUserId, otpCode, deviceId }),
       });
 
       const data = await response.json();
