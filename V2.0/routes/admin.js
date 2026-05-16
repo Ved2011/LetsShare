@@ -77,7 +77,7 @@ router.get('/users', authenticateToken, requireSiteAdmin, async (req, res) => {
 router.get('/users/:id/details', authenticateToken, requireSiteAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    const [userRes, itemsRes, communitiesRes] = await Promise.all([
+    const [userRes, itemsRes, communitiesRes, borrowedRes] = await Promise.all([
       pool.query('SELECT id, name, email, username, city, state, country, is_verified, is_site_admin, plan_type, created_at, last_login FROM users WHERE id = $1', [id]),
       pool.query('SELECT id, name, status, price_per_day, brand, condition, created_at FROM items WHERE owner_id = $1 ORDER BY created_at DESC', [id]),
       pool.query(`
@@ -86,6 +86,13 @@ router.get('/users/:id/details', authenticateToken, requireSiteAdmin, async (req
         JOIN community_members cm ON cm.community_id = c.id
         WHERE cm.user_id = $1
         ORDER BY cm.joined_at DESC
+      `, [id]),
+      pool.query(`
+        SELECT i.id, i.name, b.status as borrow_status, b.start_date, b.end_date
+        FROM borrows b
+        JOIN items i ON b.item_id = i.id
+        WHERE b.borrower_id = $1
+        ORDER BY b.created_at DESC
       `, [id])
     ]);
 
@@ -94,7 +101,8 @@ router.get('/users/:id/details', authenticateToken, requireSiteAdmin, async (req
     res.json({
       user: userRes.rows[0],
       items: itemsRes.rows,
-      communities: communitiesRes.rows
+      communities: communitiesRes.rows,
+      borrowed: borrowedRes.rows
     });
   } catch (err) {
     console.error('Error fetching user details:', err);

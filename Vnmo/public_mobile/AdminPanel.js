@@ -107,12 +107,23 @@ async function viewUser(id, name) {
                 </p>
             </div>
             <div class="detail-section">
-                <h4>Items (${data.items.length})</h4>
+                <h4>Owned Items (${data.items.length})</h4>
                 ${data.items.length ? data.items.map(i => `
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
                         <span style="font-size:0.82rem"><strong>${i.name}</strong> <span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status}</span></span>
-                        <button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Del</button>
+                        <div>
+                            <a href="item_View.html?id=${i.id}" class="btn-view" style="text-decoration:none;font-size:0.7rem;padding:0.25rem 0.5rem">View</a>
+                            <button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Del</button>
+                        </div>
                     </div>`).join('') : '<p class="empty-admin">No items listed.</p>'}
+            </div>
+            <div class="detail-section">
+                <h4>Borrowed Items (${data.borrowed.length})</h4>
+                ${data.borrowed.length ? data.borrowed.map(b => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
+                        <span style="font-size:0.82rem"><strong>${b.name}</strong> <span class="badge ${b.borrow_status === 'approved' ? 'badge-ok' : 'badge-warn'}">${b.borrow_status}</span></span>
+                        <a href="item_View.html?id=${b.id}" class="btn-view" style="text-decoration:none;font-size:0.7rem;padding:0.25rem 0.5rem">View</a>
+                    </div>`).join('') : '<p class="empty-admin">No items borrowed.</p>'}
             </div>
             <div class="detail-section">
                 <h4>Communities (${data.communities.length})</h4>

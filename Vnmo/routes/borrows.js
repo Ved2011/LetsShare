@@ -19,7 +19,11 @@ router.post('/', authenticateToken, async (req, res) => {
     if (itemOwnerResult.rows.length === 0) return res.status(404).json({ error: 'Item not found' });
     const ownerId = itemOwnerResult.rows[0].owner_id;
 
-    if (ownerId !== borrowerId) {
+    // Get borrower details
+    const borrowerResult = await pool.query('SELECT plan_type, free_credits, last_credit_added, is_site_admin FROM users WHERE id = $1', [borrowerId]);
+    let borrower = borrowerResult.rows[0];
+
+    if (ownerId !== borrowerId && !borrower.is_site_admin) {
       const shareCommunityResult = await pool.query(`
         SELECT 1 FROM community_members cm1 
         JOIN community_members cm2 ON cm1.community_id = cm2.community_id 
@@ -39,23 +43,21 @@ router.post('/', authenticateToken, async (req, res) => {
     if (duration <= 0) {
       return res.status(400).json({ error: 'Return date must be in the future' });
     }
-
-    // Get borrower details
-    const borrowerResult = await pool.query('SELECT plan_type, free_credits, last_credit_added FROM users WHERE id = $1', [borrowerId]);
-    let borrower = borrowerResult.rows[0];
     
-    // Check if we need to add new month's credits
-    const nowCheck = new Date();
-    const lastAdded = borrower.last_credit_added ? new Date(borrower.last_credit_added) : nowCheck;
-    let monthsPassed = (nowCheck.getFullYear() - lastAdded.getFullYear()) * 12 + (nowCheck.getMonth() - lastAdded.getMonth());
-    if (monthsPassed > 0) {
-      borrower.free_credits += 5 * monthsPassed;
-      await pool.query('UPDATE users SET free_credits = $1, last_credit_added = CURRENT_TIMESTAMP WHERE id = $2', [borrower.free_credits, borrowerId]);
-    }
+    // Check if we need to add new month's credits (Skip for admin)
+    if (!borrower.is_site_admin) {
+        const nowCheck = new Date();
+        const lastAdded = borrower.last_credit_added ? new Date(borrower.last_credit_added) : nowCheck;
+        let monthsPassed = (nowCheck.getFullYear() - lastAdded.getFullYear()) * 12 + (nowCheck.getMonth() - lastAdded.getMonth());
+        if (monthsPassed > 0) {
+          borrower.free_credits += 5 * monthsPassed;
+          await pool.query('UPDATE users SET free_credits = $1, last_credit_added = CURRENT_TIMESTAMP WHERE id = $2', [borrower.free_credits, borrowerId]);
+        }
 
-    // Enforce Early Bird free credits
-    if (borrower.free_credits <= 0) {
-      return res.status(403).json({ error: 'You have used all your free credits for this month. Please wait for the next month for more credits!' });
+        // Enforce Early Bird free credits
+        if (borrower.free_credits <= 0) {
+          return res.status(403).json({ error: 'You have used all your free credits for this month. Please wait for the next month for more credits!' });
+        }
     }
 
     let message = 'Borrow request sent successfully';
@@ -66,16 +68,20 @@ router.post('/', authenticateToken, async (req, res) => {
     // Start transaction
     await pool.query('BEGIN');
     
-    // Deduct 1 credit
-    await pool.query('UPDATE users SET free_credits = free_credits - 1 WHERE id = $1', [borrowerId]);
+    // Deduct 1 credit (Skip if admin)
+    if (!borrower.is_site_admin) {
+        await pool.query('UPDATE users SET free_credits = free_credits - 1 WHERE id = $1', [borrowerId]);
+    }
 
     const result = await pool.query(
       'INSERT INTO borrows (borrow_id, item_id, borrower_id, status, due_date, duration_days) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
       [borrowId, itemId, borrowerId, 'requested', dueDate, duration]
     );
 
-    // Increment monthly borrows
-    await pool.query('UPDATE users SET borrows_this_month = borrows_this_month + 1 WHERE id = $1', [borrowerId]);
+    // Increment monthly borrows (Skip if admin)
+    if (!borrower.is_site_admin) {
+        await pool.query('UPDATE users SET borrows_this_month = borrows_this_month + 1 WHERE id = $1', [borrowerId]);
+    }
     
     await pool.query('COMMIT');
 

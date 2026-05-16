@@ -177,8 +177,14 @@ router.post('/login', async (req, res) => {
     // No OTP required — update last_login
     await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
 
+    // Admins get Premium by default in V2.0
+    if (user.is_site_admin && user.plan_type !== 'Premium') {
+      await pool.query("UPDATE users SET plan_type = 'Premium' WHERE id = $1", [user.id]);
+      user.plan_type = 'Premium';
+    }
+
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin, plan_type: user.plan_type } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -216,8 +222,14 @@ router.post('/verify-2fa', async (req, res) => {
       );
     }
 
+    // Admins get Premium by default in V2.0
+    if (user.is_site_admin && user.plan_type !== 'Premium') {
+      await pool.query("UPDATE users SET plan_type = 'Premium' WHERE id = $1", [user.id]);
+      user.plan_type = 'Premium';
+    }
+
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin, plan_type: user.plan_type } });
   } catch (err) {
     console.error('2FA verification error:', err);
     res.status(500).json({ error: 'Server error' });

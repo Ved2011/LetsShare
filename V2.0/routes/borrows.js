@@ -19,7 +19,11 @@ router.post('/', authenticateToken, async (req, res) => {
     if (itemOwnerResult.rows.length === 0) return res.status(404).json({ error: 'Item not found' });
     const ownerId = itemOwnerResult.rows[0].owner_id;
 
-    if (ownerId !== borrowerId) {
+    // Get borrower details to check plan limits
+    const borrowerResult = await pool.query('SELECT plan_type, borrows_this_month, wallet_balance, is_site_admin FROM users WHERE id = $1', [borrowerId]);
+    const borrower = borrowerResult.rows[0];
+
+    if (ownerId !== borrowerId && !borrower.is_site_admin) {
       const shareCommunityResult = await pool.query(`
         SELECT 1 FROM community_members cm1 
         JOIN community_members cm2 ON cm1.community_id = cm2.community_id 
@@ -39,10 +43,6 @@ router.post('/', authenticateToken, async (req, res) => {
     if (duration <= 0) {
       return res.status(400).json({ error: 'Return date must be in the future' });
     }
-
-    // Get borrower details to check plan limits
-    const borrowerResult = await pool.query('SELECT plan_type, borrows_this_month, wallet_balance FROM users WHERE id = $1', [borrowerId]);
-    const borrower = borrowerResult.rows[0];
     
     let limit = 5;
     if (borrower.plan_type === 'Pro') limit = 15;
@@ -52,7 +52,7 @@ router.post('/', authenticateToken, async (req, res) => {
     let message = 'Borrow request sent successfully';
     let extraFee = 0;
 
-    if (currentBorrows > limit) {
+    if (currentBorrows > limit && !borrower.is_site_admin) {
       extraFee = 5;
       if (Number(borrower.wallet_balance) < extraFee) {
         return res.status(400).json({ error: `Insufficient balance. Extra borrows cost Rs. 5. Your balance: Rs. ${borrower.wallet_balance}` });
@@ -66,8 +66,8 @@ router.post('/', authenticateToken, async (req, res) => {
     // Start transaction
     await pool.query('BEGIN');
     
-    // Deduct fee if over limit
-    if (extraFee > 0) {
+    // Deduct fee if over limit (Skip for admin)
+    if (extraFee > 0 && !borrower.is_site_admin) {
       await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [extraFee, borrowerId]);
       await pool.query(
         'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
@@ -80,8 +80,10 @@ router.post('/', authenticateToken, async (req, res) => {
       [borrowId, itemId, borrowerId, 'requested', dueDate, duration]
     );
 
-    // Increment monthly borrows
-    await pool.query('UPDATE users SET borrows_this_month = borrows_this_month + 1 WHERE id = $1', [borrowerId]);
+    // Increment monthly borrows (Skip for admin)
+    if (!borrower.is_site_admin) {
+        await pool.query('UPDATE users SET borrows_this_month = borrows_this_month + 1 WHERE id = $1', [borrowerId]);
+    }
     
     await pool.query('COMMIT');
 
@@ -164,18 +166,21 @@ router.put('/:id/approve', authenticateToken, async (req, res) => {
     const itemName = itemInfo.rows[0].name;
     const totalPrice = pricePerDay * Number(duration || 1);
 
-    // Get borrower balance
-    const borrowerInfo = await pool.query('SELECT wallet_balance FROM users WHERE id = $1', [borrowerId]);
+    // Get borrower balance and admin status
+    const borrowerInfo = await pool.query('SELECT wallet_balance, is_site_admin FROM users WHERE id = $1', [borrowerId]);
     const borrowerBalance = Number(borrowerInfo.rows[0].wallet_balance || 0);
+    const isBorrowerAdmin = borrowerInfo.rows[0].is_site_admin;
 
-    if (totalPrice > 0 && borrowerBalance < totalPrice) {
-      return res.status(400).json({ error: `Borrower has insufficient balance (Rs. ${borrowerBalance}) for this rental (Total: Rs. ${totalPrice}).` });
+    let finalPrice = isBorrowerAdmin ? 0 : totalPrice;
+
+    if (finalPrice > 0 && borrowerBalance < finalPrice) {
+      return res.status(400).json({ error: `Borrower has insufficient balance (Rs. ${borrowerBalance}) for this rental (Total: Rs. ${finalPrice}).` });
     }
 
     // Start transaction for payment
     await pool.query('BEGIN');
 
-    if (totalPrice > 0) {
+    if (finalPrice > 0) {
       const platformFee = totalPrice * 0.10;
       const ownerEarning = totalPrice - platformFee;
 
