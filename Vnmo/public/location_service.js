@@ -34,6 +34,10 @@ const LocationService = {
                 body: JSON.stringify({ country, state })
             });
             const data = await res.json();
+            if (res.status !== 200) {
+                console.error('CountriesNow Error:', data);
+                return [];
+            }
             if (!data.data) return [];
             return data.data.sort();
         } catch (err) {

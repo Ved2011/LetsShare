@@ -16,10 +16,10 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
         (SELECT COUNT(*) FROM items i 
          JOIN community_members cm ON i.owner_id = cm.user_id 
          WHERE cm.community_id = c.id AND (i.exclusive_community_id IS NULL OR i.exclusive_community_id = c.id)) as item_count,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1::int) as is_member,
+        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1::int AND is_admin = true) as is_current_user_admin
       FROM communities c
-      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1))
+      WHERE (c.is_private = false OR c.admin_id = $1::int OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1::int))
     `;
     const params = [userId];
 
