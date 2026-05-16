@@ -51,7 +51,7 @@ function injectSidebar() {
                 <i>🤝</i> <span class="nav-text">Borrow Item</span>
             </a>
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
-                <i>⚠️</i> <span class="nav-text">Complaints</span>
+                <i>⚠️</i> <span class="nav-text">Issue Complaint</span>
             </a>
             ${user?.is_site_admin ? `
             <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}" style="color: #4f46e5;">
@@ -88,22 +88,32 @@ function injectSidebar() {
         document.body.prepend(mainWrapper);
         document.body.prepend(overlay);
         document.body.prepend(sidebar);
+    }
 
-        // Auto-inject toggle button into header if missing
-        const header = document.querySelector('.header');
-        if (header && !document.getElementById('menuToggle')) {
-            const btn = document.createElement('button');
-            btn.id = 'menuToggle';
-            btn.className = 'menu-toggle';
-            btn.innerHTML = '☰';
-            btn.style.marginRight = '1rem';
-            btn.style.background = 'none';
-            btn.style.border = '1px solid var(--border)';
-            btn.style.padding = '0.5rem';
-            btn.style.borderRadius = '8px';
-            btn.style.cursor = 'pointer';
-            header.prepend(btn);
-        }
+    // Auto-unify Header (Moved outside wrapper check)
+    const header = document.querySelector('.header');
+    if (header) {
+        // Determine Page Title
+        let pageTitle = "LetsShare";
+        const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
+        const existingH2 = header.querySelector('h2');
+        if (existingSpan) pageTitle = existingSpan.textContent;
+        else if (existingH2) pageTitle = existingH2.textContent;
+        else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
+
+        header.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                <button class="menu-toggle" id="menuToggle" style="background: none; border: none; font-size: 1.5rem; color: var(--accent); padding: 0.5rem; margin-left: -0.5rem; cursor: pointer;">☰</button>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <img src="assets/Logo1.jpeg" alt="Logo" style="height: 32px; border-radius: 4px;">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                </div>
+                <h2 style="font-size: 1.1rem; margin: 0; color: var(--text); flex-grow: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pageTitle}</h2>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <a href="user_Profile.html" class="header-avatar" style="text-decoration: none;">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
+                </div>
+            </div>
+        `;
     }
 
     // Toggle logic
