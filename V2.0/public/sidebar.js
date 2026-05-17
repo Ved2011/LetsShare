@@ -50,8 +50,8 @@ function injectSidebar() {
     overlay.id = 'sidebarOverlay';
 
     sidebar.innerHTML = `
-        <div class="sidebar-header">
-            <img src="/assets/Logo1.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+        <div class="sidebar-header" style="justify-content: center; padding: 1rem 0;">
+            <img src="/assets/Logo1.jpeg" alt="Logo" style="height: 45px; width: auto; border-radius: 6px;">
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
