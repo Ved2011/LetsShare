@@ -47,7 +47,7 @@ html[data-theme="dark"] {
 html, body {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
     margin: 0;
     padding: 0;
     font-family: 'Outfit', sans-serif;
@@ -59,7 +59,7 @@ html, body {
 .main-wrapper {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
     position: relative;
 }
 
@@ -76,6 +76,7 @@ html, body {
     z-index: 2000;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    overflow-y: auto;
 }
 
 .sidebar.active {
@@ -91,7 +92,7 @@ html, body {
     max-width: 100%;
     min-height: 100vh;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: clip;
     margin: 0;
     padding: 0;
 }
