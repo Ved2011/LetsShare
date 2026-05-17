@@ -19,7 +19,6 @@ function injectSidebar() {
     sidebar.innerHTML = `
         <div class="sidebar-header">
             <img src="/assets/Logo1.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
-            <span class="nav-text" style="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
