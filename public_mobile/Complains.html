@@ -47,25 +47,27 @@
                     <input type="text" id="borrowerName" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="issueType">Issue Type</label>
-                    <select id="issueType" required>
-                        <option value="">Select issue</option>
-                        <option value="damage">Damage</option>
-                        <option value="lost">Lost Item</option>
-                        <option value="late">Late Return</option>
-                        <option value="misuse">Misuse</option>
-                    </select>
-                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="issueType">Issue Type</label>
+                        <select id="issueType" required>
+                            <option value="">Select issue</option>
+                            <option value="damage">Damage</option>
+                            <option value="lost">Lost Item</option>
+                            <option value="late">Late Return</option>
+                            <option value="misuse">Misuse</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="severity">Severity</label>
-                    <select id="severity" required>
-                        <option value="">Select severity</option>
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                    </select>
+                    <div class="form-group">
+                        <label for="severity">Severity</label>
+                        <select id="severity" required>
+                            <option value="">Select severity</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="form-group">
