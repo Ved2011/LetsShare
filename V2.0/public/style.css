@@ -2036,7 +2036,10 @@ html[data-theme="dark"] .custom-dropdown-menu {
     .community-grid,
     .items-grid,
     .features-grid,
-    .stats-grid {
+    .stats-grid,
+    .dashboard-grid,
+    .items-square-grid {
+        display: grid !important;
         grid-template-columns: 1fr !important;
         gap: 1rem !important;
     }

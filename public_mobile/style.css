@@ -1831,12 +1831,16 @@ html[data-theme="dark"] .custom-dropdown-menu {
     .grid-container,
     .items-grid,
     .features-grid,
-    .stats-grid {
+    .stats-grid,
+    .dashboard-grid,
+    .items-square-grid {
+        display: grid !important;
         grid-template-columns: 1fr !important;
         gap: 1rem !important;
     }
     
     .community-grid {
+        display: grid !important;
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
         gap: 0.75rem !important;
     }
