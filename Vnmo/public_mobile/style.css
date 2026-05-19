@@ -1691,7 +1691,7 @@ a, a:hover, a:focus {
         padding: 0.75rem !important;
         font-size: 1.5rem !important;
         background: var(--card-bg) !important;
-        border-color: var(--accent) !important;
+        border: none !important;
         color: var(--accent) !important;
         box-shadow: var(--shadow);
     }
@@ -1829,12 +1829,25 @@ html[data-theme="dark"] .custom-dropdown-menu {
     
     /* Grid systems - Force auto-fit or single column properly */
     .grid-container,
-    .community-grid,
     .items-grid,
     .features-grid,
     .stats-grid {
         grid-template-columns: 1fr !important;
         gap: 1rem !important;
+    }
+    
+    .community-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+        gap: 0.75rem !important;
+    }
+    
+    .community-grid .community-card {
+        padding: 0.75rem !important;
+    }
+    
+    .community-grid .community-card img {
+        height: 110px !important;
+        object-fit: cover !important;
     }
     
     /* Hero Sections */

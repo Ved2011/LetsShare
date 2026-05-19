@@ -273,11 +273,30 @@
 
             <!-- COMPLAINTS TAB -->
             <div class="admin-section card" id="section-complaints">
+                <div class="filters-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: rgba(79, 124, 222, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em;">Filter by Severity</label>
+                        <select id="complaintFilterSeverity" onchange="filterComplaints()" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text); min-width: 160px; outline: none;">
+                            <option value="">All Severities</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em;">Filter by Category</label>
+                        <select id="complaintFilterCategory" onchange="filterComplaints()" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text); min-width: 180px; outline: none;">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="table-scroll">
                     <table class="admin-table" id="complaintsTable">
                         <thead>
                             <tr>
                                 <th>Issue Type</th>
+                                <th>Severity</th>
                                 <th>Item</th>
                                 <th>Complainant</th>
                                 <th>Accused</th>
@@ -287,7 +306,7 @@
                             </tr>
                         </thead>
                         <tbody id="complaintsBody">
-                            <tr><td colspan="7" class="empty-admin">Loading complaints…</td></tr>
+                            <tr><td colspan="8" class="empty-admin">Loading complaints…</td></tr>
                         </tbody>
                     </table>
                 </div>

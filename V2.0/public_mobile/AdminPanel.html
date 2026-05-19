@@ -172,10 +172,28 @@
             </div>
 
             <div class="admin-section card" id="section-complaints">
+                <div class="filters-row" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(79, 70, 229, 0.05); padding: 0.75rem; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 120px;">
+                        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em;">Severity</label>
+                        <select id="complaintFilterSeverity" onchange="filterComplaints()" style="padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem; background: var(--card-bg); color: var(--text); outline: none;">
+                            <option value="">All</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem; flex: 1; min-width: 120px;">
+                        <label style="font-size: 0.65rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em;">Category</label>
+                        <select id="complaintFilterCategory" onchange="filterComplaints()" style="padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.8rem; background: var(--card-bg); color: var(--text); outline: none;">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="table-scroll">
                     <table class="admin-table" id="complaintsTable">
-                        <thead><tr><th>Issue</th><th class="hide-xs">Item</th><th>From</th><th class="hide-xs">To</th><th>Status</th><th>Actions</th></tr></thead>
-                        <tbody id="complaintsBody"><tr><td colspan="6" class="empty-admin">Loading…</td></tr></tbody>
+                        <thead><tr><th>Issue</th><th>Severity</th><th class="hide-xs">Item</th><th>From</th><th class="hide-xs">To</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="complaintsBody"><tr><td colspan="7" class="empty-admin">Loading…</td></tr></tbody>
                     </table>
                 </div>
             </div>

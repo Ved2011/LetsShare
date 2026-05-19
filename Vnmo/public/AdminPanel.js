@@ -98,14 +98,24 @@ async function loadUsers() {
 
 async function viewUser(id, name) {
     document.getElementById('modalUserName').textContent = '👤 ' + name;
-    document.getElementById('modalContent').innerHTML = '<p class="muted">Loading…</p>';
+    document.getElementById('modalContent').innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+            <p class="muted">Loading user details...</p>
+        </div>`;
     document.getElementById('userModal').classList.add('active');
 
     try {
+        console.log(`[Admin] Fetching details for user ID: ${id}`);
         const res = await fetch(`/api/admin/users/${id}/details`, { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) {
+            throw new Error(`Failed to load details (status: ${res.status})`);
+        }
         const data = await res.json();
-
         const u = data.user;
+        if (!u) {
+            throw new Error('User not found in details response');
+        }
+
         document.getElementById('modalContent').innerHTML = `
             <div class="detail-section">
                 <h4>Profile</h4>
@@ -146,9 +156,57 @@ async function viewUser(id, name) {
                     `).join('')}</tbody>
                 </table>` : '<p class="empty-admin">Not in any communities.</p>'}
             </div>
+            <div class="detail-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; margin-bottom: 0.6rem;">
+                    <h4 style="margin: 0;">Warning History (${data.warnings ? data.warnings.length : 0})</h4>
+                    <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; margin: 0; background: rgba(220,53,69,0.1); color: #dc3545; border-color: rgba(220,53,69,0.2);">⚠️ Issue Warning</button>
+                </div>
+                
+                <div id="warningFormContainer-${u.id}" style="display: none; background: rgba(220, 53, 69, 0.03); border: 1px dashed rgba(220, 53, 69, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <h5 style="margin: 0 0 0.5rem 0; color: #dc3545; font-size: 0.85rem;">Issue Warning to ${u.name}</h5>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div>
+                            <label style="font-size: 0.7rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.2rem;">Reason / Category</label>
+                            <select id="warnCategory-${u.id}" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; background: var(--card-bg); color: var(--text);">
+                                <option value="Terms of Service">Terms of Service</option>
+                                <option value="Inappropriate Content">Inappropriate Content</option>
+                                <option value="Spam">Spam</option>
+                                <option value="Harassment">Harassment</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.7rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 0.2rem;">Warning Message</label>
+                            <textarea id="warnMessage-${u.id}" rows="3" placeholder="Describe the warning message..." style="width: 100%; padding: 0.4rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; font-family: inherit; background: var(--card-bg); color: var(--text); resize: vertical;"></textarea>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.25rem;">
+                            <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="background: none; border: 1px solid var(--border); color: var(--text);">Cancel</button>
+                            <button class="btn-del" onclick="submitWarning(${u.id}, '${u.name.replace(/'/g, "\\'")}')" style="background: #dc3545; color: white; border: none;">Submit Warning</button>
+                        </div>
+                    </div>
+                </div>
+
+                ${data.warnings && data.warnings.length ? `
+                <table class="admin-table">
+                    <thead><tr><th>Category</th><th>Message</th><th>Issued By</th><th>Date</th></tr></thead>
+                    <tbody>${data.warnings.map(w => `
+                        <tr>
+                            <td><span class="badge badge-warn">${w.category}</span></td>
+                            <td style="max-width:250px;word-break:break-word;font-style:italic;color:var(--muted)">"${w.message}"</td>
+                            <td>${w.admin_name || 'System'}</td>
+                            <td>${fmt(w.created_at)}</td>
+                        </tr>
+                    `).join('')}</tbody>
+                </table>` : '<p class="empty-admin">No warning history for this user.</p>'}
+            </div>
         `;
     } catch (err) {
-        document.getElementById('modalContent').innerHTML = '<p class="empty-admin">Failed to load user details.</p>';
+        console.error('[Admin] Error loading user details:', err);
+        document.getElementById('modalContent').innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                <p>⚠️ Error: ${err.message || 'Failed to load user details.'}</p>
+                <button class="btn-view" onclick="viewUser(${id}, '${name.replace(/'/g, "\\'")}')" style="margin-top: 1rem;">Retry</button>
+            </div>`;
     }
 }
 
@@ -222,35 +280,77 @@ async function loadCommunities() {
 }
 
 // ── COMPLAINTS ────────────────────────────────────────────────────────────────
+let allComplaints = [];
+
 async function loadComplaints() {
     try {
         const res = await fetch('/api/admin/complaints', { headers: { 'Authorization': `Bearer ${token}` } });
-        const complaints = await res.json();
-        const open = complaints.filter(c => c.status === 'open').length;
+        if (!res.ok) throw new Error('Failed to fetch complaints');
+        allComplaints = await res.json();
+        
+        const open = allComplaints.filter(c => c.status === 'open').length;
         document.getElementById('statComplaints').textContent = open;
 
-        const tbody = document.getElementById('complaintsBody');
-        if (!complaints.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-admin">No complaints on the platform.</td></tr>';
-            return;
+        // Populate dynamic category selector
+        const categoryFilter = document.getElementById('complaintFilterCategory');
+        if (categoryFilter) {
+            const currentSelected = categoryFilter.value;
+            const categories = [...new Set(allComplaints.map(c => c.issue_type || 'General'))];
+            categoryFilter.innerHTML = '<option value="">All Categories</option>' + 
+                categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            categoryFilter.value = currentSelected;
         }
 
-        tbody.innerHTML = complaints.map(c => `
-            <tr>
-                <td><strong>${c.issue_type || 'General'}</strong></td>
-                <td>${c.actual_item_name || '—'}</td>
-                <td>${c.complainant_name}</td>
-                <td>${c.accused_name}</td>
-                <td style="max-width:200px;word-break:break-word;font-style:italic;color:var(--muted)">"${c.description || '—'}"</td>
-                <td><span class="badge ${c.status === 'open' ? 'badge-warn' : 'badge-ok'}">${c.status.toUpperCase()}</span></td>
-                <td>
-                    ${c.status === 'open' ? `<button class="btn-view" onclick="resolveComplaint(${c.id})">Resolve</button>` : ''}
-                </td>
-            </tr>
-        `).join('');
+        filterComplaints();
     } catch (err) {
-        document.getElementById('complaintsBody').innerHTML = '<tr><td colspan="7" class="empty-admin">Failed to load complaints.</td></tr>';
+        console.error('[Admin] Error loading complaints:', err);
+        document.getElementById('complaintsBody').innerHTML = '<tr><td colspan="8" class="empty-admin">Failed to load complaints.</td></tr>';
     }
+}
+
+function filterComplaints() {
+    const severity = document.getElementById('complaintFilterSeverity').value.toLowerCase();
+    const category = document.getElementById('complaintFilterCategory').value;
+    
+    let filtered = allComplaints;
+    if (severity) {
+        filtered = filtered.filter(c => (c.severity || '').toLowerCase() === severity);
+    }
+    if (category) {
+        filtered = filtered.filter(c => (c.issue_type || 'General') === category);
+    }
+    
+    renderComplaintsTable(filtered);
+}
+
+function renderComplaintsTable(complaintsList) {
+    const tbody = document.getElementById('complaintsBody');
+    if (!complaintsList.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-admin">No complaints found matching filters.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = complaintsList.map(c => `
+        <tr>
+            <td><strong>${c.issue_type || 'General'}</strong></td>
+            <td><span class="badge ${getSeverityBadgeClass(c.severity)}">${(c.severity || 'low').toUpperCase()}</span></td>
+            <td>${c.actual_item_name || '—'}</td>
+            <td>${c.complainant_name}</td>
+            <td>${c.accused_name}</td>
+            <td style="max-width:200px;word-break:break-word;font-style:italic;color:var(--muted)">"${c.description || '—'}"</td>
+            <td><span class="badge ${c.status === 'open' ? 'badge-warn' : 'badge-ok'}">${c.status.toUpperCase()}</span></td>
+            <td>
+                ${c.status === 'open' ? `<button class="btn-view" onclick="resolveComplaint(${c.id})">Resolve</button>` : ''}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getSeverityBadgeClass(severity) {
+    const sev = (severity || '').toLowerCase();
+    if (sev === 'critical' || sev === 'high') return 'badge-warn';
+    if (sev === 'medium') return 'badge-pro';
+    return 'badge-free';
 }
 
 async function resolveComplaint(id) {
@@ -264,6 +364,49 @@ async function resolveComplaint(id) {
         if (res.ok) { loadComplaints(); }
         else { alert('Failed to resolve complaint.'); }
     } catch (err) {
+        alert('Network error.');
+    }
+}
+
+function toggleWarningForm(userId) {
+    const el = document.getElementById(`warningFormContainer-${userId}`);
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+async function submitWarning(userId, userName) {
+    const category = document.getElementById(`warnCategory-${userId}`).value;
+    const message = document.getElementById(`warnMessage-${userId}`).value.trim();
+
+    if (!message) {
+        alert('Please enter a warning message.');
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to issue this warning to ${userName}?`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/warn`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ category, message })
+        });
+
+        if (res.ok) {
+            alert('Warning issued successfully.');
+            viewUser(userId, userName);
+        } else {
+            const data = await res.json();
+            alert(`Failed to issue warning: ${data.error || 'Unknown error'}`);
+        }
+    } catch (err) {
+        console.error('[Admin] Error submitting warning:', err);
         alert('Network error.');
     }
 }

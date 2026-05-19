@@ -181,6 +181,14 @@ const createTables = async () => {
         last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(user_id, device_id)
       );
+      CREATE TABLE IF NOT EXISTS user_warnings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        category TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
       ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_code TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires TIMESTAMP;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS image BYTEA;

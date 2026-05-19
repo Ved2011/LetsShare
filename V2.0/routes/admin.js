@@ -77,7 +77,7 @@ router.get('/users', authenticateToken, requireSiteAdmin, async (req, res) => {
 router.get('/users/:id/details', authenticateToken, requireSiteAdmin, async (req, res) => {
   const { id } = req.params;
   try {
-    const [userRes, itemsRes, communitiesRes, borrowedRes] = await Promise.all([
+    const [userRes, itemsRes, communitiesRes, borrowedRes, warningsRes] = await Promise.all([
       pool.query('SELECT id, name, email, username, city, state, country, is_verified, is_site_admin, plan_type, created_at, last_login FROM users WHERE id = $1', [id]),
       pool.query('SELECT id, name, status, price_per_day, brand, condition, created_at FROM items WHERE owner_id = $1 ORDER BY created_at DESC', [id]),
       pool.query(`
@@ -88,11 +88,18 @@ router.get('/users/:id/details', authenticateToken, requireSiteAdmin, async (req
         ORDER BY cm.joined_at DESC
       `, [id]),
       pool.query(`
-        SELECT i.id, i.name, b.status as borrow_status, b.start_date, b.end_date
+        SELECT i.id, i.name, b.status as borrow_status, b.issue_date, b.due_date
         FROM borrows b
         JOIN items i ON b.item_id = i.id
         WHERE b.borrower_id = $1
         ORDER BY b.created_at DESC
+      `, [id]),
+      pool.query(`
+        SELECT w.*, u.name as admin_name
+        FROM user_warnings w
+        LEFT JOIN users u ON w.admin_id = u.id
+        WHERE w.user_id = $1
+        ORDER BY w.created_at DESC
       `, [id])
     ]);
 
@@ -102,11 +109,39 @@ router.get('/users/:id/details', authenticateToken, requireSiteAdmin, async (req
       user: userRes.rows[0],
       items: itemsRes.rows,
       communities: communitiesRes.rows,
-      borrowed: borrowedRes.rows
+      borrowed: borrowedRes.rows,
+      warnings: warningsRes.rows
     });
   } catch (err) {
     console.error('Error fetching user details:', err);
     res.status(500).json({ error: 'Server error fetching user details' });
+  }
+});
+
+router.post('/users/:id/warn', authenticateToken, requireSiteAdmin, async (req, res) => {
+  const { id } = req.params;
+  const adminId = req.user.id;
+  const { category, message } = req.body;
+
+  if (!category || !message) {
+    return res.status(400).json({ error: 'Category and message are required.' });
+  }
+
+  const validCategories = ['Terms of Service', 'Inappropriate Content', 'Spam', 'Harassment', 'Other'];
+  if (!validCategories.includes(category)) {
+    return res.status(400).json({ error: 'Invalid warning category.' });
+  }
+
+  try {
+    const result = await pool.query(`
+      INSERT INTO user_warnings (user_id, admin_id, category, message)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *
+    `, [id, adminId, category, message]);
+    res.status(201).json({ message: 'Warning saved.', warning: result.rows[0] });
+  } catch (err) {
+    console.error('Error warning user:', err);
+    res.status(500).json({ error: 'Server error saving warning.' });
   }
 });
 

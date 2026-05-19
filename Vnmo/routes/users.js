@@ -217,6 +217,25 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
+// Get user's own warnings
+router.get('/warnings', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(
+      `SELECT w.*, u.name as admin_name
+       FROM user_warnings w
+       LEFT JOIN users u ON w.admin_id = u.id
+       WHERE w.user_id = $1
+       ORDER BY w.created_at DESC`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching user warnings:', err);
+    res.status(500).json({ error: 'Server error fetching warnings' });
+  }
+});
+
 // Get specific user profile
 router.get('/:id', authenticateTokenOptional, async (req, res) => {
   const targetUserIdStr = req.params.id;

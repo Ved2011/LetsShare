@@ -15,7 +15,13 @@ function injectSidebar() {
 
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
-    sidebar.className = 'sidebar collapsed';
+    const isMobileDevice = window.innerWidth <= 1024;
+    const isSidebarExpanded = !isMobileDevice && localStorage.getItem('sidebarExpanded') === 'true';
+    if (isSidebarExpanded && (!isLandingPage || isLoggedIn)) {
+        sidebar.className = 'sidebar active';
+    } else {
+        sidebar.className = 'sidebar collapsed';
+    }
     sidebar.id = 'sidebar';
 
     // Create Mobile Header
@@ -165,10 +171,16 @@ function injectSidebar() {
             sidebar.classList.remove('collapsed');
             sidebar.classList.add('active');
             overlay.classList.add('active');
+            if (window.innerWidth > 1024) {
+                localStorage.setItem('sidebarExpanded', 'true');
+            }
         } else {
             sidebar.classList.add('collapsed');
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
+            if (window.innerWidth > 1024) {
+                localStorage.setItem('sidebarExpanded', 'false');
+            }
         }
     };
 
