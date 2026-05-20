@@ -36,8 +36,8 @@ function injectSidebar() {
 
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
-            <span class="nav-text" style="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
+            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;">
+            <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
@@ -70,12 +70,15 @@ function injectSidebar() {
             <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
                 <i>💎</i> <span class="nav-text">Upgrade Plan</span>
             </a>
-            <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem;">
-                <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
-                    <div class="header-avatar" style="width: 24px; height: 24px; font-size: 0.5rem; margin-right: 0.5rem;">${user?.name?.charAt(0).toUpperCase() || 'Login'}</div>
-                    <span class="nav-text">${isLoggedIn ? 'My Profile' : 'Login'}</span>
+            <div style="margin-top: auto; border-top: 1px solid var(--border); padding: 0.75rem;">
+                <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
+                    <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user?.name || 'Login'}</div>
+                        <div style="font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${isLoggedIn ? 'View profile' : 'Sign in'}</div>
+                    </div>
                 </a>
-                <a href="#" class="nav-item" id="sidebarLogout">
+                <a href="#" class="nav-item" id="sidebarLogout" style="color: var(--danger, #ef4444);">
                     <i>🚪</i> <span class="nav-text">Logout</span>
                 </a>
             </div>
