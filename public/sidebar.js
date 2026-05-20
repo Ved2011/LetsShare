@@ -1,12 +1,18 @@
 // sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
-    sidebar.className = 'sidebar collapsed';
+    const isMobileDevice = window.innerWidth <= 1024;
+    const isSidebarExpanded = !isMobileDevice && localStorage.getItem('sidebarExpanded') === 'true';
+    if (isSidebarExpanded && (!isLandingPage || isLoggedIn)) {
+        sidebar.className = 'sidebar active';
+    } else {
+        sidebar.className = 'sidebar collapsed';
+    }
     sidebar.id = 'sidebar';
 
     // Create Mobile Header
@@ -17,15 +23,15 @@ function injectSidebar() {
     mobileHeader.innerHTML = `
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
-            <a href="index.html" class="brand">
-                <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+            <a href="user_Dashboard.html" class="brand">
+                <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.src='/assets/Logo1.jpeg'">
             </a>
         </div>
         <div class="mobile-header-center">
             <h2>${pageTitle}</h2>
         </div>
         <div class="mobile-header-right">
-            <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="header-avatar" style="width: 32px; height: 32px; font-size: 0.6rem; text-decoration: none;">${user?.name?.charAt(0).toUpperCase() || 'Login'}</a>
+            ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar" style="width: 32px; height: 32px;">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
         </div>
     `;
 
@@ -36,12 +42,15 @@ function injectSidebar() {
 
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;">
+            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;" onerror="this.src='/assets/Logo1.jpeg'">
             <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i>🏠</i> <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
+                <i>🔔</i> <span class="nav-text">Notifications</span>
             </a>
             <a href="SearchPage.html" class="nav-item ${window.location.pathname.includes('SearchPage') ? 'active' : ''}">
                 <i>🔍</i> <span class="nav-text">Global Search</span>
@@ -63,9 +72,6 @@ function injectSidebar() {
             </a>
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i>⚠️</i> <span class="nav-text">Complaints</span>
-            </a>
-            <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
-                <i>🔔</i> <span class="nav-text">Notifications</span>
             </a>
             <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
                 <i>💎</i> <span class="nav-text">Upgrade Plan</span>
@@ -119,16 +125,15 @@ function injectSidebar() {
             const logoSrc = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
 
             const headerRight = header.querySelector('.header-right');
-            const preservedRight = headerRight ? headerRight.innerHTML : `
-                <a href="Notifications.html" style="text-decoration: none; font-size: 1.2rem; margin-right: 0.5rem; filter: grayscale(100%); transition: filter 0.2s;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='grayscale(100%)'" title="Notifications">🔔</a>
-                <a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
+            const preservedRight = headerRight && headerRight.innerHTML.trim() !== '?' ? headerRight.innerHTML : `
+                ${isLoggedIn ? `<a href="Notifications.html" style="text-decoration: none; font-size: 1.2rem; margin-right: 0.5rem; filter: grayscale(100%); transition: filter 0.2s;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='grayscale(100%)'" title="Notifications">🔔</a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
             `;
 
             header.innerHTML = `
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle">☰</button>
-                    <a href="index.html" class="brand">
-                        <img src="${logoSrc}" alt="Logo" class="header-logo">
+                    <a href="user_Dashboard.html" class="brand">
+                        <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='/assets/Logo1.jpeg'">
                     </a>
                 </div>
                 <div class="header-center">
@@ -148,8 +153,23 @@ function injectSidebar() {
     const toggleSidebar = () => {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
-        sidebar.classList.toggle('collapsed');
-        overlay.classList.toggle('active');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            if (window.innerWidth > 1024) {
+                localStorage.setItem('sidebarExpanded', 'true');
+            }
+        } else {
+            sidebar.classList.add('collapsed');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            if (window.innerWidth > 1024) {
+                localStorage.setItem('sidebarExpanded', 'false');
+            }
+        }
     };
 
     if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
@@ -168,21 +188,23 @@ function injectSidebar() {
     // Smart Sticky Header Logic
     let lastScroll = 0;
     const header = document.querySelector('.header');
-    window.addEventListener('scroll', () => {
-        const currentScroll = window.pageYOffset;
-        if (currentScroll <= 0) {
-            header.classList.remove('header-hidden');
-            return;
-        }
-        if (currentScroll > lastScroll && !header.classList.contains('header-hidden')) {
-            // Scroll Down
-            header.classList.add('header-hidden');
-        } else if (currentScroll < lastScroll && header.classList.contains('header-hidden')) {
-            // Scroll Up
-            header.classList.remove('header-hidden');
-        }
-        lastScroll = currentScroll;
-    });
+    if (header) {
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll <= 0) {
+                header.classList.remove('header-hidden');
+                return;
+            }
+            if (currentScroll > lastScroll && !header.classList.contains('header-hidden')) {
+                // Scroll Down
+                header.classList.add('header-hidden');
+            } else if (currentScroll < lastScroll && header.classList.contains('header-hidden')) {
+                // Scroll Up
+                header.classList.remove('header-hidden');
+            }
+            lastScroll = currentScroll;
+        });
+    }
 
     // Update logo on resize
     window.addEventListener('resize', () => {
@@ -200,7 +222,7 @@ function injectSidebar() {
             e.preventDefault();
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'index.html';
+            window.location.href = 'welcome.html';
         });
     }
 

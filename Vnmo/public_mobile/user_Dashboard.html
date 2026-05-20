@@ -11,13 +11,34 @@
 
     <div class="page-wrapper">
         <header class="header">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-                <a href="user_Dashboard.html" class="brand">
-                    <img src="assets/Logo2.jpeg" alt="LetsShare" class="logo" style="max-height: 40px; border-radius: 4px;">
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                <a href="user_Dashboard.html" class="brand" style="display: flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
                 </a>
-                <span style="font-weight: 600; color: var(--accent);">Dashboard</span>
+                <span style="font-weight: 600; color: var(--accent); flex-grow: 1; text-align: center;">Dashboard</span>
+                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
             </div>
         </header>
+
+        <!-- Early Bird Banner -->
+        <div class="card" style="background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; margin-bottom: 2rem; position: relative; overflow: hidden; padding: 1.5rem;">
+            <div style="position: absolute; top: -10px; right: -10px; font-size: 5rem; opacity: 0.1; transform: rotate(15deg);">🐣</div>
+            <div style="position: relative; z-index: 1;">
+                <h2 style="color: white; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; font-size: 1.5rem;">
+                    <span>🌟</span> Early Bird Special
+                </h2>
+                <p style="font-size: 0.95rem; opacity: 0.9; line-height: 1.5;">
+                    Welcome to Vnmo Early Bird! You get <strong>5 FREE credits</strong> for listings and borrows this month. Unused credits carry over!
+                </p>
+            </div>
+        </div>
+
+        <section class="card" id="warningsSection" style="display: none; border-left: 4px solid #dc3545; background: rgba(220, 53, 69, 0.02);">
+            <h3 style="color: #dc3545; display: flex; align-items: center; gap: 0.5rem;">⚠️ Admin Warning Notice</h3>
+            <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">An administrator has issued the following warning(s) to your account. Please review them and comply with our Terms of Service.</p>
+            <div id="warningsList" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+        </section>
 
         <section class="card">
             <div class="section-heading">
@@ -25,10 +46,12 @@
                     <h2>Your Communities</h2>
                     <p>Access your joined communities or discover new ones.</p>
                 </div>
-                <a href="communities.html" class="btn small primary" style="margin-left: 1rem;">Browse All</a>
             </div>
             <div id="joinedCommunitiesGrid" class="community-grid">
                 <!-- Joined communities will be loaded here -->
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem; width: 100%;">
+                <a href="communities.html" class="btn small primary" style="display: inline-block; min-width: 200px; text-align: center;">Browse All Communities</a>
             </div>
         </section>
 
@@ -80,7 +103,10 @@
         </section>
 
         <section class="card">
-            <h3>My Uploaded Items</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                <h3 style="margin: 0;">My Uploaded Items</h3>
+                <a href="ItemForm.html" class="btn small primary" style="display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 50px; padding: 0.4rem 1rem; font-weight: 600; text-decoration: none; font-size: 0.85rem; box-shadow: var(--shadow);"><i>➕</i> List Item</a>
+            </div>
             <div id="dashboardMyItemsList" class="community-grid"></div>
         </section>
 
@@ -94,7 +120,10 @@
         </section>
 
         <section class="card">
-            <h3>My Borrowed Items</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem;">
+                <h3 style="margin: 0;">My Borrowed Items</h3>
+                <a href="issue_Item.html" class="btn small outline" style="display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 50px; padding: 0.4rem 1rem; font-weight: 600; text-decoration: none; font-size: 0.85rem; border: 1.5px solid var(--accent); color: var(--accent);"><i>➕</i> Borrow Item</a>
+            </div>
             <div class="list-header">
                 <span class="col-info">Item Details</span>
                 <span class="col-meta"><span>Status</span> <span>Actions</span></span>

@@ -45,8 +45,8 @@ app.use('/api/communities', communitiesRoutes);
 app.use('/api/notifications', require('./routes/notifications'));
 
 // Static File Routing
-const publicStatic = express.static('public');
-const mobileStatic = express.static('public_mobile');
+const publicStatic = express.static('public', { index: 'welcome.html' });
+const mobileStatic = express.static('public_mobile', { index: 'welcome.html' });
 
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) {
@@ -62,9 +62,9 @@ app.use((req, res, next) => {
 // Root route
 app.get('/', (req, res) => {
   if (req.useragent.isMobile || (req.hostname && req.hostname.startsWith('mobile.'))) {
-    res.sendFile(__dirname + '/public_mobile/index.html');
+    res.sendFile(__dirname + '/public_mobile/welcome.html');
   } else {
-    res.sendFile(__dirname + '/public/index.html');
+    res.sendFile(__dirname + '/public/welcome.html');
   }
 });
 

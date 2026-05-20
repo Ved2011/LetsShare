@@ -6,7 +6,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: 'abc123',
 });
 
 const createTables = async () => {
@@ -27,6 +27,13 @@ const createTables = async () => {
         last_borrow_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         wallet_balance DECIMAL DEFAULT 0,
         upi_id TEXT,
+        city TEXT,
+        state TEXT,
+        locality TEXT,
+        country TEXT,
+        verification_code TEXT,
+        is_verified BOOLEAN DEFAULT false,
+        username TEXT UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -157,6 +164,23 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+
+      CREATE TABLE IF NOT EXISTS user_devices (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        device_id TEXT NOT NULL,
+        last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, device_id)
+      );
+      CREATE TABLE IF NOT EXISTS user_warnings (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        category TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
       ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_code TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires TIMESTAMP;
       ALTER TABLE items ADD COLUMN IF NOT EXISTS image BYTEA;
@@ -190,8 +214,31 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS upi_id TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_type TEXT DEFAULT 'Free';
       ALTER TABLE users ADD COLUMN IF NOT EXISTS borrows_this_month INTEGER DEFAULT 0;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS free_credits INTEGER DEFAULT 5;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_credit_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_borrow_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS username TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS city TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS state TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS locality TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_site_admin BOOLEAN DEFAULT false;
+      
+      -- Explicitly fix communities table
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS city TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS state TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS locality TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS country TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS chat_enabled BOOLEAN DEFAULT false;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS latitude NUMERIC;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS longitude NUMERIC;
+
+      -- Explicitly fix community_members table
+      ALTER TABLE community_members ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
+
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS exclusive_community_id INTEGER REFERENCES communities(id) ON DELETE SET NULL;
     `);
 
     console.log('Tables created successfully');

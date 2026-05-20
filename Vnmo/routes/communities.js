@@ -1,25 +1,27 @@
 const express = require('express');
 const { pool } = require('../db');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, authenticateTokenOptional } = require('../middleware/auth');
 
 const router = express.Router();
 
 // Get all public communities + user's communities
-router.get('/', authenticateToken, async (req, res) => {
+router.get('/', authenticateTokenOptional, async (req, res) => {
   try {
-    const userId = req.user.id;
+    let userId = req.user?.id ? parseInt(req.user.id) : null;
+    if (userId && isNaN(userId)) userId = null;
     const { city, state, locality, country } = req.query;
     
     let query = `
       SELECT c.*, 
-        (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as member_count,
-        (SELECT COUNT(*) FROM items i 
-         JOIN community_members cm ON i.owner_id = cm.user_id 
+        (SELECT COUNT(*) FROM public.community_members WHERE community_id = c.id) as member_count,
+        (SELECT COUNT(*) FROM public.items i 
+         JOIN public.community_members cm ON i.owner_id = cm.user_id 
          WHERE cm.community_id = c.id AND (i.exclusive_community_id IS NULL OR i.exclusive_community_id = c.id)) as item_count,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1) as is_member,
-        EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
-      FROM communities c
-      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM community_members WHERE community_id = c.id AND user_id = $1))
+        EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1) as is_member,
+        EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1 AND is_admin = true) as is_current_user_admin
+      FROM public.communities c
+      WHERE (c.is_private = false OR c.admin_id = $1 OR EXISTS(SELECT 1 FROM public.community_members WHERE community_id = c.id AND user_id = $1))
+      AND ($1::int IS NULL OR c.city = (SELECT city FROM users WHERE id = $1))
     `;
     const params = [userId];
 
@@ -42,12 +44,13 @@ router.get('/', authenticateToken, async (req, res) => {
 
     query += ` ORDER BY c.created_at DESC`;
     
+    console.log('Fetching communities with:', params);
     const result = await pool.query(query, params);
     
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching communities:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error', details: err.message });
   }
 });
 
@@ -111,34 +114,23 @@ router.get('/:id', authenticateToken, async (req, res) => {
 
 // Create a community
 router.post('/', authenticateToken, async (req, res) => {
-    const { name, address, description, max_limit, is_private, city, state, locality } = req.body;
-    const userId = req.user.id;
+    const { name, address, description, max_limit, is_private, city, state, locality, country } = req.body;
+    const userId = parseInt(req.user.id);
+    if (isNaN(userId)) return res.status(401).json({ error: 'Invalid user ID in token' });
 
     if (!name) return res.status(400).json({ error: 'Community name is required' });
 
     try {
+      const colCheck = await pool.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'communities'");
+      console.log('Server-side Communities columns:', colCheck.rows.map(r => r.column_name));
       await pool.query('BEGIN');
       
-      // Check wallet balance
-      const userResult = await pool.query('SELECT wallet_balance FROM users WHERE id = $1', [userId]);
-      const walletBalance = Number(userResult.rows[0].wallet_balance);
-      const creationCost = 200;
-
-      if (walletBalance < creationCost) {
-        await pool.query('ROLLBACK');
-        return res.status(400).json({ error: `Insufficient balance. Creating a community costs Rs. ${creationCost}.` });
-      }
-
-      // Deduct cost and log transaction
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [creationCost, userId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [userId, creationCost, 'debit', 'platform_fee', `Community creation fee for ${name}`]
-      );
+      // Community creation is free in Early Bird phase.
+      const creationCost = 0;
 
       const communityResult = await pool.query(
         'INSERT INTO communities (name, address, description, max_limit, is_private, admin_id, city, state, locality, country) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
-        [name, address || '', description || '', max_limit || 100, is_private || false, userId, city || null, state || null, locality || null, country || 'India']
+        [name, address || '', description || '', parseInt(max_limit) || 100, is_private || false, userId, city || null, state || null, locality || null, country || 'India']
       );
     
     const newCommunity = communityResult.rows[0];
@@ -154,7 +146,7 @@ router.post('/', authenticateToken, async (req, res) => {
   } catch (err) {
     await pool.query('ROLLBACK');
     console.error('Error creating community:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error', details: err.message, stack: err.stack });
   }
 });
 
@@ -172,7 +164,14 @@ router.post('/:id/join', authenticateToken, async (req, res) => {
 
     const memberCountResult = await pool.query('SELECT COUNT(*) FROM community_members WHERE community_id = $1', [communityId]);
     const memberCount = parseInt(memberCountResult.rows[0].count);
-    if (memberCount >= community.max_limit) return res.status(400).json({ error: 'Community has reached its maximum limit.' });
+    
+    // Check admin status to bypass limit
+    const userResult = await pool.query('SELECT is_site_admin FROM users WHERE id = $1', [userId]);
+    const isSiteAdmin = userResult.rows[0]?.is_site_admin || false;
+
+    if (!isSiteAdmin && memberCount >= community.max_limit) {
+      return res.status(400).json({ error: 'Community has reached its maximum limit.' });
+    }
 
     await pool.query(
       'INSERT INTO community_members (community_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
@@ -295,12 +294,7 @@ router.put('/:id/chat', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const userResult = await pool.query('SELECT plan_type FROM users WHERE id = $1', [userId]);
-    if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    
-    if (userResult.rows[0].plan_type !== 'Premium') {
-      return res.status(403).json({ error: 'Only admins with a Premium plan can enable or disable chat.' });
-    }
+    // Plan type check removed for Early Bird phase.
 
     // Check if user is an admin in this community
     const adminCheck = await pool.query('SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2 AND is_admin = true', [communityId, userId]);

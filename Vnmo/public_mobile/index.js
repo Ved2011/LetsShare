@@ -141,7 +141,6 @@ function displayItems(items) {
         <div class="card-info">
           <h4>${item.name}</h4>
           <p style="margin-bottom: 0.25rem; opacity: 0.7;">Owner: ${item.owner_name || 'Anonymous'}</p>
-          <p style="font-weight: 700; color: var(--accent); margin: 0;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
         </div>
       </div>
       <div class="item-meta">

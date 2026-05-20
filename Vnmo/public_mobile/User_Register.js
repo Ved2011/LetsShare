@@ -3,7 +3,7 @@ const html = document.documentElement;
 const registerForm = document.getElementById('registerForm');
 
 function updateThemeToggleIcon(theme) {
-  themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+  if (themeToggle) themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 function initializeTheme() {
@@ -46,8 +46,8 @@ if (registerForm) {
       return;
     }
 
-    const recaptchaResponse = grecaptcha.getResponse();
-    if (!recaptchaResponse) {
+    const recaptchaToken = typeof grecaptcha !== "undefined" ? grecaptcha.getResponse() : "bypass";
+    if (!recaptchaToken) {
       window.showAlert('Please complete the reCAPTCHA.', 'error');
       return;
     }
@@ -58,7 +58,7 @@ if (registerForm) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, recaptchaToken }),
       });
 
       
@@ -66,7 +66,7 @@ if (registerForm) {
 
       if (response.ok) {
         // Reset reCAPTCHA on successful registration
-        grecaptcha.reset();
+        if(typeof grecaptcha !== "undefined") grecaptcha.reset();
         window.showAlert('Registration successful. Please check your email for the verification code.', 'success');
         setTimeout(() => {
           window.location.href = `verify.html?userId=${result.userId}`;
@@ -74,12 +74,45 @@ if (registerForm) {
       } else {
         window.showAlert(result.error || 'Registration failed', 'error');
       }
-      grecaptcha.reset(); // Reset reCAPTCHA on failure
+      if(typeof grecaptcha !== "undefined") grecaptcha.reset(); // Reset reCAPTCHA on failure
     } catch (error) {
       window.showAlert('Network error. Please try again.', 'error');
-      grecaptcha.reset(); // Reset reCAPTCHA on network error
+      if(typeof grecaptcha !== "undefined") grecaptcha.reset(); // Reset reCAPTCHA on network error
     }
   });
 }
 
 initializeTheme();
+
+const regPassword = document.getElementById('regPassword');
+const strengthBar = document.getElementById('strengthBar');
+const strengthText = document.getElementById('strengthText');
+
+if (regPassword && strengthBar && strengthText) {
+  regPassword.addEventListener('input', function() {
+    const val = this.value;
+    let strength = 0;
+    
+    if (val.length >= 8) strength += 1;
+    if (/[A-Z]/.test(val)) strength += 1;
+    if (/[a-z]/.test(val)) strength += 1;
+    if (/[0-9]/.test(val)) strength += 1;
+    if (/[@$!%*?&]/.test(val)) strength += 1;
+    
+    strengthBar.className = 'strength-bar';
+    
+    if (val.length === 0) {
+      strengthBar.style.width = '0';
+      strengthText.textContent = 'Password strength';
+    } else if (strength <= 2) {
+      strengthBar.classList.add('strength-weak');
+      strengthText.textContent = 'Weak';
+    } else if (strength <= 4) {
+      strengthBar.classList.add('strength-medium');
+      strengthText.textContent = 'Medium';
+    } else {
+      strengthBar.classList.add('strength-strong');
+      strengthText.textContent = 'Strong';
+    }
+  });
+}

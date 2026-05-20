@@ -200,6 +200,44 @@ function displayComplaints(complaints) {
   });
 }
 
+async function loadWarnings() {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch('/api/users/warnings', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const warnings = await response.json();
+      displayWarnings(warnings);
+    }
+  } catch (error) {
+    console.error('Error loading warnings:', error);
+  }
+}
+
+function displayWarnings(warnings) {
+  const warningsSection = document.getElementById('warningsSection');
+  const warningsList = document.getElementById('warningsList');
+  if (!warningsSection || !warningsList) return;
+
+  if (warnings.length === 0) {
+    warningsSection.style.display = 'none';
+    return;
+  }
+
+  warningsSection.style.display = 'block';
+  warningsList.innerHTML = warnings.map(w => `
+    <div class="item-card" style="background: #fff; border: 1px solid rgba(220, 53, 69, 0.2); padding: 1rem; border-radius: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span class="badge" style="background: rgba(220,53,69,0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.5rem; font-weight: bold; border-radius: 4px;">${w.category}</span>
+        <span style="font-size: 0.8rem; color: var(--muted);">${new Date(w.created_at).toLocaleDateString()}</span>
+      </div>
+      <p style="font-size: 0.9rem; font-style: italic; color: var(--text); margin: 0.25rem 0;">"${w.message}"</p>
+      <small style="color: var(--muted); font-size: 0.75rem;">Issued by: ${w.admin_name || 'System'}</small>
+    </div>
+  `).join('');
+}
+
 function initDashboard() {
   loadCounts();
   loadJoinedCommunities();
@@ -208,6 +246,7 @@ function initDashboard() {
   loadRequests();
   loadOverdueItems();
   loadComplaints();
+  loadWarnings();
 }
 
 async function loadDashboard() {
@@ -275,6 +314,7 @@ async function loadDashboard() {
     loadJoinedCommunities();
     loadOverdueItems();
     loadComplaints();
+    loadWarnings();
   } catch (error) {
     console.error('Error loading dashboard:', error);
   }
@@ -342,10 +382,8 @@ function displayMyItems(items) {
   myItemsContainer.innerHTML = recentItems.map(item => `
     <div class="community-card" onclick="window.location.href='item_View.html?id=${item.id}'" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem;">
       <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 100%; height: 160px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
-      <img src="${item.imageBase64 || '/assets/untitled.png'}" alt="${item.name}" style="width: 100%; height: 160px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
       <div style="flex: 1;">
         <h4 style="margin: 0; font-size: 1rem; line-height: 1.4;">${item.name}</h4>
-        <p style="color: var(--accent); font-weight: 700; margin-top: 0.25rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
       </div>
       <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
         <button class="btn small outline" style="flex: 1; padding: 0.4rem;" onclick="event.stopPropagation(); editItem(${item.id})">Edit</button>

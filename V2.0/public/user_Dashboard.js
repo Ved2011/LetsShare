@@ -1,7 +1,6 @@
 const html = document.documentElement;
 let themeToggle;
 let dashboardItems;
-let dashboardUsers;
 let dashboardBorrows;
 let dashboardMyItems;
 let recentItemsContainer;
@@ -200,6 +199,44 @@ function displayComplaints(complaints) {
   });
 }
 
+async function loadWarnings() {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch('/api/users/warnings', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const warnings = await response.json();
+      displayWarnings(warnings);
+    }
+  } catch (error) {
+    console.error('Error loading warnings:', error);
+  }
+}
+
+function displayWarnings(warnings) {
+  const warningsSection = document.getElementById('warningsSection');
+  const warningsList = document.getElementById('warningsList');
+  if (!warningsSection || !warningsList) return;
+
+  if (warnings.length === 0) {
+    warningsSection.style.display = 'none';
+    return;
+  }
+
+  warningsSection.style.display = 'block';
+  warningsList.innerHTML = warnings.map(w => `
+    <div class="item-card" style="background: #fff; border: 1px solid rgba(220, 53, 69, 0.2); padding: 1rem; border-radius: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span class="badge" style="background: rgba(220,53,69,0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.5rem; font-weight: bold; border-radius: 4px;">${w.category}</span>
+        <span style="font-size: 0.8rem; color: var(--muted);">${new Date(w.created_at).toLocaleDateString()}</span>
+      </div>
+      <p style="font-size: 0.9rem; font-style: italic; color: var(--text); margin: 0.25rem 0;">"${w.message}"</p>
+      <small style="color: var(--muted); font-size: 0.75rem;">Issued by: ${w.admin_name || 'System'}</small>
+    </div>
+  `).join('');
+}
+
 function initDashboard() {
   loadCounts();
   loadJoinedCommunities();
@@ -208,6 +245,7 @@ function initDashboard() {
   loadRequests();
   loadOverdueItems();
   loadComplaints();
+  loadWarnings();
 }
 
 async function loadDashboard() {
@@ -224,7 +262,6 @@ async function loadDashboard() {
     if (statsResponse.ok) {
       const stats = await statsResponse.json();
       dashboardItems.textContent = stats.total_items || 0;
-      dashboardUsers.textContent = stats.total_users || 0;
     }
 
     const itemsResponse = await fetch('/api/items');
@@ -275,6 +312,7 @@ async function loadDashboard() {
     loadJoinedCommunities();
     loadOverdueItems();
     loadComplaints();
+    loadWarnings();
   } catch (error) {
     console.error('Error loading dashboard:', error);
   }
@@ -682,7 +720,7 @@ async function declineRequest(requestId) {
 document.addEventListener('DOMContentLoaded', () => {
   themeToggle = document.getElementById('themeToggle');
   dashboardItems = document.getElementById('dashboardItems');
-  dashboardUsers = document.getElementById('dashboardUsers');
+
   dashboardBorrows = document.getElementById('dashboardBorrows');
   dashboardMyItems = document.getElementById('dashboardMyItems');
   joinedCommunitiesContainer = document.getElementById('joinedCommunitiesGrid');

@@ -88,7 +88,6 @@ function displayItems(items) {
             <img src="${item.imageBase64 || 'assets/untitled.png'}" style="width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 0.75rem;">
             <h4 style="margin: 0; font-size: 1rem;">${item.name}</h4>
             <p style="color: var(--muted); font-size: 0.8rem; margin: 0.25rem 0;">By ${item.owner_name}</p>
-            <p style="color: var(--accent); font-weight: bold; margin: 0.5rem 0 0;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
         </div>
     `).join('');
 }

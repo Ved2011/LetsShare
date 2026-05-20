@@ -42,13 +42,51 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Handle resend (simplified)
+    // Handle resend with timer
     const resendBtn = document.getElementById('resendBtn');
+    let cooldown = 60;
+    let timerInterval;
+
+    function startResendTimer() {
+        resendBtn.style.pointerEvents = 'none';
+        resendBtn.style.opacity = '0.5';
+        cooldown = 60;
+        
+        timerInterval = setInterval(() => {
+            cooldown--;
+            resendBtn.innerText = `Resend in ${cooldown}s`;
+            
+            if (cooldown <= 0) {
+                clearInterval(timerInterval);
+                resendBtn.innerText = 'Resend Email';
+                resendBtn.style.pointerEvents = 'auto';
+                resendBtn.style.opacity = '1';
+            }
+        }, 1000);
+    }
+
     if (resendBtn) {
-        resendBtn.addEventListener('click', (e) => {
+        resendBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            window.showAlert('If you still have trouble, please contact support or try re-registering.');
-            // Implementation of actual resend would go here
+            
+            try {
+                const response = await fetch('/api/auth/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    window.showAlert(data.message, 'success');
+                    startResendTimer();
+                } else {
+                    window.showAlert(data.error || 'Failed to resend code', 'error');
+                }
+            } catch (err) {
+                window.showAlert('Network error. Please try again.', 'error');
+            }
         });
     }
 });

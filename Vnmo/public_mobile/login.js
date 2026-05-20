@@ -2,6 +2,15 @@
 const html = document.documentElement;
 const loginForm = document.getElementById('loginForm');
 
+function getDeviceId() {
+  let deviceId = localStorage.getItem('deviceId');
+  if (!deviceId) {
+    deviceId = 'dev_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    localStorage.setItem('deviceId', deviceId);
+  }
+  return deviceId;
+}
+
 function initializeTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
   html.setAttribute('data-theme', savedTheme);
@@ -82,7 +91,7 @@ if (validateLoginForm()) {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ identifier, password, recaptchaToken: recaptchaResponse }),
+          body: JSON.stringify({ identifier, password, recaptchaToken: recaptchaResponse, deviceId: getDeviceId() }),
         });
 
         const data = await response.json();
@@ -112,11 +121,11 @@ if (validateLoginForm()) {
             return;
           }
           window.showAlert(data.error || 'Login failed', 'error');
-          generateCaptcha();
+          if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
         }
       } catch (error) {
         window.showAlert('Network error. Please try again.', 'error');
-        generateCaptcha();
+        if (typeof grecaptcha !== 'undefined') grecaptcha.reset();
       }
     }
   });
@@ -134,7 +143,7 @@ if (otpForm) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId: pendingUserId, otpCode }),
+        body: JSON.stringify({ userId: pendingUserId, otpCode, deviceId: getDeviceId() }),
       });
 
       const data = await response.json();

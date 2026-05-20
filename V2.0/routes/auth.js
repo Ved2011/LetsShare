@@ -2,20 +2,34 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
+const { verifyRecaptcha } = require('../utils/captcha');
+const https = require('https');
 
 const router = express.Router();
 
 // Register
 router.post('/register', async (req, res) => {
-  const { name, email, password, phone, dob, address, city, state, locality, country } = req.body;
+  const { name, email, password, phone, dob, address, city, state, locality, country, recaptchaToken } = req.body;
+
+  // Verify reCAPTCHA
+  const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+  if (!recaptchaResult.success) {
+    return res.status(400).json({ error: 'reCAPTCHA verification failed' });
+  }
 
   try {
+    // Server-side password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ error: 'Password does not meet strength requirements.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     
     const result = await pool.query(
-      'INSERT INTO users (name, email, password, phone, dob, address, city, state, locality, country, verification_code, is_verified) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id',
-      [name, email, hashedPassword, phone, dob || null, address || null, city || null, state || null, locality || null, country || 'India', verificationCode, false]
+      'INSERT INTO users (name, email, password, phone, dob, address, city, state, locality, country, verification_code, is_verified, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id',
+      [name, email, hashedPassword, phone, dob || null, address || null, city || null, state || null, locality || null, country || 'India', verificationCode, false, name]
     );
 
     // Send verification email
@@ -43,7 +57,12 @@ router.post('/register', async (req, res) => {
   } catch (err) {
     console.error('Register error:', err);
     if (err.code === '23505') {
-      return res.status(400).json({ error: 'Email already exists' });
+      if (err.detail.includes('email')) {
+        return res.status(400).json({ error: 'Email already exists' });
+      } else if (err.detail.includes('username')) {
+        return res.status(400).json({ error: 'Username already exists' });
+      }
+      return res.status(400).json({ error: 'User already exists' });
     }
     res.status(500).json({ error: 'Server error' });
   }
@@ -72,7 +91,13 @@ router.post('/verify-email', async (req, res) => {
 
 // Login
 router.post('/login', async (req, res) => {
-  const { identifier, password } = req.body;
+  const { identifier, password, recaptchaToken } = req.body;
+
+  // Verify reCAPTCHA
+  const recaptchaResult = await verifyRecaptcha(recaptchaToken);
+  if (!recaptchaResult.success) {
+    return res.status(400).json({ error: 'reCAPTCHA verification failed' });
+  }
 
   try {
     const result = await pool.query(
@@ -98,8 +123,25 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    if (user.two_factor_enabled) {
-      // Generate OTP
+    // Check if it's a first-ever login (no last_login recorded)
+    const isFirstLogin = !user.last_login;
+
+    // Check device trust
+    const { deviceId } = req.body;
+    let isTrustedDevice = false;
+    if (deviceId) {
+      const deviceResult = await pool.query(
+        'SELECT 1 FROM user_devices WHERE user_id = $1 AND device_id = $2',
+        [user.id, deviceId]
+      );
+      isTrustedDevice = deviceResult.rows.length > 0;
+    }
+
+    // Check if user has 2FA enabled and hasn't logged in for 7+ days
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const isLongAbsenceWith2FA = user.two_factor_enabled && user.last_login && new Date(user.last_login) < sevenDaysAgo;
+
+    if (isFirstLogin || !isTrustedDevice || isLongAbsenceWith2FA) {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
@@ -108,7 +150,6 @@ router.post('/login', async (req, res) => {
         [otp, expires, user.id]
       );
 
-      // Send OTP via email
       try {
         const { sendEmail } = require('../utils/email');
         await sendEmail(
@@ -133,8 +174,17 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    // No OTP required — update last_login
+    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+
+    // Admins get Premium by default in V2.0
+    if (user.is_site_admin && user.plan_type !== 'Premium') {
+      await pool.query("UPDATE users SET plan_type = 'Premium' WHERE id = $1", [user.id]);
+      user.plan_type = 'Premium';
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin, plan_type: user.plan_type } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -160,11 +210,26 @@ router.post('/verify-2fa', async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
-    // Clear OTP
-    await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL WHERE id = $1', [userId]);
+    // Clear OTP and update last_login
+    await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL, last_login = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    // Trust the device so future logins from it skip OTP
+    const { deviceId } = req.body;
+    if (deviceId) {
+      await pool.query(
+        'INSERT INTO user_devices (user_id, device_id, last_used) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (user_id, device_id) DO UPDATE SET last_used = CURRENT_TIMESTAMP',
+        [userId, deviceId]
+      );
+    }
+
+    // Admins get Premium by default in V2.0
+    if (user.is_site_admin && user.plan_type !== 'Premium') {
+      await pool.query("UPDATE users SET plan_type = 'Premium' WHERE id = $1", [user.id]);
+      user.plan_type = 'Premium';
+    }
+
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin, plan_type: user.plan_type } });
   } catch (err) {
     console.error('2FA verification error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -180,7 +245,7 @@ router.get('/me', async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const result = await pool.query('SELECT id, name, email, phone, dob, address FROM users WHERE id = $1', [decoded.id]);
+    const result = await pool.query('SELECT id, name, email, phone, dob, address, is_site_admin FROM users WHERE id = $1', [decoded.id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -188,6 +253,40 @@ router.get('/me', async (req, res) => {
   } catch (err) {
     console.error('Me error:', err);
     res.status(403).json({ error: 'Invalid token' });
+  }
+});
+
+// Resend Verification Code
+router.post('/resend-verification', async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const result = await pool.query('SELECT email, is_verified FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    
+    const user = result.rows[0];
+    if (user.is_verified) return res.status(400).json({ error: 'User is already verified' });
+
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    await pool.query('UPDATE users SET verification_code = $1 WHERE id = $2', [verificationCode, userId]);
+
+    // Send email
+    const { sendEmail } = require('../utils/email');
+    await sendEmail(
+      user.email,
+      'New Verification Code - LetsShare',
+      `Your new verification code is: ${verificationCode}`,
+      `<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2>New Verification Code</h2>
+        <p>You requested a new verification code for your LetsShare account:</p>
+        <h1 style="color: #4f7cde; letter-spacing: 5px;">${verificationCode}</h1>
+        <p>If you did not request this, you can safely ignore this email.</p>
+      </div>`
+    );
+
+    res.json({ message: 'A new verification code has been sent to your email.' });
+  } catch (err) {
+    console.error('Resend error:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 

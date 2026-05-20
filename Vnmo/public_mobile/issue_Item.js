@@ -45,8 +45,11 @@ function displayItems(items) {
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   const token = localStorage.getItem('token');
 
-  // Filter for available items and optionally hide own items
-  const availableItems = items.filter(item => item.status === 'available');
+  // Filter for available items and hide own items
+  const availableItems = items.filter(item => 
+    item.status === 'available' && 
+    (!user || Number(item.owner_id) !== Number(user.id))
+  );
 
   if (availableItems.length === 0) {
     itemsList.innerHTML = '<p>No available items to borrow at the moment.</p>';
@@ -71,7 +74,7 @@ function displayItems(items) {
       <div class="card-info">
         <h4>${item.name}</h4>
         <p>${item.description || 'No description'}</p>
-        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
+
       </div>
       <div class="item-meta">
         <span class="status ${item.status}">${item.status}</span>

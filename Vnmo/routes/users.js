@@ -148,7 +148,11 @@ router.get('/global-search', authenticateToken, async (req, res) => {
        WHERE name ILIKE $1 OR address ILIKE $1 OR city ILIKE $1 OR state ILIKE $1 OR locality ILIKE $1 
        LIMIT 10)
       UNION ALL
-      (SELECT id, name, 'Item' as category, 'Item' as subtext FROM items WHERE name ILIKE $1 LIMIT 10)
+      (SELECT i.id, i.name, 'Item' as category, COALESCE(d.category, 'Item') as subtext 
+       FROM items i 
+       LEFT JOIN item_details d ON i.id = d.item_id 
+       WHERE i.name ILIKE $1 OR d.category ILIKE $1 OR d.brand ILIKE $1 
+       LIMIT 10)
       UNION ALL
       (SELECT id, name, 'User' as category, email as subtext FROM users WHERE (name ILIKE $1 OR email ILIKE $1) AND id <> $2 LIMIT 10)
       ORDER BY category, name
@@ -210,6 +214,25 @@ router.get('/me', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Get profile error:', err);
     res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Get user's own warnings
+router.get('/warnings', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(
+      `SELECT w.*, u.name as admin_name
+       FROM user_warnings w
+       LEFT JOIN users u ON w.admin_id = u.id
+       WHERE w.user_id = $1
+       ORDER BY w.created_at DESC`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching user warnings:', err);
+    res.status(500).json({ error: 'Server error fetching warnings' });
   }
 });
 
@@ -280,35 +303,10 @@ router.post('/upgrade-plan', authenticateToken, async (req, res) => {
     return res.status(400).json({ error: 'Invalid plan type' });
   }
 
-  const cost = planCosts[planType];
-
   try {
+    // Plan upgrades are free in Early Bird phase.
+    const cost = 0;
     await pool.query('BEGIN');
-
-    // Get current user data
-    const userResult = await pool.query('SELECT wallet_balance, plan_type FROM users WHERE id = $1', [userId]);
-    const user = userResult.rows[0];
-
-    if (user.plan_type === planType && planType !== 'Free') {
-      await pool.query('ROLLBACK');
-      return res.status(400).json({ error: `You are already on the ${planType} plan.` });
-    }
-
-    if (cost > 0) {
-      if (Number(user.wallet_balance) < cost) {
-        await pool.query('ROLLBACK');
-        return res.status(400).json({ error: `Insufficient balance. ${planType} plan costs Rs. ${cost}.` });
-      }
-
-      // Deduct balance
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [cost, userId]);
-      
-      // Log transaction
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [userId, cost, 'debit', 'subscription', `Upgrade to ${planType} plan`]
-      );
-    }
 
     // Update user plan and set expiry to 30 days from now
     const expiryDate = new Date();

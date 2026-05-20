@@ -19,7 +19,11 @@ router.post('/', authenticateToken, async (req, res) => {
     if (itemOwnerResult.rows.length === 0) return res.status(404).json({ error: 'Item not found' });
     const ownerId = itemOwnerResult.rows[0].owner_id;
 
-    if (ownerId !== borrowerId) {
+    // Get borrower details
+    const borrowerResult = await pool.query('SELECT plan_type, free_credits, last_credit_added, is_site_admin FROM users WHERE id = $1', [borrowerId]);
+    let borrower = borrowerResult.rows[0];
+
+    if (ownerId !== borrowerId && !borrower.is_site_admin) {
       const shareCommunityResult = await pool.query(`
         SELECT 1 FROM community_members cm1 
         JOIN community_members cm2 ON cm1.community_id = cm2.community_id 
@@ -39,26 +43,24 @@ router.post('/', authenticateToken, async (req, res) => {
     if (duration <= 0) {
       return res.status(400).json({ error: 'Return date must be in the future' });
     }
-
-    // Get borrower details to check plan limits
-    const borrowerResult = await pool.query('SELECT plan_type, borrows_this_month, wallet_balance FROM users WHERE id = $1', [borrowerId]);
-    const borrower = borrowerResult.rows[0];
     
-    let limit = 5;
-    if (borrower.plan_type === 'Pro') limit = 15;
-    if (borrower.plan_type === 'Premium') limit = 30;
+    // Check if we need to add new month's credits (Skip for admin)
+    if (!borrower.is_site_admin) {
+        const nowCheck = new Date();
+        const lastAdded = borrower.last_credit_added ? new Date(borrower.last_credit_added) : nowCheck;
+        let monthsPassed = (nowCheck.getFullYear() - lastAdded.getFullYear()) * 12 + (nowCheck.getMonth() - lastAdded.getMonth());
+        if (monthsPassed > 0) {
+          borrower.free_credits += 5 * monthsPassed;
+          await pool.query('UPDATE users SET free_credits = $1, last_credit_added = CURRENT_TIMESTAMP WHERE id = $2', [borrower.free_credits, borrowerId]);
+        }
 
-    const currentBorrows = borrower.borrows_this_month + 1;
-    let message = 'Borrow request sent successfully';
-    let extraFee = 0;
-
-    if (currentBorrows > limit) {
-      extraFee = 5;
-      if (Number(borrower.wallet_balance) < extraFee) {
-        return res.status(400).json({ error: `Insufficient balance. Extra borrows cost Rs. 5. Your balance: Rs. ${borrower.wallet_balance}` });
-      }
-      message = `Borrow request sent! Rs. 5 has been deducted for exceeding your ${borrower.plan_type} limit.`;
+        // Enforce Early Bird free credits
+        if (borrower.free_credits <= 0) {
+          return res.status(403).json({ error: 'You have used all your free credits for this month. Please wait for the next month for more credits!' });
+        }
     }
+
+    let message = 'Borrow request sent successfully';
 
     // Generate borrow_id
     const borrowId = 'BR-' + Date.now();
@@ -66,13 +68,9 @@ router.post('/', authenticateToken, async (req, res) => {
     // Start transaction
     await pool.query('BEGIN');
     
-    // Deduct fee if over limit
-    if (extraFee > 0) {
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [extraFee, borrowerId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [borrowerId, extraFee, 'debit', 'borrow_fee', `Extra borrow fee for item ${itemId}`]
-      );
+    // Deduct 1 credit (Skip if admin)
+    if (!borrower.is_site_admin) {
+        await pool.query('UPDATE users SET free_credits = free_credits - 1 WHERE id = $1', [borrowerId]);
     }
 
     const result = await pool.query(
@@ -80,8 +78,10 @@ router.post('/', authenticateToken, async (req, res) => {
       [borrowId, itemId, borrowerId, 'requested', dueDate, duration]
     );
 
-    // Increment monthly borrows
-    await pool.query('UPDATE users SET borrows_this_month = borrows_this_month + 1 WHERE id = $1', [borrowerId]);
+    // Increment monthly borrows (Skip if admin)
+    if (!borrower.is_site_admin) {
+        await pool.query('UPDATE users SET borrows_this_month = borrows_this_month + 1 WHERE id = $1', [borrowerId]);
+    }
     
     await pool.query('COMMIT');
 
@@ -158,47 +158,9 @@ router.put('/:id/approve', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Request has already been processed' });
     }
 
-    // Get item price
-    const itemInfo = await pool.query('SELECT price_per_day, name FROM items WHERE id = $1', [itemId]);
-    const pricePerDay = Number(itemInfo.rows[0].price_per_day || 0);
-    const itemName = itemInfo.rows[0].name;
-    const totalPrice = pricePerDay * Number(duration || 1);
-
-    // Get borrower balance
-    const borrowerInfo = await pool.query('SELECT wallet_balance FROM users WHERE id = $1', [borrowerId]);
-    const borrowerBalance = Number(borrowerInfo.rows[0].wallet_balance || 0);
-
-    if (totalPrice > 0 && borrowerBalance < totalPrice) {
-      return res.status(400).json({ error: `Borrower has insufficient balance (Rs. ${borrowerBalance}) for this rental (Total: Rs. ${totalPrice}).` });
-    }
-
-    // Start transaction for payment
+    // Rental is free for all members in Early Bird phase.
+    const totalPrice = 0;
     await pool.query('BEGIN');
-
-    if (totalPrice > 0) {
-      const platformFee = totalPrice * 0.10;
-      const ownerEarning = totalPrice - platformFee;
-
-      // Deduct from borrower
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [totalPrice, borrowerId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [borrowerId, totalPrice, 'debit', 'borrow_fee', `Rental payment for ${itemName}`]
-      );
-
-      // Add to owner
-      await pool.query('UPDATE users SET wallet_balance = wallet_balance + $1 WHERE id = $2', [ownerEarning, userId]);
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [userId, ownerEarning, 'credit', 'earning', `Earning from ${itemName} rental`]
-      );
-
-      // Log platform fee
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [null, platformFee, 'credit', 'platform_fee', `10% commission from ${itemName} rental`]
-      );
-    }
 
     // Update borrow with details and status
     await pool.query(

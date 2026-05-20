@@ -9,7 +9,7 @@
     --warning: #f59e0b;
     --danger: #ef4444;
     --sidebar-width: 280px;
-    --header-height: 70px;
+    --header-height: 80px;
     --mesh-gradient: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
                      radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
                      radial-gradient(at 100% 100%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
@@ -49,7 +49,7 @@ html[data-theme="dark"] {
 html, body {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
     margin: 0;
     padding: 0;
     font-family: 'Outfit', sans-serif;
@@ -64,7 +64,7 @@ html, body {
     min-height: 100vh;
     width: 100%;
     max-width: 100vw;
-    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 .main-wrapper {
@@ -76,6 +76,7 @@ html, body {
     position: relative;
     background-color: var(--bg-main);
     transition: all 0.3s ease;
+    overflow-x: clip;
 }
 
 .page-wrapper {
@@ -97,18 +98,42 @@ html, body {
     position: sticky;
     top: 0;
     height: 100vh;
-    z-index: 1000;
+    z-index: 10000;
     overflow-y: auto;
+    overflow-x: hidden;
     flex-shrink: 0;
     transform-origin: left;
 }
 
 .sidebar.collapsed {
-    width: 0;
-    transform: scaleX(0);
-    opacity: 0;
-    border-right: none;
-    pointer-events: none;
+    width: 70px;
+    transform: none;
+    opacity: 1;
+    border-right: 1px solid var(--border);
+    pointer-events: auto;
+}
+
+.sidebar.collapsed .nav-text {
+    display: none !important;
+}
+
+.sidebar.collapsed .sidebar-header img {
+    height: 25px !important;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 0.75rem 0;
+    gap: 0;
+}
+
+.sidebar.collapsed .nav-item i {
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.sidebar.collapsed .nav-item .header-avatar {
+    margin-right: 0 !important;
 }
 
 @media (max-width: 1024px) {
@@ -116,10 +141,27 @@ html, body {
         position: fixed;
         left: 0;
         transform: translateX(0);
+        width: var(--sidebar-width);
     }
     .sidebar.collapsed {
-        transform: translateX(-100%);
-        width: var(--sidebar-width); /* Maintain width for mobile animation */
+        transform: translateX(-100%) !important;
+        width: var(--sidebar-width) !important;
+        opacity: 1 !important;
+        pointer-events: none !important;
+    }
+    .sidebar.collapsed .nav-text {
+        display: inline !important;
+    }
+    .sidebar.collapsed .sidebar-header img {
+        height: 45px !important;
+    }
+    .sidebar.collapsed .nav-item {
+        justify-content: flex-start !important;
+        padding: 0.75rem 1rem !important;
+        gap: 1rem !important;
+    }
+    .sidebar.collapsed .nav-item .header-avatar {
+        margin-right: 0.5rem !important;
     }
 }
 
@@ -131,7 +173,7 @@ html, body {
     height: 100%;
     background: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(4px);
-    z-index: 950;
+    z-index: 9999;
     display: none;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -140,6 +182,12 @@ html, body {
 .sidebar-overlay.active {
     display: block;
     opacity: 1;
+}
+
+@media (min-width: 1025px) {
+    .sidebar-overlay, .sidebar-overlay.active {
+        display: none !important;
+    }
 }
 
 .sidebar-header {
@@ -258,7 +306,7 @@ html, body {
 
 .logo {
     height: auto;
-    max-height: 65px;
+    max-height: 90px;
     width: auto;
     max-width: 400px;
     object-fit: contain;
@@ -361,7 +409,7 @@ body {
 }
 
 .header-logo {
-    height: 40px;
+    height: 50px;
     width: auto;
     border-radius: 8px;
     object-fit: contain;
@@ -1322,7 +1370,7 @@ html[data-theme="dark"] .item-card {
     margin: 0 auto;
     background: var(--card-bg);
     border-radius: 28px;
-    padding: 3.5rem;
+    padding: 2rem;
     border: 1px solid var(--border);
     box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.18);
     backdrop-filter: blur(12px);
@@ -1337,9 +1385,33 @@ html[data-theme="dark"] .item-card {
 
 .form-group {
     display: grid;
-    gap: 0.45rem;
-    margin-bottom: 1rem;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
 }
+
+/* Password Strength Indicator */
+.password-strength {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 0.25rem;
+    overflow: hidden;
+}
+.strength-bar {
+    height: 100%;
+    width: 0;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+.strength-text {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+    display: block;
+}
+.strength-weak { background: #ef4444; width: 33%; }
+.strength-medium { background: #f59e0b; width: 66%; }
+.strength-strong { background: #10b981; width: 100%; }
 
 label {
     font-weight: 600;
@@ -1349,7 +1421,7 @@ label {
 
 input {
     width: 100%;
-    padding: 0.85rem 1rem;
+    padding: 0.6rem 0.8rem;
     border-radius: 12px;
     border: 1px solid var(--border);
     background: var(--card-bg);
@@ -1475,7 +1547,7 @@ button[type="clear"]:hover {
 
 select {
     width: 100%;
-    padding: 0.85rem 1rem;
+    padding: 0.6rem 0.8rem;
     border-radius: 12px;
     border: 1px solid var(--border);
     background: var(--card-bg);
@@ -1486,7 +1558,7 @@ select {
 
 textarea {
     width: 100%;
-    padding: 0.85rem 1rem;
+    padding: 0.6rem 0.8rem;
     border-radius: 12px;
     border: 1px solid var(--border);
     background: var(--card-bg);
@@ -1823,7 +1895,7 @@ a, a:hover, a:focus {
         padding: 0.75rem !important;
         font-size: 1.5rem !important;
         background: var(--card-bg) !important;
-        border-color: var(--accent) !important;
+        border: none !important;
         color: var(--accent) !important;
         box-shadow: var(--shadow);
     }
@@ -1954,7 +2026,7 @@ html[data-theme="dark"] .custom-dropdown-menu {
         min-width: auto;
     }
     
-    .logo {
+    .logo, .header-logo {
         max-height: 40px !important;
         max-width: 100px !important;
     }
@@ -1964,7 +2036,10 @@ html[data-theme="dark"] .custom-dropdown-menu {
     .community-grid,
     .items-grid,
     .features-grid,
-    .stats-grid {
+    .stats-grid,
+    .dashboard-grid,
+    .items-square-grid {
+        display: grid !important;
         grid-template-columns: 1fr !important;
         gap: 1rem !important;
     }

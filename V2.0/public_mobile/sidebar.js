@@ -1,27 +1,41 @@
 // sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/';
+    const path = window.location.pathname;
+    const isLandingPage = path.endsWith('welcome.html') || path === '/' || path === '';
+    const isPublicPage = isLandingPage || path.endsWith('login.html') || path.endsWith('User_Register.html');
     const isLoggedIn = !!localStorage.getItem('token');
+
+    // Don't inject sidebar at all on the landing page if not logged in
+    if (isLandingPage && !isLoggedIn) return;
+
+    // Redirect logged-in users away from public pages to dashboard
+    if (isLoggedIn && isPublicPage) {
+        window.location.href = 'user_Dashboard.html';
+        return;
+    }
+
     const user = JSON.parse(localStorage.getItem('user'));
-    
+
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     sidebar.className = 'sidebar';
     sidebar.id = 'sidebar';
-    
+
     // Create Overlay
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
     overlay.id = 'sidebarOverlay';
-    
+
     sidebar.innerHTML = `
-        <div class="sidebar-header">
-            <img src="assets/Logo2.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
-            <span class="nav-text" style="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
+        <div class="sidebar-header" style="justify-content: center; padding: 1rem 0;">
+            <img src="assets/Logo1.jpeg" alt="Logo" style="height: 45px; width: auto; border-radius: 6px;">
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i>🏠</i> <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="notifications.html" class="nav-item ${window.location.pathname.includes('notifications') ? 'active' : ''}">
+                <i>🔔</i> <span class="nav-text">Notifications</span>
             </a>
             <a href="SearchPage.html" class="nav-item ${window.location.pathname.includes('SearchPage') ? 'active' : ''}">
                 <i>🔍</i> <span class="nav-text">Global Search</span>
@@ -39,8 +53,12 @@ function injectSidebar() {
                 <i>🤝</i> <span class="nav-text">Borrow Item</span>
             </a>
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
-                <i>⚠️</i> <span class="nav-text">Complaints</span>
+                <i>⚠️</i> <span class="nav-text">Issue Complaint</span>
             </a>
+            ${user?.is_site_admin ? `
+            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}" style="color: #4f46e5;">
+                <i>🛡️</i> <span class="nav-text">Admin Panel</span>
+            </a>` : ''}
             <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
                 <i>💎</i> <span class="nav-text">Upgrade Plan</span>
             </a>
@@ -57,11 +75,12 @@ function injectSidebar() {
     `;
 
     // Improved Wrapping: Wrap EVERYTHING in the body except scripts and sidebar elements
-    if (!document.getElementById('mainWrapper')) {
-        const mainWrapper = document.createElement('div');
+    let mainWrapper = document.getElementById('mainWrapper');
+    if (!mainWrapper) {
+        mainWrapper = document.createElement('div');
         mainWrapper.className = 'main-wrapper';
         mainWrapper.id = 'mainWrapper';
-        
+
         // Move all current body children into mainWrapper (except scripts and the sidebar/overlay)
         const children = Array.from(document.body.children);
         children.forEach(child => {
@@ -69,26 +88,38 @@ function injectSidebar() {
                 mainWrapper.appendChild(child);
             }
         });
-        
+
         document.body.prepend(mainWrapper);
         document.body.prepend(overlay);
         document.body.prepend(sidebar);
+    }
 
-        // Auto-inject toggle button into header if missing
-        const header = document.querySelector('.header');
-        if (header && !document.getElementById('menuToggle')) {
-            const btn = document.createElement('button');
-            btn.id = 'menuToggle';
-            btn.className = 'menu-toggle';
-            btn.innerHTML = '☰';
-            btn.style.marginRight = '1rem';
-            btn.style.background = 'none';
-            btn.style.border = '1px solid var(--border)';
-            btn.style.padding = '0.5rem';
-            btn.style.borderRadius = '8px';
-            btn.style.cursor = 'pointer';
-            header.prepend(btn);
-        }
+    // Auto-unify Header (Moved outside wrapper check)
+    const header = document.querySelector('.header');
+    if (header) {
+        // Determine Page Title
+        let pageTitle = "LetsShare";
+        const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
+        const existingH2 = header.querySelector('h2');
+        const existingH1 = header.querySelector('h1');
+        if (existingSpan) pageTitle = existingSpan.textContent;
+        else if (existingH2) pageTitle = existingH2.textContent;
+        else if (existingH1) pageTitle = existingH1.textContent;
+        else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
+
+        header.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                <button class="menu-toggle" id="menuToggle" style="background: none; border: none; font-size: 1.5rem; color: var(--accent); padding: 0.5rem; margin-left: -0.5rem; cursor: pointer;">☰</button>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
+                </div>
+                <h2 style="font-size: 1.1rem; margin: 0; color: var(--text); flex-grow: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pageTitle}</h2>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <a href="user_Profile.html" class="header-avatar" style="text-decoration: none;">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
+                </div>
+            </div>
+        `;
     }
 
     // Toggle logic
@@ -114,7 +145,7 @@ function injectSidebar() {
             e.preventDefault();
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            window.location.href = 'index.html';
+            window.location.href = 'welcome.html';
         });
     }
 
@@ -124,7 +155,7 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
-        
+
         // Ensure main wrapper doesn't have padding
         mainWrapper.style.paddingLeft = '0';
     }

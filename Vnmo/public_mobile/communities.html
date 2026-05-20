@@ -78,7 +78,7 @@
             background: rgba(0, 0, 0, 0.5);
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 1100;
         }
 
         .modal.active {
@@ -99,11 +99,14 @@
 
     <div class="page-wrapper">
         <header class="header">
-            <div style="flex-grow: 1;">
-                <h2>Communities</h2>
-                <p>Join or create local sharing groups.</p>
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                <a href="user_Dashboard.html" class="brand" style="display: flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+                    <img src="assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
+                </a>
+                <span style="font-weight: 600; color: var(--accent); flex-grow: 1; text-align: center;">Communities</span>
+                <button id="createCommunityBtn" class="btn primary small">Create</button>
             </div>
-            <button id="createCommunityBtn" class="btn primary">Create Community</button>
         </header>
 
         <section class="card" style="margin-bottom: 2rem;">
@@ -125,8 +128,7 @@
         <div id="createCommunityModal" class="modal">
             <div class="modal-content">
                 <h3>Create New Community</h3>
-                <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">Cost: Rs. 200 deducted from
-                    wallet.</p>
+                <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">Creating a community is free for all members.</p>
                 <form id="createCommunityForm">
                     <div class="form-group">
                         <label>Name of Community</label>
@@ -172,7 +174,7 @@
                     <div class="form-actions" style="justify-content: flex-end; margin-top: 1rem;">
                         <button type="button" class="btn outline"
                             onclick="document.getElementById('createCommunityModal').classList.remove('active')">Cancel</button>
-                        <button type="submit" class="btn primary">Pay Rs. 200 & Create</button>
+                        <button type="submit" class="btn primary">Create Community</button>
                     </div>
                 </form>
             </div>

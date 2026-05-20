@@ -18,41 +18,51 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchCommunities();
     fetchInvites();
 
-    document.getElementById('createCommunityBtn').addEventListener('click', () => {
-        document.getElementById('createCommunityModal').classList.add('active');
-    });
+    const createBtn = document.getElementById('createCommunityBtn');
+    if (createBtn) {
+        createBtn.addEventListener('click', () => {
+            const modal = document.getElementById('createCommunityModal');
+            if (modal) modal.classList.add('active');
+        });
+    }
 
-    document.getElementById('createCommunityForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-            name: document.getElementById('commName').value,
-            locality: document.getElementById('commLocality').value,
-            country: document.getElementById('commCountry').value,
-            city: document.getElementById('commCity').value,
-            state: document.getElementById('commState').value,
-            address: document.getElementById('commAddress').value,
-            max_limit: document.getElementById('commLimit').value,
-            is_private: document.getElementById('commPrivate').checked
-        };
+    const createForm = document.getElementById('createCommunityForm');
+    if (createForm) {
+        createForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('commName').value,
+                locality: document.getElementById('commLocality').value,
+                country: document.getElementById('commCountry').value,
+                city: document.getElementById('commCity').value,
+                state: document.getElementById('commState').value,
+                address: document.getElementById('commAddress').value,
+                max_limit: document.getElementById('commLimit').value,
+                is_private: document.getElementById('commPrivate').checked
+            };
 
-        try {
-            const res = await fetch('/api/communities', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            const data = await res.json();
-            if (res.ok) {
-                window.showAlert('Community created successfully!');
-                document.getElementById('createCommunityModal').classList.remove('active');
-                fetchCommunities();
-            } else {
-                window.showAlert(data.error, 'error');
+            try {
+                const res = await fetch('/api/communities', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.showAlert('Community created successfully!');
+                    const modal = document.getElementById('createCommunityModal');
+                    if (modal) modal.classList.remove('active');
+                    fetchCommunities();
+                } else {
+                    const errorData = await res.json();
+                    console.error('Community Creation Error:', errorData);
+                    window.showAlert(errorData.error || 'Failed to create community', 'error');
+                }
+            } catch (err) {
+                window.showAlert('Server error', 'error');
             }
-        } catch (err) {
-            window.showAlert('Server error', 'error');
-        }
-    });
+        });
+    }
 
     document.getElementById('inviteCommBtn').addEventListener('click', () => {
         const form = document.getElementById('inviteForm');

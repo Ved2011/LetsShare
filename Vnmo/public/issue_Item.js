@@ -46,8 +46,11 @@ function displayItems(items) {
 
   const user = JSON.parse(localStorage.getItem('user') || 'null');
   
-  // Filter for available items and optionally hide own items
-  const availableItems = items.filter(item => item.status === 'available');
+  // Filter for available items and hide own items
+  const availableItems = items.filter(item => 
+    item.status === 'available' && 
+    (!user || Number(item.owner_id) !== Number(user.id))
+  );
 
   if (availableItems.length === 0) {
     itemsList.innerHTML = '<p class="empty-state">No items found.</p>';
@@ -60,7 +63,7 @@ function displayItems(items) {
         <div class="item-name">${item.name}</div>
         <div class="item-name">${item.name}</div> 
         <div class="item-category">${item.category || 'Miscellaneous'}</div>
-        <div style="color: var(--accent); font-weight: 700; margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)}/day</div>
+
     </div>
   `).join('');
 }

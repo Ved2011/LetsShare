@@ -78,7 +78,7 @@
         <header class="header">
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle">☰</button>
-                <a href="index.html" class="brand">
+                <a href="welcome.html" class="brand">
                     <img src="assets/Logo1.jpeg" alt="Logo" class="header-logo">
                 </a>
             </div>
@@ -86,7 +86,7 @@
                 <h1 class="page-title">Global Search</h1>
             </div>
             <div class="header-right">
-                <a href="user_Dashboard.html" class="btn outline small">Dashboard</a>
+                <!-- Dashboard in sidebar -->
             </div>
         </header>
 
@@ -94,6 +94,84 @@
             <div class="search-box-wrapper">
                 <span class="search-icon-large">🔍</span>
                 <input type="text" id="globalSearchInput" class="search-box" placeholder="Search communities, items, or users..." autofocus>
+            </div>
+
+            <div class="search-categories" style="margin-bottom: 2rem; overflow: visible;">
+                <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text);">Browse by Category</h3>
+                <div class="category-grid" style="display: flex; gap: 1rem; overflow-x: auto; padding: 24px 10px 24px 10px; margin-top: -12px; margin-bottom: -12px; scrollbar-width: none; overflow-y: visible;">
+                    <style>
+                        .category-grid::-webkit-scrollbar { display: none; }
+                        .category-btn {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            gap: 0.75rem;
+                            background: none;
+                            border: none;
+                            cursor: pointer;
+                            min-width: 80px;
+                        }
+                        .category-circle {
+                            width: 64px;
+                            height: 64px;
+                            border-radius: 50%;
+                            background: var(--card-bg);
+                            border: 2px solid var(--border);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 1.8rem;
+                            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                        }
+                        .category-btn:hover .category-circle,
+                        .category-btn.active .category-circle {
+                            border-color: var(--accent);
+                            transform: translateY(-3px) scale(1.05);
+                            box-shadow: 0 5px 15px rgba(79, 124, 222, 0.2);
+                        }
+                        .category-btn.active .category-circle {
+                            background: rgba(79, 124, 222, 0.15);
+                        }
+                        .category-btn span {
+                            font-size: 0.85rem;
+                            color: var(--text);
+                            font-weight: 500;
+                        }
+                    </style>
+                    <button class="category-btn" onclick="toggleTag(this, 'Electronics')">
+                        <div class="category-circle">💻</div>
+                        <span>Electronics</span>
+                    </button>
+                    <button class="category-btn" onclick="toggleTag(this, 'Books')">
+                        <div class="category-circle">📚</div>
+                        <span>Books</span>
+                    </button>
+                    <button class="category-btn" onclick="toggleTag(this, 'Sports')">
+                        <div class="category-circle">🎾</div>
+                        <span>Sports</span>
+                    </button>
+                    <button class="category-btn" onclick="toggleTag(this, 'Tools')">
+                        <div class="category-circle">🔨</div>
+                        <span>Tools</span>
+                    </button>
+                    <button class="category-btn" onclick="toggleTag(this, 'Clothing')">
+                        <div class="category-circle">👕</div>
+                        <span>Clothing</span>
+                    </button>
+                    <button class="category-btn" onclick="toggleTag(this, 'Vehicles')">
+                        <div class="category-circle">🚗</div>
+                        <span>Vehicles</span>
+                    </button>
+                    <button class="category-btn" onclick="toggleTag(this, 'Home')">
+                        <div class="category-circle">🏡</div>
+                        <span>Home</span>
+                    </button>
+                    <button class="category-btn" onclick="toggleTag(this, 'Games')">
+                        <div class="category-circle">🎮</div>
+                        <span>Games</span>
+                    </button>
+                </div>
             </div>
 
             <div id="searchResults" class="card" style="padding: 0; min-height: 200px;">
@@ -108,18 +186,61 @@
         const resultsContainer = document.getElementById('searchResults');
 
         let debounceTimer;
+        let activeTags = [];
+        const allTags = ['Electronics', 'Books', 'Sports', 'Tools', 'Clothing', 'Vehicles', 'Home', 'Games'];
 
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
-            const query = e.target.value.trim();
+            const query = e.target.value;
             
-            if (query.length < 1) {
+            // Two-way binding: update active status on tag buttons based on input value
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                const tag = btn.querySelector('span').textContent.trim();
+                const regex = new RegExp('\\b' + tag + '\\b', 'i');
+                if (regex.test(query)) {
+                    btn.classList.add('active');
+                    if (!activeTags.includes(tag)) activeTags.push(tag);
+                } else {
+                    btn.classList.remove('active');
+                    activeTags = activeTags.filter(t => t !== tag);
+                }
+            });
+
+            const queryTrim = query.trim();
+            if (queryTrim.length < 1) {
                 resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>';
                 return;
             }
 
-            debounceTimer = setTimeout(() => performSearch(query), 300);
+            debounceTimer = setTimeout(() => performSearch(queryTrim), 300);
         });
+
+        function toggleTag(btn, tag) {
+            btn.classList.toggle('active');
+            
+            if (btn.classList.contains('active')) {
+                if (!activeTags.includes(tag)) activeTags.push(tag);
+            } else {
+                activeTags = activeTags.filter(t => t !== tag);
+            }
+            
+            // Rebuild search input text preserving typed keywords
+            let textVal = searchInput.value;
+            allTags.forEach(t => {
+                textVal = textVal.replace(new RegExp('\\b' + t + '\\b', 'gi'), '');
+            });
+            textVal = textVal.replace(/\s+/g, ' ').trim();
+            
+            const newQuery = [textVal, ...activeTags].join(' ').replace(/\s+/g, ' ').trim();
+            searchInput.value = newQuery;
+            
+            clearTimeout(debounceTimer);
+            if (newQuery.length < 1) {
+                resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>';
+                return;
+            }
+            performSearch(newQuery);
+        }
 
         async function performSearch(query) {
             const token = localStorage.getItem('token');
@@ -140,7 +261,7 @@
                 resultsContainer.innerHTML = results.map(r => {
                     let link = '#';
                     if (r.category === 'Community') link = `community_Home.html?id=${r.id}`;
-                    else if (r.category === 'Item') link = `item_Details.html?id=${r.id}`;
+                    else if (r.category === 'Item') link = `item_View.html?id=${r.id}`;
                     else if (r.category === 'User') link = `user_View.html?id=${r.id}`; 
 
                     return `

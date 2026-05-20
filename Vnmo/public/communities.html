@@ -78,7 +78,7 @@
             background: rgba(0, 0, 0, 0.5);
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 1100;
         }
 
         .modal.active {
@@ -101,7 +101,7 @@
         <header class="header">
             <div class="header-left">
                 <button class="menu-toggle" id="menuToggle">☰</button>
-                <a href="index.html" class="brand">
+                <a href="welcome.html" class="brand">
                     <img src="assets/Logo1.jpeg" alt="Logo" class="header-logo">
                 </a>
             </div>
@@ -124,14 +124,14 @@
             <div class="community-grid" id="myCommunitiesList"></div>
         </section>
 
-
-
-        <!-- Create Community Modal -->
+        <section class="card">
+            <h2>Communities Around Me</h2>
+            <div class="community-grid" id="communitiesList"></div>
+        </section>        <!-- Create Community Modal -->
         <div id="createCommunityModal" class="modal">
             <div class="modal-content">
                 <h3>Create New Community</h3>
-                <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">Cost: Rs. 200 deducted from
-                    wallet.</p>
+                <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">Creating a community is free for all members.</p>
                 <form id="createCommunityForm">
                     <div class="form-group">
                         <label>Name of Community</label>
@@ -177,12 +177,11 @@
                     <div class="form-actions" style="justify-content: flex-end; margin-top: 1rem;">
                         <button type="button" class="btn outline"
                             onclick="document.getElementById('createCommunityModal').classList.remove('active')">Cancel</button>
-                        <button type="submit" class="btn primary">Pay Rs. 200 & Create</button>
+                        <button type="submit" class="btn primary">Create Community</button>
                     </div>
                 </form>
             </div>
         </div>
-
         <!-- Community View Modal -->
         <div id="viewCommunityModal" class="modal">
             <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
