@@ -415,4 +415,69 @@ router.put('/me', authenticateToken, upload.single('profilePicture'), async (req
   }
 });
 
+// Get current user warnings
+router.get('/warnings', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(
+      'SELECT id, reason, severity, created_at FROM warnings WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get warnings error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Delete current user account
+router.delete('/me', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const userResult = await pool.query('SELECT email, name FROM users WHERE id = $1', [userId]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const { email, name } = userResult.rows[0];
+
+    // Check if user has active borrows or lent items
+    const activeItems = await pool.query(`
+      SELECT 1 FROM items WHERE (owner_id = $1 AND status = 'borrowed')
+      UNION
+      SELECT 1 FROM borrows WHERE borrower_id = $1 AND status = 'active'
+    `, [userId]);
+
+    if (activeItems.rows.length > 0) {
+      return res.status(400).json({ error: 'Cannot delete account with active borrowed or lent items. Please return them first.' });
+    }
+
+    // Perform deletion
+    await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+
+    // Send automated email
+    try {
+      const { sendEmail } = require('../utils/email');
+      await sendEmail(
+        email,
+        'Account Deleted - LetsShare',
+        `Hello ${name},\n\nYour LetsShare account has been successfully deleted.`,
+        `<div style="font-family: sans-serif; padding: 20px;">
+          <h2>Account Deleted</h2>
+          <p>Hello ${name},</p>
+          <p>Your LetsShare account and all associated data have been deleted.</p>
+          <p>We're sorry to see you go!</p>
+        </div>`
+      );
+    } catch (mailErr) {
+      console.error('Failed to send account deletion email:', mailErr);
+    }
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    console.error('Delete account error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

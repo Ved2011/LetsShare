@@ -18,8 +18,9 @@ function injectSidebar() {
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
             <a href="index.html" class="brand">
-                <img src="/assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
-            </a>
+                <img src="/assets/Logo3.png" alt="Logo" style="width: 32pp; height: 32px; border-radius: 6px;">ng" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+              a>
+        </  </a>
         </div>
         <div class="mobile-header-center">
             <h2>${pageTitle}</h2>
@@ -36,7 +37,8 @@ function injectSidebar() {
 
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="/assets/Logo3.jpeg" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+            <img src="/assets/Logo3.tple="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
+        </div>ng" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             <span class="nav-text" style="font-weight: 700; font-size: 1.3rem; color: var(--accent); margin-left: 0.75rem;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
@@ -110,7 +112,7 @@ function injectSidebar() {
             const pageTitle = document.title.split(' - ')[0];
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
-            const logoSrc = '/assets/Logo1.jpeg';
+            const logoSrc = '/assets/Logo1.png';
 
             const headerRight = header.querySelector('.header-right');
             const preservedRight = headerRight ? headerRight.innerHTML : `
@@ -181,8 +183,9 @@ function injectSidebar() {
     window.addEventListener('resize', () => {
         const logo = document.querySelector('.header-logo');
         if (logo) {
-            const isMobile = window.innerWidth <= 1024;
-            logo.src = '/assets/Logo1.jpeg';
+       
+     const isMobile = window.innerWidth <= 1024;
+            logo.src = '/assets/Logo1.png';
         }
     });
 

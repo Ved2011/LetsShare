@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - LetsShare</title>
+    <link rel="icon" href="assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <a href="index.html" class="brand">
+                    <img src="assets/Logo1.jpeg" alt="Logo" class="header-logo">
+                </a>
+            </div>
+            <div class="header-center">
+                <h1 class="page-title">Notifications</h1>
+            </div>
+            <div class="header-right">
+                <a href="user_Dashboard.html" class="btn outline small">Dashboard</a>
+            </div>
+        </header>
+
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <h3 style="margin: 0;">Recent Notifications</h3>
+                    <p style="color: var(--muted); margin: 0;">Stay updated on your borrows, complaints, and account activity.</p>
+                </div>
+                <button class="btn small" onclick="markAllAsRead()">Mark All as Read</button>
+            </div>
+            
+            <div id="notificationsList" style="display: flex; flex-direction: column; gap: 1rem;">
+                <p class="empty-state">Loading notifications...</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script>
+        async function loadNotifications() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/notifications', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const notifications = await res.json();
+                const list = document.getElementById('notificationsList');
+
+                if (notifications.length === 0) {
+                    list.innerHTML = '<p class="empty-state">You have no new notifications.</p>';
+                } else {
+                    list.innerHTML = notifications.map(n => `
+                        <div class="card" style="margin-bottom: 0; padding: 1.25rem; border-left: 4px solid ${n.is_read ? 'transparent' : 'var(--accent)'}; background: ${n.is_read ? 'var(--card-bg)' : 'rgba(99, 102, 241, 0.03)'}; display: flex; align-items: center; gap: 1rem; cursor: pointer; transition: all 0.2s ease;" onclick="markAsRead(${n.id})">
+                            <div style="flex-grow: 1;">
+                                <h4 style="margin: 0; font-size: 1.1rem; color: var(--text-main);">${n.type.toUpperCase()}</h4>
+                                <p style="margin: 0.25rem 0 0 0; font-size: 0.95rem; color: var(--text-main);">${n.message}</p>
+                                <small style="color: var(--muted); display: block; margin-top: 0.5rem;">${new Date(n.created_at).toLocaleString()}</small>
+                            </div>
+                            ${!n.is_read ? '<span style="color: var(--accent); font-size: 1.5rem; line-height: 1;">•</span>' : ''}
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Error loading notifications:', err);
+                document.getElementById('notificationsList').innerHTML = '<p class="empty-state error">Failed to load notifications.</p>';
+            }
+        }
+
+        async function markAsRead(id) {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`/api/notifications/${id}/read`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadNotifications();
+            } catch (err) {
+                console.error('Error marking as read:', err);
+            }
+        }
+
+        async function markAllAsRead() {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`/api/notifications/read-all`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadNotifications();
+            } catch (err) {
+                console.error('Error marking all as read:', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadNotifications);
+    </script>
+</body>
+</html>

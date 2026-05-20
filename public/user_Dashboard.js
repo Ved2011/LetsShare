@@ -167,22 +167,47 @@ async function loadComplaints() {
 
 function displayComplaints(complaints) {
   const complaintsSection = document.getElementById('complaintsSection');
-  const complaintsList = document.getElementById('complaintsList');
-  if (!complaintsSection || !complaintsList) return;
+  if (!complaintsSection) return;
 
   if (complaints.length === 0) {
     complaintsSection.style.display = 'none';
     return;
   }
 
+  window.allComplaints = complaints;
+  renderFilteredComplaints();
+}
+
+function renderFilteredComplaints() {
+  const complaintsSection = document.getElementById('complaintsSection');
+  const complaintsList = document.getElementById('complaintsList');
+  if (!complaintsSection || !complaintsList || !window.allComplaints) return;
+
   complaintsSection.style.display = 'block';
   complaintsList.innerHTML = '';
 
-  complaints.forEach(complaint => {
+  const severityFilter = document.getElementById('complaintSeverityFilter')?.value || 'all';
+  const typeFilter = document.getElementById('complaintTypeFilter')?.value || 'all';
+
+  let filtered = window.allComplaints;
+
+  if (severityFilter !== 'all') {
+    filtered = filtered.filter(c => c.severity === severityFilter);
+  }
+  if (typeFilter !== 'all') {
+    filtered = filtered.filter(c => c.issue_type === typeFilter);
+  }
+
+  if (filtered.length === 0) {
+    complaintsList.innerHTML = '<p class="empty-state">No complaints match the selected filters.</p>';
+    return;
+  }
+
+  filtered.forEach(complaint => {
     const isAccused = complaint.accused_id === JSON.parse(localStorage.getItem('user')).id;
     const card = document.createElement('div');
     card.className = 'item-card';
-    card.style.background = '#fff';
+    card.style.background = 'var(--card-bg)';
     card.style.border = '1px solid rgba(245, 158, 11, 0.2)';
     
     card.innerHTML = `
@@ -200,6 +225,8 @@ function displayComplaints(complaints) {
   });
 }
 
+window.renderFilteredComplaints = renderFilteredComplaints;
+
 function initDashboard() {
   loadCounts();
   loadJoinedCommunities();
@@ -208,6 +235,7 @@ function initDashboard() {
   loadRequests();
   loadOverdueItems();
   loadComplaints();
+  loadWarnings();
 }
 
 async function loadDashboard() {
@@ -275,9 +303,58 @@ async function loadDashboard() {
     loadJoinedCommunities();
     loadOverdueItems();
     loadComplaints();
+    loadWarnings();
   } catch (error) {
     console.error('Error loading dashboard:', error);
   }
+}
+
+async function loadWarnings() {
+  const token = localStorage.getItem('token');
+  try {
+    const response = await fetch('/api/users/warnings', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (response.ok) {
+      const warnings = await response.json();
+      displayWarnings(warnings);
+    }
+  } catch (error) {
+    console.error('Error loading warnings:', error);
+  }
+}
+
+function displayWarnings(warnings) {
+  const warningsSection = document.getElementById('warningsSection');
+  const warningsList = document.getElementById('warningsList');
+  const warningCount = document.getElementById('warningCount');
+  if (!warningsSection || !warningsList || !warningCount) return;
+
+  if (warnings.length === 0) {
+    warningsSection.style.display = 'none';
+    return;
+  }
+
+  warningsSection.style.display = 'block';
+  warningCount.textContent = warnings.length;
+  warningsList.innerHTML = '';
+
+  warnings.forEach(warning => {
+    const card = document.createElement('div');
+    card.style.background = 'var(--card-bg)';
+    card.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+    card.style.padding = '1rem';
+    card.style.borderRadius = '8px';
+    
+    card.innerHTML = `
+      <div style="display: flex; justify-content: space-between;">
+        <h4 style="color: #ef4444; margin: 0 0 0.5rem 0;">${warning.severity.toUpperCase()} Severity</h4>
+        <small style="color: var(--muted);">${new Date(warning.created_at).toLocaleDateString()}</small>
+      </div>
+      <p style="margin: 0; font-size: 0.9rem;">${warning.reason}</p>
+    `;
+    warningsList.appendChild(card);
+  });
 }
 
 function handleInvalidToken() {

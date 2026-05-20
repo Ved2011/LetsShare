@@ -10,6 +10,16 @@ router.post('/register', async (req, res) => {
   const { name, email, password, phone, dob, address, city, state, locality, country } = req.body;
 
   try {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    const blacklistCheck = await pool.query('SELECT 1 FROM blacklisted_emails WHERE email = $1', [email]);
+    if (blacklistCheck.rows.length > 0) {
+      return res.status(403).json({ error: 'Registration is not allowed for this email address' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
     

@@ -280,7 +280,13 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
   try {
     // Check if item belongs to user
-    const itemResult = await pool.query('SELECT owner_id, status FROM items WHERE id = $1', [id]);
+    const itemResult = await pool.query(`
+      SELECT i.owner_id, i.name, i.status, u.email 
+      FROM items i 
+      JOIN users u ON i.owner_id = u.id 
+      WHERE i.id = $1
+    `, [id]);
+    
     if (itemResult.rows.length === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -291,7 +297,27 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete borrowed item' });
     }
 
+    const itemName = itemResult.rows[0].name;
+    const userEmail = itemResult.rows[0].email;
+
     await pool.query('DELETE FROM items WHERE id = $1', [id]);
+    
+    // Send automated email
+    try {
+      const { sendEmail } = require('../utils/email');
+      await sendEmail(
+        userEmail,
+        'Item Deleted from LetsShare',
+        `Your item "${itemName}" has been successfully deleted from your LetsShare account.`,
+        `<div style="font-family: sans-serif; padding: 20px;">
+          <h2>Item Deleted</h2>
+          <p>Your item <strong>${itemName}</strong> has been deleted and is no longer available on the platform.</p>
+        </div>`
+      );
+    } catch (mailErr) {
+      console.error('Failed to send item deletion email:', mailErr);
+    }
+
     res.json({ message: 'Item deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });

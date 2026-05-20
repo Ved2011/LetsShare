@@ -20,12 +20,12 @@
         </header>
 
         <section class="card">
-            <div class="section-heading">
+            <div class="section-heading" style="flex-direction: column; text-align: center; gap: 1rem; align-items: center;">
                 <div>
                     <h2>Your Communities</h2>
                     <p>Access your joined communities or discover new ones.</p>
                 </div>
-                <a href="communities.html" class="btn small primary" style="margin-left: 1rem;">Browse All</a>
+                <a href="communities.html" class="btn small primary" style="margin: 0 auto;">Browse All Communities</a>
             </div>
             <div id="joinedCommunitiesGrid" class="community-grid">
                 <!-- Joined communities will be loaded here -->
@@ -60,6 +60,11 @@
             </div>
         </section>
 
+        <section class="card" id="warningsSection" style="display: none; border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.02);">
+            <h3 style="color: #ef4444; margin-bottom: 0;">🚨 Account Warnings (<span id="warningCount">0</span>)</h3>
+            <div id="warningsList" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;"></div>
+        </section>
+
         <section class="card" id="overdueSection" style="display: none; border-left: 4px solid #dc3545; background: rgba(220, 53, 69, 0.02);">
             <h3 style="color: #dc3545;">⚠️ Overdue Items</h3>
             <div id="overdueItemsList" style="display: flex; flex-direction: column; gap: 1rem;"></div>
@@ -81,12 +86,29 @@
 
         <section class="card">
             <h3>My Uploaded Items</h3>
-            <div id="dashboardMyItemsList" class="community-grid"></div>
+            <div id="dashboardMyItemsList" class="items-responsive-grid"></div>
         </section>
 
         <section class="card" id="complaintsSection" style="display: none; border-left: 4px solid #f59e0b;">
-            <h3 style="color: #d97706;">⚠️ Active Complaints</h3>
-            <div class="list-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <h3 style="color: #d97706; margin: 0;">⚠️ Active Complaints</h3>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <select id="complaintSeverityFilter" onchange="renderFilteredComplaints()" style="padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--border); font-size: 0.85rem; background: var(--bg-main); color: var(--text-main);">
+                        <option value="all">All Severities</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                    <select id="complaintTypeFilter" onchange="renderFilteredComplaints()" style="padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid var(--border); font-size: 0.85rem; background: var(--bg-main); color: var(--text-main);">
+                        <option value="all">All Types</option>
+                        <option value="damage">Damage</option>
+                        <option value="lost">Lost Item</option>
+                        <option value="late">Late Return</option>
+                        <option value="misuse">Misuse</option>
+                    </select>
+                </div>
+            </div>
+            <div class="list-header" style="margin-top: 1rem;">
                 <span class="col-info">Complaint Details</span>
                 <span class="col-meta"><span>Status</span></span>
             </div>
