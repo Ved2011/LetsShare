@@ -131,7 +131,7 @@ html, body {
 
 .sidebar.collapsed .nav-item {
     justify-content: center;
-    padding: 0.6rem 0;
+    padding: 0.6rem 0.5rem;
     gap: 0;
     margin: 0.1rem 0.3rem;
     border-radius: 8px;
@@ -2054,7 +2054,7 @@ html[data-theme="dark"] .custom-dropdown-menu {
     
     /* Layout containers */
     .page-wrapper {
-        padding: 0.5rem;
+        padding: 1rem;
     }
     
     .card {

@@ -63,6 +63,7 @@ app.use('/api/returns', returnRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/communities', communitiesRoutes);
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', adminRoutes);
 
 // Static File Routing
