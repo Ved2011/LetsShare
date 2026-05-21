@@ -24,7 +24,7 @@ function injectSidebar() {
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i>🏠</i> <span class="nav-text">Dashboard</span>
             </a>
-            <a href="notifications.html" class="nav-item ${window.location.pathname.includes('notifications') ? 'active' : ''}">
+            <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
                 <i>🔔</i> <span class="nav-text">Notifications</span>
             </a>
             <a href="SearchPage.html" class="nav-item ${window.location.pathname.includes('SearchPage') ? 'active' : ''}">

@@ -19,13 +19,13 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     // Start transaction
     await pool.query('BEGIN');
 
-    // Get user's plan, balance, and admin status
-    const userResult = await pool.query('SELECT plan_type, wallet_balance, is_site_admin FROM users WHERE id = $1', [ownerId]);
+    // Get user's plan and balance
+    const userResult = await pool.query('SELECT plan_type, wallet_balance FROM users WHERE id = $1', [ownerId]);
     if (userResult.rows.length === 0) {
       await pool.query('ROLLBACK');
       return res.status(404).json({ error: 'User not found' });
     }
-    const { plan_type, wallet_balance, is_site_admin } = userResult.rows[0];
+    const { plan_type, wallet_balance } = userResult.rows[0];
 
     // Get current listing count
     const itemCountResult = await pool.query('SELECT COUNT(*) FROM items WHERE owner_id = $1', [ownerId]);
@@ -37,7 +37,7 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     if (plan_type === 'Premium') limit = 30;
 
     let fee = 0;
-    if (itemCount >= limit && !is_site_admin) {
+    if (itemCount >= limit) {
       fee = 20;
       if (wallet_balance < fee) {
         await pool.query('ROLLBACK');
@@ -280,7 +280,13 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
   try {
     // Check if item belongs to user
-    const itemResult = await pool.query('SELECT owner_id, status FROM items WHERE id = $1', [id]);
+    const itemResult = await pool.query(`
+      SELECT i.owner_id, i.name, i.status, u.email 
+      FROM items i 
+      JOIN users u ON i.owner_id = u.id 
+      WHERE i.id = $1
+    `, [id]);
+    
     if (itemResult.rows.length === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -291,7 +297,27 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete borrowed item' });
     }
 
+    const itemName = itemResult.rows[0].name;
+    const userEmail = itemResult.rows[0].email;
+
     await pool.query('DELETE FROM items WHERE id = $1', [id]);
+    
+    // Send automated email
+    try {
+      const { sendEmail } = require('../utils/email');
+      await sendEmail(
+        userEmail,
+        'Item Deleted from LetsShare',
+        `Your item "${itemName}" has been successfully deleted from your LetsShare account.`,
+        `<div style="font-family: sans-serif; padding: 20px;">
+          <h2>Item Deleted</h2>
+          <p>Your item <strong>${itemName}</strong> has been deleted and is no longer available on the platform.</p>
+        </div>`
+      );
+    } catch (mailErr) {
+      console.error('Failed to send item deletion email:', mailErr);
+    }
+
     res.json({ message: 'Item deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });

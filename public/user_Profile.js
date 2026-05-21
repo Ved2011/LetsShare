@@ -104,7 +104,16 @@ async function loadUserProfile() {
           displayDob.textContent = 'Not provided';
         }
       }
-      if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
+      if (displayAddress) {
+        const addressParts = [
+          user.address,
+          user.locality,
+          user.city,
+          user.state,
+          user.country
+        ].filter(part => part && part.trim() !== '');
+        displayAddress.textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Not provided';
+      }
 
       const walletBalance = document.getElementById('walletBalance');
       const editUpiId = document.getElementById('editUpiId');
@@ -121,6 +130,10 @@ async function loadUserProfile() {
     const editPhone = document.getElementById('editPhone');
     const editDob = document.getElementById('editDob');
     const editAddress = document.getElementById('editAddress');
+    const editCountry = document.getElementById('editCountry');
+    const editState = document.getElementById('editState');
+    const editCity = document.getElementById('editCity');
+    const editLocality = document.getElementById('editLocality');
     const editBio = document.getElementById('editBio');
     const twoFactorToggle = document.getElementById('twoFactorToggle');
 
@@ -130,6 +143,10 @@ async function loadUserProfile() {
     if (editPhone) editPhone.value = user.phone || '';
     if (editDob && user.dob) editDob.value = user.dob.split('T')[0];
     if (editAddress) editAddress.value = user.address || '';
+    if (editCountry) editCountry.value = user.country || '';
+    if (editState) editState.value = user.state || '';
+    if (editCity) editCity.value = user.city || '';
+    if (editLocality) editLocality.value = user.locality || '';
     if (editBio) editBio.value = user.bio || '';
       if (twoFactorToggle) {
         twoFactorToggle.checked = user.two_factor_enabled;
@@ -303,6 +320,10 @@ if (profileUpdateForm) {
     formData.append('phone', document.getElementById('editPhone').value || '');
     formData.append('dob', document.getElementById('editDob').value || '');
     formData.append('address', document.getElementById('editAddress').value || '');
+    formData.append('country', document.getElementById('editCountry') ? document.getElementById('editCountry').value : '');
+    formData.append('state', document.getElementById('editState') ? document.getElementById('editState').value : '');
+    formData.append('city', document.getElementById('editCity') ? document.getElementById('editCity').value : '');
+    formData.append('locality', document.getElementById('editLocality') ? document.getElementById('editLocality').value : '');
     formData.append('bio', document.getElementById('editBio').value || '');
     
     const oldPass = document.getElementById('oldPassword').value;

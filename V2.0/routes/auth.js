@@ -18,6 +18,16 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    const blacklistCheck = await pool.query('SELECT 1 FROM blacklisted_emails WHERE email = $1', [email]);
+    if (blacklistCheck.rows.length > 0) {
+      return res.status(403).json({ error: 'Registration is not allowed for this email address' });
+    }
+
     // Server-side password strength validation
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
@@ -123,25 +133,24 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
-    // Check if it's a first-ever login (no last_login recorded)
-    const isFirstLogin = !user.last_login;
-
-    // Check device trust
     const { deviceId } = req.body;
-    let isTrustedDevice = false;
-    if (deviceId) {
-      const deviceResult = await pool.query(
-        'SELECT 1 FROM user_devices WHERE user_id = $1 AND device_id = $2',
-        [user.id, deviceId]
-      );
-      isTrustedDevice = deviceResult.rows.length > 0;
-    }
+    
+    // Check if device is trusted
+    const deviceResult = await pool.query(
+      'SELECT * FROM user_devices WHERE user_id = $1 AND device_id = $2',
+      [user.id, deviceId]
+    );
+    const isTrustedDevice = deviceResult.rows.length > 0;
 
-    // Check if user has 2FA enabled and hasn't logged in for 7+ days
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const isLongAbsenceWith2FA = user.two_factor_enabled && user.last_login && new Date(user.last_login) < sevenDaysAgo;
+    // Check if login is after 30 days
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const isOldLogin = user.last_login && new Date(user.last_login) < thirtyDaysAgo;
+    
+    // Check if it's a new account (no last_login)
+    const isNewAccount = !user.last_login;
 
-    if (isFirstLogin || !isTrustedDevice || isLongAbsenceWith2FA) {
+    if (user.two_factor_enabled || !isTrustedDevice || isOldLogin || isNewAccount) {
+      // Generate OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
@@ -150,6 +159,7 @@ router.post('/login', async (req, res) => {
         [otp, expires, user.id]
       );
 
+      // Send OTP via email
       try {
         const { sendEmail } = require('../utils/email');
         await sendEmail(
@@ -174,17 +184,8 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // No OTP required — update last_login
-    await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
-
-    // Admins get Premium by default in V2.0
-    if (user.is_site_admin && user.plan_type !== 'Premium') {
-      await pool.query("UPDATE users SET plan_type = 'Premium' WHERE id = $1", [user.id]);
-      user.plan_type = 'Premium';
-    }
-
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin, plan_type: user.plan_type } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -210,10 +211,10 @@ router.post('/verify-2fa', async (req, res) => {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
-    // Clear OTP and update last_login
+    // Clear OTP
     await pool.query('UPDATE users SET otp_code = NULL, otp_expires = NULL, last_login = CURRENT_TIMESTAMP WHERE id = $1', [userId]);
 
-    // Trust the device so future logins from it skip OTP
+    // Trust the device if provided
     const { deviceId } = req.body;
     if (deviceId) {
       await pool.query(
@@ -222,14 +223,8 @@ router.post('/verify-2fa', async (req, res) => {
       );
     }
 
-    // Admins get Premium by default in V2.0
-    if (user.is_site_admin && user.plan_type !== 'Premium') {
-      await pool.query("UPDATE users SET plan_type = 'Premium' WHERE id = $1", [user.id]);
-      user.plan_type = 'Premium';
-    }
-
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin, plan_type: user.plan_type } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
   } catch (err) {
     console.error('2FA verification error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -245,7 +240,7 @@ router.get('/me', async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const result = await pool.query('SELECT id, name, email, phone, dob, address, is_site_admin FROM users WHERE id = $1', [decoded.id]);
+    const result = await pool.query('SELECT id, name, email, phone, dob, address FROM users WHERE id = $1', [decoded.id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }

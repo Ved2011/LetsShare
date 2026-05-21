@@ -20,36 +20,39 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     await pool.query('BEGIN');
 
     // Get user's plan and balance
-    const userResult = await pool.query('SELECT plan_type, wallet_balance, free_credits, last_credit_added, is_site_admin FROM users WHERE id = $1', [ownerId]);
+    const userResult = await pool.query('SELECT plan_type, wallet_balance FROM users WHERE id = $1', [ownerId]);
     if (userResult.rows.length === 0) {
       await pool.query('ROLLBACK');
       return res.status(404).json({ error: 'User not found' });
     }
-    let { plan_type, wallet_balance, free_credits, last_credit_added, is_site_admin } = userResult.rows[0];
-
-    // Check if we need to add new month's credits (Skip for admin)
-    if (!is_site_admin) {
-        const now = new Date();
-        const lastAdded = last_credit_added ? new Date(last_credit_added) : now;
-        let monthsPassed = (now.getFullYear() - lastAdded.getFullYear()) * 12 + (now.getMonth() - lastAdded.getMonth());
-        if (monthsPassed > 0) {
-          free_credits += 5 * monthsPassed;
-          await pool.query('UPDATE users SET free_credits = $1, last_credit_added = CURRENT_TIMESTAMP WHERE id = $2', [free_credits, ownerId]);
-        }
-
-        // Enforce Early Bird free credits
-        if (free_credits <= 0) {
-          await pool.query('ROLLBACK');
-          return res.status(403).json({ error: 'You have used all your free credits for this month. Please wait for the next month for more credits!' });
-        }
-
-        // Deduct 1 credit
-        await pool.query('UPDATE users SET free_credits = free_credits - 1 WHERE id = $1', [ownerId]);
-    }
+    const { plan_type, wallet_balance } = userResult.rows[0];
 
     // Get current listing count
     const itemCountResult = await pool.query('SELECT COUNT(*) FROM items WHERE owner_id = $1', [ownerId]);
     const itemCount = parseInt(itemCountResult.rows[0].count);
+
+    // Determine limit
+    let limit = 5;
+    if (plan_type === 'Pro') limit = 15;
+    if (plan_type === 'Premium') limit = 30;
+
+    let fee = 0;
+    if (itemCount >= limit) {
+      fee = 20;
+      if (wallet_balance < fee) {
+        await pool.query('ROLLBACK');
+        return res.status(400).json({ error: `Listing limit reached for ${plan_type} plan (${limit} items). You need Rs. 20 in your wallet for additional listings.` });
+      }
+
+      // Deduct fee
+      await pool.query('UPDATE users SET wallet_balance = wallet_balance - $1 WHERE id = $2', [fee, ownerId]);
+      
+      // Record transaction
+      await pool.query(
+        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
+        [ownerId, fee, 'debit', 'listing_fee', `Extra listing fee beyond ${limit} items limit`]
+      );
+    }
 
     // Enforce max price
     const price = Math.min(parseFloat(price_per_day) || 0, 100);
@@ -68,7 +71,7 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
     
     await pool.query('COMMIT');
     res.status(201).json({ 
-      message: 'Item created successfully!', 
+      message: fee > 0 ? `Item created successfully! (Rs. ${fee} charged for extra listing)` : 'Item created successfully!', 
       itemId 
     });
   } catch (err) {
@@ -102,15 +105,10 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
           SELECT i.*, d.brand, d.category, d.age, d.condition, d.description, d.image
           FROM items i
           LEFT JOIN item_details d ON i.id = d.item_id
-          WHERE $1::int IS NULL OR i.owner_id = $1 
-          OR EXISTS (
+          WHERE $1::int IS NULL OR i.owner_id = $1 OR EXISTS (
             SELECT 1 FROM community_members cm1
             JOIN community_members cm2 ON cm1.community_id = cm2.community_id
             WHERE cm1.user_id = i.owner_id AND cm2.user_id = $1
-          )
-          OR EXISTS (
-            SELECT 1 FROM follows f
-            WHERE f.follower_id = $1 AND f.followed_user_id = i.owner_id
           )
         `;
         params = [userId];
@@ -154,15 +152,6 @@ router.get('/user/:userId', authenticateToken, async (req, res) => {
           JOIN community_members cm2 ON cm1.community_id = cm2.community_id
           WHERE cm1.user_id = i.owner_id AND cm2.user_id = $2
         ))
-        OR
-        -- Case 3: Item is visible if the viewer follows the owner
-        EXISTS (
-          SELECT 1 FROM follows f
-          WHERE f.follower_id = $2 AND f.followed_user_id = i.owner_id
-        )
-        OR
-        -- Case 4: Owner is the viewer themselves
-        i.owner_id = $2
       )
       ORDER BY i.created_at DESC
     `;
@@ -291,7 +280,13 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
   try {
     // Check if item belongs to user
-    const itemResult = await pool.query('SELECT owner_id, status FROM items WHERE id = $1', [id]);
+    const itemResult = await pool.query(`
+      SELECT i.owner_id, i.name, i.status, u.email 
+      FROM items i 
+      JOIN users u ON i.owner_id = u.id 
+      WHERE i.id = $1
+    `, [id]);
+    
     if (itemResult.rows.length === 0) {
       return res.status(404).json({ error: 'Item not found' });
     }
@@ -302,7 +297,27 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete borrowed item' });
     }
 
+    const itemName = itemResult.rows[0].name;
+    const userEmail = itemResult.rows[0].email;
+
     await pool.query('DELETE FROM items WHERE id = $1', [id]);
+    
+    // Send automated email
+    try {
+      const { sendEmail } = require('../utils/email');
+      await sendEmail(
+        userEmail,
+        'Item Deleted from LetsShare',
+        `Your item "${itemName}" has been successfully deleted from your LetsShare account.`,
+        `<div style="font-family: sans-serif; padding: 20px;">
+          <h2>Item Deleted</h2>
+          <p>Your item <strong>${itemName}</strong> has been deleted and is no longer available on the platform.</p>
+        </div>`
+      );
+    } catch (mailErr) {
+      console.error('Failed to send item deletion email:', mailErr);
+    }
+
     res.json({ message: 'Item deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Server error' });
