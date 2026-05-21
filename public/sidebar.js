@@ -24,7 +24,7 @@ function injectSidebar() {
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
             <a href="user_Dashboard.html" class="brand">
-                <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.src='/assets/Logo1.jpeg'">
+                <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.src='assets/Logo1.jpeg'">
             </a>
         </div>
         <div class="mobile-header-center">
@@ -42,7 +42,7 @@ function injectSidebar() {
 
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;" onerror="this.src='/assets/Logo1.jpeg'">
+            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;" onerror="this.src='assets/Logo1.jpeg'">
             <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
@@ -126,13 +126,13 @@ function injectSidebar() {
 
             const headerRight = header.querySelector('.header-right');
             const preservedRight = headerRight && headerRight.innerHTML.trim() !== '?' ? headerRight.innerHTML : `
-                ${isLoggedIn ? `<a href="Notifications.html" style="text-decoration: none; font-size: 1.2rem; margin-right: 0.5rem; filter: grayscale(100%); transition: filter 0.2s;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='grayscale(100%)'" title="Notifications">🔔</a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
+                ${isLoggedIn ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; font-size:1.2rem; margin-right:0.5rem; filter:grayscale(100%); transition:filter 0.2s;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='grayscale(100%)'" title="Notifications">🔔<span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
             `;
 
             header.innerHTML = `
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle">☰</button>
-                    <a href="user_Dashboard.html" class="brand">
+    
                         <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='/assets/Logo1.jpeg'">
                     </a>
                 </div>
@@ -200,11 +200,21 @@ function injectSidebar() {
                 header.classList.add('header-hidden');
             } else if (currentScroll < lastScroll && header.classList.contains('header-hidden')) {
                 // Scroll Up
-                header.classList.remove('header-hidden');
-            }
-            lastScroll = currentScroll;
-        });
-    }
+                const res = await fetch('/api/notifications', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                const rawData = await res.json();
+                const notifications = Array.isArray(rawData) ? rawData : [];
+                const list = document.getElementById('notificationsList');
+
+                if (notifications.length === 0) {
+            const isMobile = window.innerWidth <= 1024;
+            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+        }
+    });
 
     // Update logo on resize
     window.addEventListener('resize', () => {
