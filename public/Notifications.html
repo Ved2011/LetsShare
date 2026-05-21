@@ -20,7 +20,7 @@
                 <h1 class="page-title">Notifications</h1>
             </div>
             <div class="header-right">
-                <a href="user_Dashboard.html" class="btn outline small">Dashboard</a>
+
             </div>
         </header>
 
@@ -52,7 +52,11 @@
                 const res = await fetch('/api/notifications', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const notifications = await res.json();
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                const rawData = await res.json();
+                const notifications = Array.isArray(rawData) ? rawData : [];
                 const list = document.getElementById('notificationsList');
 
                 if (notifications.length === 0) {
