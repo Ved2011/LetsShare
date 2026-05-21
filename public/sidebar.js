@@ -49,6 +49,35 @@ function injectSidebar() {
         
         const style = document.createElement('style');
         style.innerHTML = `
+            .sidebar-footer {
+                margin-top: auto;
+                border-top: 1px solid var(--border);
+                padding: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            .sidebar.collapsed .sidebar-footer {
+                padding: 0.5rem;
+            }
+            .sidebar-footer .nav-item {
+                margin: 0 !important;
+            }
+            .notification-link {
+                color: var(--text-main);
+                transition: color 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+            }
+            .notification-link:hover {
+                color: var(--accent);
+                background: rgba(99, 102, 241, 0.1);
+            }
+            
             .sidebar-nav .lucide {
                 width: 22px;
                 height: 22px;
@@ -109,10 +138,10 @@ function injectSidebar() {
             <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
                 <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
             </a>
-            <div style="margin-top: auto; border-top: 1px solid var(--border); padding: 0.75rem;">
+            <div class="sidebar-footer">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
                     <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
-                    <div style="flex: 1; min-width: 0;">
+                    <div class="nav-text" style="flex: 1; min-width: 0;">
                         <div style="font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user?.name || 'Login'}</div>
                         <div style="font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${isLoggedIn ? 'View profile' : 'Sign in'}</div>
                     </div>
@@ -159,7 +188,7 @@ function injectSidebar() {
 
             // Build header right content (notification bell + avatar or login)
             const headerRightContent = isLoggedIn
-              ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; font-size:1.2rem; margin-right:0.5rem; filter:grayscale(100%); transition:filter 0.2s;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='grayscale(100%)'" title="Notifications">🔔<span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>`
+              ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:0.5rem;" title="Notifications"><i data-lucide="bell"></i><span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>`
               : `<a href="login.html" class="btn small outline">Login</a>`;
 
             header.innerHTML = `
@@ -175,6 +204,7 @@ function injectSidebar() {
                 <div class="header-right">${headerRightContent}</div>
                 </div>
             `;
+            if (window.lucide) setTimeout(() => window.lucide.createIcons(), 0);
         }
     }
 

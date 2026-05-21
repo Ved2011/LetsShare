@@ -25,6 +25,35 @@ function injectSidebar() {
         
         const style = document.createElement('style');
         style.innerHTML = `
+            .sidebar-footer {
+                margin-top: auto;
+                border-top: 1px solid var(--border);
+                padding: 0.75rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            .sidebar.collapsed .sidebar-footer {
+                padding: 0.5rem;
+            }
+            .sidebar-footer .nav-item {
+                margin: 0 !important;
+            }
+            .notification-link {
+                color: var(--text-main);
+                transition: color 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+            }
+            .notification-link:hover {
+                color: var(--accent);
+                background: rgba(99, 102, 241, 0.1);
+            }
+            
             .sidebar-nav .lucide {
                 width: 22px;
                 height: 22px;
@@ -81,7 +110,7 @@ function injectSidebar() {
             <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
                 <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
             </a>
-            <div style="margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem;">
+            <div class="sidebar-footer">
                 <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
                     <i data-lucide="circle-user-round"></i> <span class="nav-text">My Profile</span>
                 </a>
