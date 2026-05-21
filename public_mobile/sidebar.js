@@ -1,6 +1,8 @@
 // sidebar.js
 function injectSidebar() {
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
+    const theme = document.documentElement.getAttribute('data-theme') || 'light';
+    const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 

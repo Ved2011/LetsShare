@@ -561,33 +561,9 @@ html[data-theme="dark"] .header {
     background: rgba(30, 41, 59, 0.8);
 }
 
-@media (max-width: 640px) {
-    .header {
-        flex-wrap: wrap;
-        padding: 0.75rem 1rem;
-    }
-    
-    .logo {
-        max-width: 120px;
-    }
 
-    .header-left {
-        flex-direction: column;
-        width: 100%;
-        gap: 0.5rem;
-    }
-}
 
-@media (max-width: 600px) {
-    .header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-    }
-    .auth-buttons {
-        justify-content: center;
-    }
-}
+
 
 .auth-buttons {
     display: flex;

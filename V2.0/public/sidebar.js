@@ -1,6 +1,8 @@
 // sidebar.js
 function injectSidebar() {
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
+    const theme = document.documentElement.getAttribute('data-theme') || 'light';
+    const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -24,7 +26,7 @@ function injectSidebar() {
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
             <a href="user_Dashboard.html" class="brand">
-                <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.src='/assets/Logo1.jpeg'">
+                <img src="assets/${prefix}Logo1.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             </a>
         </div>
         <div class="mobile-header-center">
@@ -104,7 +106,7 @@ function injectSidebar() {
 
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;" onerror="this.src='/assets/Logo1.jpeg'">
+            <img src="assets/${prefix}Logo1.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">

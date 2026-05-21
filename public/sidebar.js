@@ -24,7 +24,7 @@ function injectSidebar() {
         <div class="mobile-header-left">
             <button class="menu-toggle" id="mobileMenuToggle">☰</button>
             <a href="user_Dashboard.html" class="brand">
-                <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.src='assets/Logo1.jpeg'">
+                <img src="assets/${prefix}Logo1.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             </a>
         </div>
         <div class="mobile-header-center">
@@ -104,7 +104,7 @@ function injectSidebar() {
 
     sidebar.innerHTML = `
         <div class="sidebar-header">
-            <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;" onerror="this.src='assets/Logo1.jpeg'">
+            <img src="assets/${prefix}Logo1.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
             <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
@@ -184,7 +184,11 @@ function injectSidebar() {
             const pageTitle = document.title.split(' - ')[0];
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
-            const logoSrc = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.jpeg';
+            
+            const theme = document.documentElement.getAttribute('data-theme') || 'light';
+            const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
+            const logoSrc = isMobile ? `assets/${prefix}Logo2.png` : `assets/${prefix}Logo3.png`;
+        
 
             // Build header right content (notification bell + avatar or login)
             const headerRightContent = isLoggedIn
@@ -195,7 +199,7 @@ function injectSidebar() {
                 <div class="header-left">
                     <button class="menu-toggle" id="menuToggle">☰</button>
     
-                        <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='/assets/Logo1.jpeg'">
+                        <img src="${logoSrc}" alt="Logo" class="header-logo">
                     </a>
                 </div>
                 <div class="header-center">
