@@ -107,9 +107,6 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
-            <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
-                <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
-            </a>
             <div class="sidebar-footer">
                 <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
                     <i data-lucide="circle-user-round"></i> <span class="nav-text">My Profile</span>
