@@ -40,6 +40,39 @@ function injectSidebar() {
     overlay.className = 'sidebar-overlay';
     overlay.id = 'sidebarOverlay';
 
+    
+    // Inject Lucide script and styles
+    if (!document.getElementById('lucide-setup')) {
+        const script = document.createElement('script');
+        script.id = 'lucide-setup';
+        script.src = "https://unpkg.com/lucide@latest";
+        
+        const style = document.createElement('style');
+        style.innerHTML = `
+            .sidebar-nav .lucide {
+                width: 22px;
+                height: 22px;
+                stroke-width: 2px;
+                transition: transform 0.2s ease, stroke 0.2s ease;
+                color: inherit;
+            }
+            .sidebar-nav .nav-item:hover .lucide {
+                transform: scale(1.1);
+            }
+            .sidebar-nav .nav-item.active .lucide {
+                stroke: var(--accent, #6366f1);
+            }
+        `;
+        document.head.appendChild(style);
+        document.head.appendChild(script);
+        
+        script.onload = () => {
+            if (window.lucide) lucide.createIcons();
+        };
+    } else {
+        if (window.lucide) setTimeout(() => lucide.createIcons(), 0);
+    }
+
     sidebar.innerHTML = `
         <div class="sidebar-header">
             <img src="assets/Logo3.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px; filter: brightness(0) invert(1); opacity: 0.95;" onerror="this.src='assets/Logo1.jpeg'">
@@ -47,34 +80,34 @@ function injectSidebar() {
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
-                <i>🏠</i> <span class="nav-text">Dashboard</span>
+                <i data-lucide="layout-dashboard"></i> <span class="nav-text">Dashboard</span>
             </a>
             <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
-                <i>🔔</i> <span class="nav-text">Notifications</span>
+                <i data-lucide="bell"></i> <span class="nav-text">Notifications</span>
             </a>
             <a href="SearchPage.html" class="nav-item ${window.location.pathname.includes('SearchPage') ? 'active' : ''}">
-                <i>🔍</i> <span class="nav-text">Global Search</span>
+                <i data-lucide="search"></i> <span class="nav-text">Global Search</span>
             </a>
             <a href="Following.html" class="nav-item ${window.location.pathname.includes('Following') ? 'active' : ''}">
-                <i>⭐</i> <span class="nav-text">Following</span>
+                <i data-lucide="star"></i> <span class="nav-text">Following</span>
             </a>
             <a href="communities.html" class="nav-item ${window.location.pathname.includes('communities') ? 'active' : ''}">
-                <i>👥</i> <span class="nav-text">Communities</span>
+                <i data-lucide="users"></i> <span class="nav-text">Communities</span>
             </a>
             <a href="Followers.html" class="nav-item ${window.location.pathname.includes('Followers') ? 'active' : ''}">
-                <i>👤</i> <span class="nav-text">Followers</span>
+                <i data-lucide="user-round"></i> <span class="nav-text">Followers</span>
             </a>
             <a href="ItemForm.html" class="nav-item ${window.location.pathname.includes('ItemForm') ? 'active' : ''}">
-                <i>➕</i> <span class="nav-text">List Item</span>
+                <i data-lucide="square-plus"></i> <span class="nav-text">List Item</span>
             </a>
             <a href="issue_Item.html" class="nav-item ${window.location.pathname.includes('issue_Item') ? 'active' : ''}">
-                <i>🤝</i> <span class="nav-text">Borrow Item</span>
+                <i data-lucide="handshake"></i> <span class="nav-text">Borrow Item</span>
             </a>
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
-                <i>⚠️</i> <span class="nav-text">Complaints</span>
+                <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
             <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
-                <i>💎</i> <span class="nav-text">Upgrade Plan</span>
+                <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
             </a>
             <div style="margin-top: auto; border-top: 1px solid var(--border); padding: 0.75rem;">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
@@ -85,7 +118,7 @@ function injectSidebar() {
                     </div>
                 </a>
                 <a href="#" class="nav-item" id="sidebarLogout" style="color: var(--danger, #ef4444);">
-                    <i>🚪</i> <span class="nav-text">Logout</span>
+                    <i data-lucide="log-out"></i> <span class="nav-text">Logout</span>
                 </a>
             </div>
         </nav>
@@ -122,12 +155,12 @@ function injectSidebar() {
             const pageTitle = document.title.split(' - ')[0];
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
-            const logoSrc = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+            const logoSrc = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.jpeg';
 
-            const headerRight = header.querySelector('.header-right');
-            const preservedRight = headerRight && headerRight.innerHTML.trim() !== '?' ? headerRight.innerHTML : `
-                ${isLoggedIn ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; font-size:1.2rem; margin-right:0.5rem; filter:grayscale(100%); transition:filter 0.2s;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='grayscale(100%)'" title="Notifications">🔔<span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
-            `;
+            // Build header right content (notification bell + avatar or login)
+            const headerRightContent = isLoggedIn
+              ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; font-size:1.2rem; margin-right:0.5rem; filter:grayscale(100%); transition:filter 0.2s;" onmouseover="this.style.filter='none'" onmouseout="this.style.filter='grayscale(100%)'" title="Notifications">🔔<span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>`
+              : `<a href="login.html" class="btn small outline">Login</a>`;
 
             header.innerHTML = `
                 <div class="header-left">
@@ -139,8 +172,7 @@ function injectSidebar() {
                 <div class="header-center">
                     <h1 class="page-title">${pageTitle === 'LetsShare' ? '' : pageTitle}</h1>
                 </div>
-                <div class="header-right">
-                    ${isLoggedIn ? preservedRight : `<a href="login.html" class="btn small primary" style="text-decoration: none;">Login</a>`}
+                <div class="header-right">${headerRightContent}</div>
                 </div>
             `;
         }
@@ -204,7 +236,9 @@ function injectSidebar() {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}`);
+                    // If the endpoint is missing, show a friendly message
+                    list.innerHTML = '<p class="empty-state error">Unable to load notifications (service unavailable).</p>';
+                    return;
                 }
                 const rawData = await res.json();
                 const notifications = Array.isArray(rawData) ? rawData : [];
@@ -212,7 +246,7 @@ function injectSidebar() {
 
                 if (notifications.length === 0) {
             const isMobile = window.innerWidth <= 1024;
-            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+            logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
         }
     });
 
@@ -221,7 +255,7 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
-            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+            logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
         }
     });
 
