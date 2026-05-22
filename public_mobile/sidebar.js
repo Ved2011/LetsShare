@@ -170,14 +170,14 @@ function injectSidebar() {
         
         
         // Standardize Header across all pages
-        const header = document.querySelector('.header');
+        const headerMain = document.querySelector('.header');
         const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome');
         
-        if (header && !isWelcomePage) {
+        if (headerMain && !isWelcomePage) {
             let pageTitle = "LetsShare";
-            const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
-            const existingH2 = header.querySelector('h2');
-            const existingH1 = header.querySelector('h1');
+            const existingSpan = headerMain.querySelector('span[style*="font-weight: 600"]');
+            const existingH2 = headerMain.querySelector('h2');
+            const existingH1 = headerMain.querySelector('h1');
             if (existingSpan) pageTitle = existingSpan.textContent;
             else if (existingH2) pageTitle = existingH2.textContent;
             else if (existingH1) pageTitle = existingH1.textContent;
@@ -199,13 +199,13 @@ function injectSidebar() {
                    <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:34px; height:34px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user?.name?.charAt(0).toUpperCase() || 'U'}</a>`
                 : `<a href="login.html" class="btn small primary" style="text-decoration: none; padding:0.5rem 1.2rem; border-radius:999px; background:var(--accent); color:white; font-weight:bold; font-size:0.9rem; flex-shrink:0;">Login</a>`;
 
-            header.style.display = 'flex';
-            header.style.justifyContent = 'space-between';
-            header.style.alignItems = 'center';
-            header.style.width = '100%';
-            header.style.gap = '0.5rem';
+            headerMain.style.display = 'flex';
+            headerMain.style.justifyContent = 'space-between';
+            headerMain.style.alignItems = 'center';
+            headerMain.style.width = '100%';
+            headerMain.style.gap = '0.5rem';
 
-            header.innerHTML = `
+            headerMain.innerHTML = `
                 <div class="header-left" style="display:flex; align-items:center; flex-shrink:0;">
                     ${menuBtn}
                     <a href="${isLoggedIn ? 'user_Dashboard.html' : 'welcome.html'}" class="brand" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
@@ -232,6 +232,7 @@ function injectSidebar() {
                 });
             }
         }
+    }
 
     // Toggle logic
     const menuToggle = document.getElementById('menuToggle');

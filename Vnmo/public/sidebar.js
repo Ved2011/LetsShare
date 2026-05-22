@@ -265,6 +265,7 @@ function injectSidebar() {
                 });
             }
         }
+    }
 
     // Toggle logic - Moved AFTER injection
     const menuToggle = document.getElementById('menuToggle');
@@ -345,20 +346,20 @@ function injectSidebar() {
 
     // Smart Sticky Header Logic
     let lastScroll = 0;
-    const header = document.querySelector('.header');
-    if (header) {
+    const stickyHeader = document.querySelector('.header');
+    if (stickyHeader) {
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
             if (currentScroll <= 0) {
-                header.classList.remove('header-hidden');
+                stickyHeader.classList.remove('header-hidden');
                 return;
             }
-            if (currentScroll > lastScroll && !header.classList.contains('header-hidden')) {
+            if (currentScroll > lastScroll && !stickyHeader.classList.contains('header-hidden')) {
                 // Scroll Down
-                header.classList.add('header-hidden');
-            } else if (currentScroll < lastScroll && header.classList.contains('header-hidden')) {
+                stickyHeader.classList.add('header-hidden');
+            } else if (currentScroll < lastScroll && stickyHeader.classList.contains('header-hidden')) {
                 // Scroll Up
-                header.classList.remove('header-hidden');
+                stickyHeader.classList.remove('header-hidden');
             }
             lastScroll = currentScroll;
         });
