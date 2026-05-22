@@ -65,9 +65,14 @@ function injectSidebar() {
                 padding: 1.25rem 0.5rem;
                 gap: 0.75rem;
             }
-            .sidebar-footer .nav-item {
-                margin: 0.2rem 0.3rem !important;
+            .sidebar.collapsed .sidebar-footer .nav-item {
+                width: 44px !important;
+                height: 44px !important;
+                padding: 0 !important;
+                margin: 0.25rem auto !important;
+                justify-content: center !important;
             }
+
             .notification-link {
                 color: var(--text-main);
                 transition: color 0.2s ease;
