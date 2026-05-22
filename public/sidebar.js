@@ -210,9 +210,7 @@ function injectSidebar() {
 
             header.innerHTML = `
                 <div class="header-left">
-                    <button class="menu-toggle" id="menuToggle">☰</button>
-    
-                        <img src="${logoSrc}" alt="Logo" class="header-logo">
+                    <img src="${logoSrc}" alt="Logo" class="header-logo">
                     </a>
                 </div>
                 <div class="header-center">
@@ -252,6 +250,8 @@ function injectSidebar() {
     };
 
     if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
+    const sidebarLogo = document.querySelector('.sidebar-header img');
+    if (sidebarLogo) sidebarLogo.addEventListener('click', toggleSidebar);
     if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
 
     // Close sidebar on outside click

@@ -172,8 +172,7 @@ function injectSidebar() {
 
         header.innerHTML = `
             <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
-                <button class="menu-toggle" id="menuToggle" style="background: none; border: none; font-size: 1.5rem; color: var(--accent); padding: 0.5rem; margin-left: -0.5rem; cursor: pointer;">☰</button>
-                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <div id="menuToggle" style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
                     <img src="/assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
                     <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
                 </div>
