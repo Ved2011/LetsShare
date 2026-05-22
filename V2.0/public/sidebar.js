@@ -1,5 +1,9 @@
 // sidebar.js
 function injectSidebar() {
+    // Initialize Theme Globally First
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
@@ -81,7 +85,10 @@ function injectSidebar() {
                 background: rgba(99, 102, 241, 0.1);
             }
             
-            .sidebar-nav .lucide {
+            .sidebar-nav .lucide, .sidebar-footer .lucide {
+                min-width: 24px !important;
+                min-height: 24px !important;
+                flex-shrink: 0 !important;
                 width: 22px;
                 height: 22px;
                 stroke-width: 2px;

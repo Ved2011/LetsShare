@@ -25,7 +25,10 @@ injection_code = """
         
         const style = document.createElement('style');
         style.innerHTML = `
-            .sidebar-nav .lucide {
+            .sidebar-nav .lucide, .sidebar-footer .lucide {
+                min-width: 24px !important;
+                min-height: 24px !important;
+                flex-shrink: 0 !important;
                 width: 22px;
                 height: 22px;
                 stroke-width: 2px;
