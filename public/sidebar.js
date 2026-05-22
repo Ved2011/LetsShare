@@ -58,7 +58,8 @@ function injectSidebar() {
                 gap: 0.25rem;
             }
             .sidebar.collapsed .sidebar-footer {
-                padding: 0.5rem;
+                padding: 1.25rem 0.5rem;
+                gap: 0.75rem;
             }
             .sidebar-footer .nav-item {
                 margin: 0 !important;
