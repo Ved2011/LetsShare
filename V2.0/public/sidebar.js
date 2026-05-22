@@ -4,12 +4,24 @@ function injectSidebar() {
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
+    const path = window.location.pathname;
+    const isLandingPage = path.endsWith('welcome.html') || path === '/' || path === '';
+    const isPublicPage = isLandingPage || path.endsWith('login.html') || path.endsWith('User_Register.html');
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
+    // Don't inject sidebar at all on public pages if not logged in
+    if (!isLoggedIn && isPublicPage) {
+        return;
+    }
+
+    // Redirect logged-in users away from public pages to dashboard
+    if (isLoggedIn && isPublicPage) {
+        window.location.href = 'user_Dashboard.html';
+        return;
+    }
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     const isMobileDevice = window.innerWidth <= 1024;

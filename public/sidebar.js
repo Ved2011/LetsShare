@@ -1,12 +1,13 @@
 // sidebar.js
 function injectSidebar() {
-    // Initialize Theme Globally First
-    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', savedTheme);
-
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
+
+    // Don't inject sidebar at all on public pages if not logged in
+    if (!isLoggedIn && isPublicPage) {
+        return;
+    }
 
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
@@ -44,13 +45,13 @@ function injectSidebar() {
     overlay.className = 'sidebar-overlay';
     overlay.id = 'sidebarOverlay';
 
-    
+
     // Inject Lucide script and styles
     if (!document.getElementById('lucide-setup')) {
         const script = document.createElement('script');
         script.id = 'lucide-setup';
         script.src = "assets/lucide.min.js";
-        
+
         const style = document.createElement('style');
         style.innerHTML = `
             
@@ -113,7 +114,7 @@ function injectSidebar() {
         `;
         document.head.appendChild(style);
         document.head.appendChild(script);
-        
+
         script.onload = () => {
             if (window.lucide) lucide.createIcons();
         };
@@ -206,16 +207,16 @@ function injectSidebar() {
             const pageTitle = document.title.split(' - ')[0];
             const user = JSON.parse(localStorage.getItem('user'));
             const isMobile = window.innerWidth <= 1024;
-            
+
             const theme = document.documentElement.getAttribute('data-theme') || 'light';
             const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
             const logoSrc = isMobile ? `assets/${prefix}Logo2.png` : `assets/${prefix}Logo3.png`;
-        
+
 
             // Build header right content (notification bell + avatar or login)
             const headerRightContent = isLoggedIn
-              ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:0.5rem;" title="Notifications"><i data-lucide="bell"></i><span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>`
-              : `<a href="login.html" class="btn small outline">Login</a>`;
+                ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:0.5rem;" title="Notifications"><i data-lucide="bell"></i><span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>`
+                : `<a href="login.html" class="btn small outline">Login</a>`;
 
             header.innerHTML = `
                 <div class="header-left">
@@ -240,7 +241,7 @@ function injectSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const isCollapsed = sidebar.classList.contains('collapsed');
-        
+
         if (isCollapsed) {
             sidebar.classList.remove('collapsed');
             sidebar.classList.add('active');
@@ -270,7 +271,7 @@ function injectSidebar() {
         if (sidebar && !sidebar.classList.contains('collapsed')) {
             const clickedInsideSidebar = sidebar.contains(e.target);
             const clickedMenuToggle = (menuToggle && menuToggle.contains(e.target)) || (mobileMenuToggle && mobileMenuToggle.contains(e.target));
-            
+
             if (!clickedInsideSidebar && !clickedMenuToggle) {
                 sidebar.classList.add('collapsed');
                 sidebar.classList.remove('active');
@@ -337,31 +338,21 @@ function injectSidebar() {
                 const list = document.getElementById('notificationsList');
 
                 if (notifications.length === 0) {
-            const isMobile = window.innerWidth <= 1024;
-            logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
-        }
-    });
+                    const isMobile = window.innerWidth <= 1024;
+                    logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
+                }
+            });
 
-    // Update logo on resize
-    window.addEventListener('resize', () => {
-        const logo = document.querySelector('.header-logo');
-        if (logo) {
-            const isMobile = window.innerWidth <= 1024;
-            logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
-        }
-    });
-
-    // Logout logic
-    const logoutBtn = document.getElementById('sidebarLogout');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = 'welcome.html';
+        // Update logo on resize
+        window.addEventListener('resize', () => {
+            const logo = document.querySelector('.header-logo');
+            if (logo) {
+                const isMobile = window.innerWidth <= 1024;
+                logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
+            }
         });
-    }
 
+<<<<<<< HEAD
     
     // Notification Dropdown Logic
     const notificationLinks = document.querySelectorAll('.notification-link');
@@ -465,11 +456,30 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
+=======
+        // Logout logic
+        const logoutBtn = document.getElementById('sidebarLogout');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'welcome.html';
+            });
+        }
+>>>>>>> 5c7f5d3 (v)
 
-        // Ensure main wrapper doesn't have padding
-        mainWrapper.style.paddingLeft = '0';
+        // Hide sidebar on landing if not logged in (visual only)
+        if (isLandingPage && !isLoggedIn) {
+            sidebar.classList.add('collapsed');
+            sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
+            overlay.style.display = 'none';
+            if (menuToggle) menuToggle.style.display = 'none';
+
+            // Ensure main wrapper doesn't have padding
+            mainWrapper.style.paddingLeft = '0';
+        }
     }
-}
 
 
 
@@ -491,4 +501,4 @@ function injectSidebar() {
     });
     observer.observe(document.documentElement, { attributes: true });
 
-document.addEventListener('DOMContentLoaded', injectSidebar);
+    document.addEventListener('DOMContentLoaded', injectSidebar);
