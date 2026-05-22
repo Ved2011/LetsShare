@@ -21,7 +21,7 @@ injection_code = """
     if (!document.getElementById('lucide-setup')) {
         const script = document.createElement('script');
         script.id = 'lucide-setup';
-        script.src = "https://unpkg.com/lucide@latest";
+        script.src = "assets/lucide.min.js";
         
         const style = document.createElement('style');
         style.innerHTML = `
