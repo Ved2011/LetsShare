@@ -385,10 +385,10 @@ function injectSidebar() {
         if (!dropdown) {
             dropdown = document.createElement('div');
             dropdown.className = 'notification-dropdown';
-            dropdown.style.cssText = 'display:none; position:absolute; top:45px; right:0; width:280px; max-height:400px; background:var(--card, #1e1e2f); border:1px solid var(--border, #2d2d3f); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; flex-direction:column; overflow:hidden;';
+            dropdown.style.cssText = 'display:none; position:absolute; top:45px; right:0; width:280px; max-height:400px; background:var(--card-bg, #1e1e2f); border:1px solid var(--border, #2d2d3f); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; flex-direction:column; overflow:hidden;';
             
             dropdown.innerHTML = `
-                <div style="padding:10px 12px; border-bottom:1px solid var(--border, #2d2d3f); font-weight:bold; color:var(--text-main, #fff); font-size:0.9rem;">Unread Notifications</div>
+                <div style="padding:10px 12px; border-bottom:1px solid var(--border, #2d2d3f); font-weight:bold; color:var(--text, #fff); font-size:0.9rem;">Unread Notifications</div>
                 <div class="notification-dropdown-list" style="display:flex; flex-direction:column; max-height:300px; overflow-y:auto;">
                     <div style="padding:15px 10px; text-align:center; color:var(--muted, #9ca3af); font-size:0.85rem;">Loading...</div>
                 </div>
@@ -422,7 +422,7 @@ function injectSidebar() {
                             badge.style.display = 'block';
                             badge.textContent = unread.length;
                             list.innerHTML = unread.map(n => `
-                                <a href="Notifications.html" style="padding:12px; border-bottom:1px solid var(--border, #2d2d3f); text-decoration:none; color:var(--text-main, #fff); font-size:0.85rem; display:block; transition:background 0.2s;">
+                                <a href="Notifications.html" style="padding:12px; border-bottom:1px solid var(--border, #2d2d3f); text-decoration:none; color:var(--text, #fff); font-size:0.85rem; display:block; transition:background 0.2s;">
                                     <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${n.message}</div>
                                 </a>
                             `).join('');
