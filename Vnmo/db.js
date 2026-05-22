@@ -148,6 +148,17 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        type TEXT NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT false,
+        related_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS community_messages (
         id SERIAL PRIMARY KEY,
         community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
