@@ -288,7 +288,7 @@ async function loadDashboard() {
     const statsResponse = await fetch('/api/stats');
     if (statsResponse.ok) {
       const stats = await statsResponse.json();
-      dashboardItems.textContent = stats.total_items || 0;
+      if (dashboardItems) dashboardItems.textContent = stats.total_items || 0;
     }
 
     const itemsResponse = await fetch('/api/items');
