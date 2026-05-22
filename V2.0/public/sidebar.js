@@ -216,6 +216,7 @@ function injectSidebar() {
 
         
         
+        
         // Standardize Header across all pages
         const header = document.querySelector('.header');
         const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome');
@@ -239,30 +240,45 @@ function injectSidebar() {
             
             const logoSrc = isMobile ? `assets/${prefix}Logo2.png` : `assets/${prefix}Logo3.png`;
 
+            const menuBtn = isMobile ? `<button id="menuToggle" class="menu-toggle" style="background:none; border:none; color:var(--text); font-size:1.5rem; cursor:pointer; padding:0.25rem 0.5rem 0.25rem 0; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i data-lucide="menu"></i></button>` : '';
+
             const uniformRight = isLoggedIn 
-                ? `${!isNotifPage ? '<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:1rem; display:flex; align-items:center; justify-content:center; color:var(--text);" title="Notifications"><i data-lucide="bell"></i></a>' : ''}
-                   <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:36px; height:36px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user?.name?.charAt(0).toUpperCase() || 'U'}</a>`
-                : `<a href="login.html" class="btn small primary" style="text-decoration: none; padding:0.5rem 1.2rem; border-radius:999px; background:var(--accent); color:white; font-weight:bold; font-size:0.9rem;">Login</a>`;
+                ? `${!isNotifPage ? '<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:0.75rem; display:flex; align-items:center; justify-content:center; color:var(--text);" title="Notifications"><i data-lucide="bell"></i></a>' : ''}
+                   <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:34px; height:34px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user?.name?.charAt(0).toUpperCase() || 'U'}</a>`
+                : `<a href="login.html" class="btn small primary" style="text-decoration: none; padding:0.5rem 1.2rem; border-radius:999px; background:var(--accent); color:white; font-weight:bold; font-size:0.9rem; flex-shrink:0;">Login</a>`;
 
             header.style.display = 'flex';
             header.style.justifyContent = 'space-between';
             header.style.alignItems = 'center';
             header.style.width = '100%';
+            header.style.gap = '0.5rem';
 
             header.innerHTML = `
-                <div class="header-left" style="display:flex; align-items:center;">
-                    <a href="${isLoggedIn ? 'user_Dashboard.html' : 'welcome.html'}" class="brand" style="display:flex; align-items:center; text-decoration:none;">
-                        <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='assets/Logo3.jpeg'" style="height:45px; width:auto; max-width:180px; border-radius:6px; object-fit:contain;">
+                <div class="header-left" style="display:flex; align-items:center; flex-shrink:0;">
+                    ${menuBtn}
+                    <a href="${isLoggedIn ? 'user_Dashboard.html' : 'welcome.html'}" class="brand" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
+                        <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='assets/Logo3.jpeg'" style="height:38px; width:auto; max-width:140px; border-radius:6px; object-fit:contain; flex-shrink:0;">
                     </a>
                 </div>
-                <div class="header-center" style="flex:1; text-align:center; padding:0 1rem; pointer-events:none;">
-                    <h1 class="page-title" style="margin:0; font-size:1.2rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare') ? '' : pageTitle}</h1>
+                <div class="header-center" style="flex:1; text-align:center; padding:0; min-width:0; pointer-events:none;">
+                    <h1 class="page-title" style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare') ? '' : pageTitle}</h1>
                 </div>
                 <div class="header-right" style="display:flex; align-items:center; justify-content:flex-end; flex-shrink:0;">
                     ${uniformRight}
                 </div>
             `;
             if (window.lucide) setTimeout(() => window.lucide.createIcons(), 0);
+            
+            // Toggle Logic Rebind for new menuToggle button
+            const injectedMenuToggle = document.getElementById('menuToggle');
+            if (injectedMenuToggle) {
+                injectedMenuToggle.addEventListener('click', () => {
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('sidebarOverlay');
+                    if (sidebar) sidebar.classList.toggle('active');
+                    if (overlay) overlay.classList.toggle('active');
+                });
+            }
         }
 
     // Toggle logic - Moved AFTER injection

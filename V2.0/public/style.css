@@ -1099,7 +1099,7 @@ html[data-theme="dark"] .header {
     background: var(--card-bg);
     border: 1px solid var(--border);
     box-shadow: 0 18px 35px rgba(15, 23, 42, 0.09);
-    min-width: 180px;
+    min-width: 0;
 }
 
 .hero-stat-card strong {
