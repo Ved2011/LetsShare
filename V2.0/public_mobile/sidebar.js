@@ -188,6 +188,30 @@ function injectSidebar() {
 
     overlay.addEventListener('click', closeSidebar);
 
+    // Close sidebar on outside click
+    document.addEventListener('click', (e) => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar && sidebar.classList.contains('active')) {
+            const clickedInsideSidebar = sidebar.contains(e.target);
+            const clickedMenuToggle = menuToggle && menuToggle.contains(e.target);
+            
+            if (!clickedInsideSidebar && !clickedMenuToggle) {
+                closeSidebar();
+            }
+        }
+    });
+
+    // Close sidebar on Escape key press
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar && sidebar.classList.contains('active')) {
+                closeSidebar();
+            }
+        }
+    });
+
+
     // Logout logic
     const logoutBtn = document.getElementById('sidebarLogout');
     if (logoutBtn) {
