@@ -53,6 +53,9 @@ function injectSidebar() {
         
         const style = document.createElement('style');
         style.innerHTML = `
+            
+            .sidebar-header:hover .main-logo { opacity: 0 !important; }
+            .sidebar-header:hover .hover-icon { opacity: 1 !important; }
             .sidebar-footer {
                 margin-top: auto;
                 border-top: 1px solid var(--border);
@@ -61,7 +64,10 @@ function injectSidebar() {
                 flex-direction: column;
                 gap: 0.25rem;
             }
-            .sidebar.collapsed .sidebar-footer {
+            .sidebar.collapsed 
+            .sidebar-header:hover .main-logo { opacity: 0 !important; }
+            .sidebar-header:hover .hover-icon { opacity: 1 !important; }
+            .sidebar-footer {
                 padding: 1.25rem 0.5rem;
                 gap: 0.75rem;
             }
