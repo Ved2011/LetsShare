@@ -62,7 +62,7 @@ function injectSidebar() {
                 gap: 0.75rem;
             }
             .sidebar-footer .nav-item {
-                margin: 0 !important;
+                margin: 0.2rem 0.3rem !important;
             }
             .notification-link {
                 color: var(--text-main);
