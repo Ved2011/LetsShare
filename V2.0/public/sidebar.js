@@ -340,4 +340,24 @@ function injectSidebar() {
     }
 }
 
+
+
+    // Theme Logo updater
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'data-theme') {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const pfx = currentTheme === 'dark' ? 'Dark_' : 'Light_';
+                document.querySelectorAll('img[src*="Logo"]').forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (!src) return;
+                    if (src.includes('Logo1.png')) img.src = `assets/${pfx}Logo1.png`;
+                    if (src.includes('Logo2.png')) img.src = `assets/${pfx}Logo2.png`;
+                    if (src.includes('Logo3.png')) img.src = `assets/${pfx}Logo3.png`;
+                });
+            }
+        });
+    });
+    observer.observe(document.documentElement, { attributes: true });
+
 document.addEventListener('DOMContentLoaded', injectSidebar);
