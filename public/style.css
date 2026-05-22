@@ -418,7 +418,7 @@ body {
 /* Grids & Cards */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5rem;
 }
 
@@ -2208,12 +2208,12 @@ html[data-theme="dark"] .custom-dropdown-menu {
 
 
 /* ====== TRULY RESPONSIVE GRIDS (Galaxy Fold / Desktop / Tablet) ====== */
-/* These rules use auto-fill and minmax to dynamically adjust columns 
+/* These rules use auto-fit and minmax to dynamically adjust columns 
    based on available width without strict media query breakpoints. */
 
 .items-square-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
     gap: 1.25rem !important;
 }
 
@@ -2225,7 +2225,7 @@ html[data-theme="dark"] .custom-dropdown-menu {
 
 .grid-container, .community-grid, .stats-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
     gap: 1.25rem !important;
 }
 
