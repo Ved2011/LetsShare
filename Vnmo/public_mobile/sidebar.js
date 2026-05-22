@@ -163,32 +163,56 @@ function injectSidebar() {
         document.body.prepend(sidebar);
     }
 
-    // Auto-unify Header
-    const header = document.querySelector('.header');
-    if (header) {
-        // Determine Page Title
-        let pageTitle = "LetsShare";
-        const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
-        const existingH2 = header.querySelector('h2');
-        const existingH1 = header.querySelector('h1');
-        if (existingSpan) pageTitle = existingSpan.textContent;
-        else if (existingH2) pageTitle = existingH2.textContent;
-        else if (existingH1) pageTitle = existingH1.textContent;
-        else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
+    
+        
+        // Standardize Header across all pages
+        const header = document.querySelector('.header');
+        const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome');
+        
+        if (header && !isWelcomePage) {
+            let pageTitle = "LetsShare";
+            const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
+            const existingH2 = header.querySelector('h2');
+            const existingH1 = header.querySelector('h1');
+            if (existingSpan) pageTitle = existingSpan.textContent;
+            else if (existingH2) pageTitle = existingH2.textContent;
+            else if (existingH1) pageTitle = existingH1.textContent;
+            else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
 
-        header.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
-                <div id="menuToggle" style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-                    <img src="/assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
-                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
+            const isNotifPage = window.location.pathname.toLowerCase().includes('notifications');
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            const isMobile = window.innerWidth <= 1024;
+            const theme = document.documentElement.getAttribute('data-theme') || 'light';
+            const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
+            
+            const logoSrc = isMobile ? `assets/${prefix}Logo2.png` : `assets/${prefix}Logo3.png`;
+
+            const uniformRight = isLoggedIn 
+                ? `${!isNotifPage ? '<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:1rem; display:flex; align-items:center; justify-content:center; color:var(--text);" title="Notifications"><i data-lucide="bell"></i></a>' : ''}
+                   <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:36px; height:36px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user?.name?.charAt(0).toUpperCase() || 'U'}</a>`
+                : `<a href="login.html" class="btn small primary" style="text-decoration: none; padding:0.5rem 1.2rem; border-radius:999px; background:var(--accent); color:white; font-weight:bold; font-size:0.9rem;">Login</a>`;
+
+            header.style.display = 'flex';
+            header.style.justifyContent = 'space-between';
+            header.style.alignItems = 'center';
+            header.style.width = '100%';
+
+            header.innerHTML = `
+                <div class="header-left" style="display:flex; align-items:center;">
+                    <a href="${isLoggedIn ? 'user_Dashboard.html' : 'welcome.html'}" class="brand" style="display:flex; align-items:center; text-decoration:none;">
+                        <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='assets/Logo3.jpeg'" style="height:45px; width:auto; max-width:180px; border-radius:6px; object-fit:contain;">
+                    </a>
                 </div>
-                <h2 style="font-size: 1.1rem; margin: 0; color: var(--text); flex-grow: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pageTitle}</h2>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <a href="user_Profile.html" class="header-avatar" style="text-decoration: none; width: 32px; height: 32px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; background: var(--accent); color: white; border-radius: 50%;">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
+                <div class="header-center" style="flex:1; text-align:center; padding:0 1rem; pointer-events:none;">
+                    <h1 class="page-title" style="margin:0; font-size:1.2rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare') ? '' : pageTitle}</h1>
                 </div>
-            </div>
-        `;
-    }
+                <div class="header-right" style="display:flex; align-items:center; justify-content:flex-end; flex-shrink:0;">
+                    ${uniformRight}
+                </div>
+            `;
+            if (window.lucide) setTimeout(() => window.lucide.createIcons(), 0);
+        }
 
     // Toggle logic
     const menuToggle = document.getElementById('menuToggle');

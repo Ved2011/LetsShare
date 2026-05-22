@@ -214,7 +214,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const token = localStorage.getItem('token');
   if (token) {
-    const guestButtons = document.querySelectorAll('.auth-buttons a.btn');
-    guestButtons.forEach(btn => btn.style.display = 'none');
+    const authButtons = document.getElementById('authButtons');
+    if (authButtons) {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      authButtons.style.display = 'flex';
+      authButtons.style.alignItems = 'center';
+      authButtons.innerHTML = `
+        <a href="user_Dashboard.html" class="btn primary" style="margin-right: 1rem;">Go to Dashboard</a>
+        <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:36px; height:36px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user.name ? user.name.charAt(0).toUpperCase() : 'U'}</a>
+      `;
+    }
   }
 });
