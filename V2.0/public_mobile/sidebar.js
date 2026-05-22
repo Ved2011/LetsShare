@@ -94,8 +94,11 @@ function injectSidebar() {
     }
 
     sidebar.innerHTML = `
-        <div class="sidebar-header" style="justify-content: center; padding: 1rem 0;">
-            <img src="/assets/Logo1.jpeg" alt="Logo" style="height: 45px; width: auto; border-radius: 6px;">
+        <div class="sidebar-header" style="justify-content: center; padding: 1rem 0; cursor: pointer;">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; height: 45px; width: 45px;">
+                <img src="/assets/Logo1.jpeg" alt="Logo" class="main-logo" style="height: 100%; width: 100%; border-radius: 6px; transition: opacity 0.2s;">
+                <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: var(--text-main); width: 28px; height: 28px;"></i>
+            </div>
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">

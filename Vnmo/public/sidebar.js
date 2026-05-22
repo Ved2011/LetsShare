@@ -118,8 +118,11 @@ function injectSidebar() {
     }
 
     sidebar.innerHTML = `
-        <div class="sidebar-header">
-            <img src="assets/${prefix}Logo1.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+        <div class="sidebar-header" style="cursor: pointer;">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
+                <img src="assets/${prefix}Logo1.png" alt="Logo" class="main-logo" style="width: 100%; height: 100%; border-radius: 6px; transition: opacity 0.2s;">
+                <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: white; width: 24px; height: 24px;"></i>
+            </div>
             <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
@@ -247,7 +250,7 @@ function injectSidebar() {
     };
 
     if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
-    const sidebarLogo = document.querySelector('.sidebar-header img');
+    const sidebarLogo = document.querySelector('.sidebar-header');
     if (sidebarLogo) sidebarLogo.addEventListener('click', toggleSidebar);
     if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
 
