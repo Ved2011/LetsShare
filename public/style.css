@@ -538,7 +538,7 @@ body {
 /* Image styling for item tiles */
 .item-image {
     width: 100%;
-    height: 180px;
+    height: 140px;
     object-fit: cover;
     border-radius: 0;
     margin-bottom: 0.75rem;
@@ -2253,7 +2253,7 @@ html[data-theme="dark"] .custom-dropdown-menu {
     .grid-container,
     .items-responsive-grid {
         display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
         gap: 1.5rem !important;
     }
 }
