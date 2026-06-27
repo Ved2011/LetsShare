@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-
 <head>
     <script>
         (function() {
@@ -11,264 +10,480 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Search - LetsShare</title>
-    <link rel="icon" href="/assets/Logo3.jpeg" type="image/jpeg">
+    <link rel="icon" href="assets/Light_Logo1.png" type="image/jpeg">
     <link rel="stylesheet" href="style.css">
     <style>
-        .search-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 1rem;
+        .search-wrap {
+            padding: 0 0.75rem 4rem;
         }
 
+        /* ── Search box ── */
         .search-box-wrapper {
             position: relative;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem;
         }
-
         .search-box {
             width: 100%;
-            padding: 1.25rem 1.5rem 1.25rem 3.5rem;
-            font-size: 1.2rem;
-            border-radius: 16px;
+            padding: 0.9rem 2.75rem 0.9rem 3rem;
+            font-size: 1rem;
+            border-radius: 12px;
             border: 2px solid var(--border);
             background: var(--card-bg);
             color: var(--text);
-            transition: all 0.3s ease;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
         }
-
         .search-box:focus {
             border-color: var(--accent);
             outline: none;
-            box-shadow: 0 0 0 4px rgba(79, 124, 222, 0.1);
+            box-shadow: 0 0 0 3px rgba(79,124,222,0.12);
         }
-
-        .search-icon-large {
+        .search-icon {
             position: absolute;
-            left: 1.25rem;
+            left: 0.9rem;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.5rem;
+            width: 18px; height: 18px;
             color: var(--muted);
+            pointer-events: none;
         }
+        .search-clear {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px; height: 22px;
+            color: var(--muted);
+            cursor: pointer;
+            display: none;
+            background: none;
+            border: none;
+            padding: 0;
+            align-items: center;
+            justify-content: center;
+        }
+        .search-clear.visible { display: flex; }
+        .search-clear:hover { color: var(--text); }
 
-        .result-item {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
+        /* ── Suggestions dropdown ── */
+        .suggestions-dropdown {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0; right: 0;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            z-index: 100;
+            overflow: hidden;
+            display: none;
+        }
+        html[data-theme="dark"] .suggestions-dropdown {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .suggestions-dropdown.visible { display: block; }
+        .suggestion-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            transition: background 0.2s ease;
+            gap: 0.65rem;
+            padding: 0.6rem 0.9rem;
+            cursor: pointer;
+            transition: background 0.15s;
             text-decoration: none;
             color: inherit;
+            font-size: 0.9rem;
         }
+        .suggestion-item:hover,
+        .suggestion-item.focused { background: rgba(0,0,0,0.04); }
+        html[data-theme="dark"] .suggestion-item:hover,
+        html[data-theme="dark"] .suggestion-item.focused { background: rgba(255,255,255,0.06); }
+        .suggestion-icon {
+            width: 28px; height: 28px;
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; color: white;
+        }
+        .suggestion-meta {
+            font-size: 0.68rem; color: var(--muted);
+            margin-left: auto; flex-shrink: 0;
+        }
+        .suggestions-section-label {
+            font-size: 0.65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--muted); padding: 0.45rem 0.9rem 0.2rem;
+        }
+        .suggestion-sep { border: none; border-top: 1px solid var(--border); margin: 0.2rem 0; }
 
-        .result-item:hover {
-            background: rgba(0, 0, 0, 0.02);
-        }
+        /* ── Recent ── */
+        .recent-searches { display: none; flex-direction: column; }
+        .recent-searches.visible { display: flex; }
+        .recent-header { display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.9rem 0.15rem; }
+        .recent-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+        .clear-recent-btn { font-size: 0.7rem; color: var(--accent); background: none; border: none; cursor: pointer; font-family: inherit; }
+        .recent-item { display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.9rem; cursor: pointer; color: var(--text); transition: background 0.15s; font-size: 0.88rem; }
+        .recent-item:hover { background: rgba(0,0,0,0.04); }
+        html[data-theme="dark"] .recent-item:hover { background: rgba(255,255,255,0.06); }
+        .recent-remove { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; padding: 0; font-size: 0.85rem; display: none; }
+        .recent-item:hover .recent-remove { display: block; }
 
-        html[data-theme="dark"] .result-item:hover {
-            background: rgba(255, 255, 255, 0.02);
+        /* ── Toolbar ── */
+        .search-toolbar {
+            display: flex; gap: 0.4rem;
+            margin-bottom: 0.75rem;
+            overflow-x: auto; padding-bottom: 2px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
         }
-
-        .result-category {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            background: var(--accent);
-            color: white;
-            margin-bottom: 0.25rem;
-            display: inline-block;
-        }
-
-        .result-subtext {
-            font-size: 0.85rem;
-            color: var(--muted);
-        }
-        .category-filters {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.25rem;
-            flex-wrap: wrap;
-        }
+        .search-toolbar::-webkit-scrollbar { display: none; }
         .cat-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 0.4rem 0.85rem;
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 0.3rem 0.7rem;
             border-radius: 999px;
             border: 2px solid var(--border);
             background: var(--card-bg);
             color: var(--muted);
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-            white-space: nowrap;
+            font-size: 0.75rem; font-weight: 600;
+            cursor: pointer; transition: all 0.18s;
+            font-family: inherit; white-space: nowrap; flex-shrink: 0;
         }
-        .cat-chip:hover {
-            border-color: var(--accent);
-            color: var(--text);
+        .cat-chip:hover { border-color: var(--accent); color: var(--text); }
+        .cat-chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+        .cat-chip .chip-count { background: rgba(255,255,255,0.28); border-radius: 999px; padding: 0 4px; font-size: 0.67rem; min-width: 16px; text-align: center; }
+        .cat-chip:not(.active) .chip-count { background: var(--border); color: var(--muted); }
+        .sort-select {
+            margin-left: auto; font-family: inherit; font-size: 0.72rem;
+            border: 2px solid var(--border); border-radius: 8px;
+            padding: 0.28rem 0.5rem; background: var(--card-bg);
+            color: var(--text); cursor: pointer; flex-shrink: 0;
         }
-        .cat-chip.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
+
+        /* ── Result cards ── */
+        .results-list { display: flex; flex-direction: column; }
+        .result-card {
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            padding: 0.8rem 0.9rem;
+            border-bottom: 1px solid var(--border);
+            text-decoration: none; color: inherit;
+            transition: background 0.15s;
+            animation: fadeSlideIn 0.2s ease both;
         }
-        .cat-chip svg {
-            flex-shrink: 0;
+        .result-card:last-child { border-bottom: none; }
+        .result-card:active { background: rgba(79,124,222,0.07); }
+        .result-card.focused { background: rgba(79,124,222,0.07); }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
+        .result-avatar { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: white; flex-shrink: 0; }
+        .result-body { flex: 1; min-width: 0; }
+        .result-top { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.1rem; }
+        .result-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 0.63rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.15rem 0.45rem; border-radius: 4px; color: white; }
+        .result-name { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+        .result-name mark { background: rgba(79,124,222,0.2); color: var(--accent); border-radius: 3px; padding: 0 1px; }
+        html[data-theme="dark"] .result-name mark { background: rgba(79,124,222,0.35); }
+        .result-meta { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.2rem; }
+        .meta-pill { display: inline-flex; align-items: center; gap: 2px; font-size: 0.68rem; color: var(--muted); background: var(--border); border-radius: 4px; padding: 0.08rem 0.4rem; }
+        .status-pill { font-size: 0.63rem; font-weight: 600; border-radius: 4px; padding: 0.08rem 0.4rem; }
+        .status-pill.available { background: rgba(16,185,129,0.15); color: #10b981; }
+        .status-pill.borrowed   { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .status-pill.private    { background: rgba(100,116,139,0.15); color: #64748b; }
+        .result-arrow { color: var(--muted); flex-shrink: 0; padding-top: 2px; }
+
+        /* ── Skeleton ── */
+        .skeleton-card { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 0.9rem; border-bottom: 1px solid var(--border); }
+        .skeleton-avatar { width: 38px; height: 38px; border-radius: 10px; background: var(--border); animation: shimmer 1.4s infinite; }
+        .skeleton-lines { flex: 1; }
+        .skeleton-line { height: 9px; border-radius: 5px; background: var(--border); margin-bottom: 7px; animation: shimmer 1.4s infinite; }
+        .skeleton-line.short { width: 35%; }
+        .skeleton-line.medium { width: 60%; }
+        .skeleton-line.long { width: 80%; }
+        @keyframes shimmer { 0%{opacity:1} 50%{opacity:0.4} 100%{opacity:1} }
+
+        /* ── Empty ── */
+        .empty-state-adv { padding: 2.5rem 1.5rem; text-align: center; color: var(--muted); }
+        .empty-state-adv svg { margin-bottom: 0.65rem; opacity: 0.4; }
+        .empty-state-adv h4 { margin: 0 0 0.35rem; color: var(--text); font-size: 1rem; }
+        .empty-state-adv p { margin: 0; font-size: 0.83rem; }
+
+        .results-count-bar { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.5rem; min-height: 1.1em; }
+
+        .results-card { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: var(--card-bg); min-height: 100px; }
     </style>
 </head>
-
 <body>
     <div class="page-wrapper">
         <header class="header">
-            <h2 style="margin: 0;">Global Search</h2>
+            <h2 style="margin:0;">Global Search</h2>
         </header>
 
-        <div class="search-container">
+        <div class="search-wrap">
 
-            <div class="search-box-wrapper">
-                <i data-lucide="search" class="search-icon-large" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; color: var(--muted); pointer-events: none;"></i>
-                <input type="text" id="globalSearchInput" class="search-box"
-                    placeholder="Search communities, items, or users..." autofocus style="padding-left: 3.5rem;">
+            <!-- Search Box + Suggestions -->
+            <div class="search-box-wrapper" id="searchBoxWrapper">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="globalSearchInput" class="search-box" placeholder="Search communities, items, users…" autocomplete="off" spellcheck="false">
+                <button class="search-clear" id="searchClear" title="Clear" aria-label="Clear search">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+
+                <div class="suggestions-dropdown" id="suggestionsDropdown">
+                    <div class="recent-searches" id="recentSearchesBlock">
+                        <div class="recent-header">
+                            <span class="recent-label">Recent</span>
+                            <button class="clear-recent-btn" onclick="clearAllRecent()">Clear all</button>
+                        </div>
+                        <div id="recentList"></div>
+                        <hr class="suggestion-sep">
+                    </div>
+                    <div id="suggestionsList"></div>
+                </div>
             </div>
 
-            <div class="category-filters">
+            <!-- Filter toolbar (scrollable on mobile) -->
+            <div class="search-toolbar" id="searchToolbar" style="display:none;">
                 <button class="cat-chip active" data-filter="all" onclick="setFilter('all')">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    All
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    All <span class="chip-count" id="cnt-all">0</span>
                 </button>
                 <button class="cat-chip" data-filter="Community" onclick="setFilter('Community')">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    Communities
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Communities <span class="chip-count" id="cnt-community">0</span>
                 </button>
                 <button class="cat-chip" data-filter="Item" onclick="setFilter('Item')">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                    Items
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Items <span class="chip-count" id="cnt-item">0</span>
                 </button>
                 <button class="cat-chip" data-filter="User" onclick="setFilter('User')">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    Users
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Users <span class="chip-count" id="cnt-user">0</span>
                 </button>
+                <select class="sort-select" id="sortSelect" onchange="onSortChange()">
+                    <option value="relevance">Relevance</option>
+                    <option value="az">A → Z</option>
+                    <option value="za">Z → A</option>
+                </select>
             </div>
 
-            <div id="searchResults" class="card" style="padding: 0; min-height: 200px;">
-                <p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>
+            <div class="results-count-bar" id="resultsCountBar"></div>
+
+            <div class="results-card" id="resultsCard">
+                <div class="empty-state-adv">
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <h4>Search LetsShare</h4>
+                    <p>Find communities, items, and members.</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="sidebar.js"></script>
     <script>
-        const searchInput = document.getElementById('globalSearchInput');
-        const resultsContainer = document.getElementById('searchResults');
+    (() => {
+        const input       = document.getElementById('globalSearchInput');
+        const dropdown    = document.getElementById('suggestionsDropdown');
+        const suggList    = document.getElementById('suggestionsList');
+        const recentBlock = document.getElementById('recentSearchesBlock');
+        const recentList  = document.getElementById('recentList');
+        const resultsCard = document.getElementById('resultsCard');
+        const toolbar     = document.getElementById('searchToolbar');
+        const countBar    = document.getElementById('resultsCountBar');
+        const clearBtn    = document.getElementById('searchClear');
 
-        let debounceTimer;
-        let activeFilter = 'all';
-        let allResults = [];
+        let debounceTimer, suggestTimer;
+        let activeFilter  = 'all';
+        let allResults    = [];
+        let currentQuery  = '';
+        let suggestFocused = -1;
 
-        function setFilter(filter) {
-            activeFilter = filter;
-            document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
-            document.querySelector(`.cat-chip[data-filter="${filter}"]`).classList.add('active');
+        // ── Recent ────────────────────────────────────────────────────────────
+        function getRecent() { try { return JSON.parse(localStorage.getItem('ls_recent_searches') || '[]'); } catch { return []; } }
+        function saveRecent(arr) { localStorage.setItem('ls_recent_searches', JSON.stringify(arr.slice(0, 8))); }
+        function addRecent(q) { if (!q || q.length < 2) return; let a = getRecent().filter(x => x.toLowerCase() !== q.toLowerCase()); a.unshift(q); saveRecent(a); }
+        function removeRecent(q) { saveRecent(getRecent().filter(x => x !== q)); renderRecentBlock(); }
+        function clearAllRecent() { saveRecent([]); renderRecentBlock(); }
+        window.clearAllRecent = clearAllRecent;
+        window.removeRecent = removeRecent;
+
+        function renderRecentBlock() {
+            const arr = getRecent();
+            if (!arr.length) { recentBlock.classList.remove('visible'); return; }
+            recentBlock.classList.add('visible');
+            recentList.innerHTML = arr.map(q => `
+                <div class="recent-item" onclick="useRecent(${JSON.stringify(q)})">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    ${escHtml(q)}
+                    <button class="recent-remove" onclick="event.stopPropagation();removeRecent(${JSON.stringify(q)})" title="Remove">✕</button>
+                </div>
+            `).join('');
+        }
+        window.useRecent = function(q) { input.value = q; closeSuggestions(); clearBtn.classList.add('visible'); toolbar.style.display = 'flex'; performSearch(q); };
+
+        // ── Helpers ──────────────────────────────────────────────────────────
+        function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        function highlight(t, q) { if (!q||!t) return escHtml(t||''); const s=q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); return escHtml(t).replace(new RegExp(`(${s})`,'gi'),'<mark>$1</mark>'); }
+        function catColor(c) { return c==='Community'?'#10b981':c==='Item'?'#3b82f6':'#f59e0b'; }
+        function catIcon(c) {
+            const s='width:11px;height:11px;flex-shrink:0;fill:none;stroke:white;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round';
+            if(c==='Community') return `<svg style="${s}" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+            if(c==='Item') return `<svg style="${s}" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
+            return `<svg style="${s}" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+        }
+        function skeleton() { return Array(3).fill('').map(()=>`<div class="skeleton-card"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line short"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div></div></div>`).join(''); }
+        function linkFor(r) { if(r.category==='Community') return `community_Home.html?id=${r.id}`; if(r.category==='Item') return `item_Details.html?id=${r.id}`; return `user_View.html?id=${r.id}`; }
+
+        function buildMeta(r) {
+            const pills = [];
+            if (r.subtext) pills.push(`<span class="meta-pill">${escHtml(r.subtext)}</span>`);
+            if (r.category === 'Community') {
+                if (r.member_count > 0) pills.push(`<span class="meta-pill">${r.member_count} member${r.member_count!==1?'s':''}</span>`);
+                if (r.is_private) pills.push('<span class="status-pill private">🔒 Private</span>');
+            }
+            if (r.category === 'Item') {
+                if (r.extra1) pills.push(`<span class="meta-pill">by ${escHtml(r.extra1)}</span>`);
+                if (r.price != null && r.price > 0) pills.push(`<span class="meta-pill">₹${Number(r.price).toFixed(0)}/day</span>`);
+                if (r.status) pills.push(`<span class="status-pill ${r.status==='available'?'available':'borrowed'}">${r.status}</span>`);
+            }
+            if (r.category === 'User') {
+                if (r.extra1) pills.push(`<span class="meta-pill">${escHtml(r.extra1)}</span>`);
+                if (r.extra2 && r.extra2 !== 'Free') pills.push(`<span class="meta-pill">⭐ ${escHtml(r.extra2)}</span>`);
+            }
+            return pills.length ? `<div class="result-meta">${pills.join('')}</div>` : '';
+        }
+
+        function renderCard(r, q) {
+            return `<a href="${linkFor(r)}" class="result-card" onclick="addRecent(${JSON.stringify(q)})">
+                <div class="result-avatar" style="background:${catColor(r.category)}">${escHtml(r.name.charAt(0).toUpperCase())}</div>
+                <div class="result-body">
+                    <div class="result-top"><span class="result-badge" style="background:${catColor(r.category)}">${catIcon(r.category)} ${r.category}</span></div>
+                    <div class="result-name">${highlight(r.name, q)}</div>
+                    ${buildMeta(r)}
+                </div>
+                <div class="result-arrow"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+            </a>`;
+        }
+
+        // ── Filter & Sort ────────────────────────────────────────────────────
+        function setFilter(f) {
+            activeFilter = f;
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === f));
             renderResults();
+        }
+        window.setFilter = setFilter;
+
+        function onSortChange() { if (currentQuery) performSearch(currentQuery, document.getElementById('sortSelect').value); }
+        window.onSortChange = onSortChange;
+
+        function updateCounts(results) {
+            document.getElementById('cnt-all').textContent       = results.length;
+            document.getElementById('cnt-community').textContent = results.filter(r=>r.category==='Community').length;
+            document.getElementById('cnt-item').textContent      = results.filter(r=>r.category==='Item').length;
+            document.getElementById('cnt-user').textContent      = results.filter(r=>r.category==='User').length;
         }
 
         function renderResults() {
             const filtered = activeFilter === 'all' ? allResults : allResults.filter(r => r.category === activeFilter);
             if (!filtered.length) {
-                resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">No results in this category.</p>';
+                const cn = activeFilter==='all'?'anything':activeFilter.toLowerCase()+'s';
+                resultsCard.innerHTML = `<div class="empty-state-adv"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h4>No ${cn} found</h4><p>Try a different search or filter.</p></div>`;
+                countBar.textContent = '';
                 return;
             }
-            resultsContainer.innerHTML = filtered.map(r => {
-                let link = '#';
-                if (r.category === 'Community') link = `community_Home.html?id=${r.id}`;
-                else if (r.category === 'Item') link = `item_Details.html?id=${r.id}`;
-                else if (r.category === 'User') link = `user_View.html?id=${r.id}`;
-                return `
-                    <a href="${link}" class="result-item">
-                        <div class="header-avatar" style="width: 40px; height: 40px; flex-shrink: 0;">${r.name.charAt(0).toUpperCase()}</div>
-                        <div style="flex-grow: 1;">
-                            <span class="result-category" style="background: ${getCategoryColor(r.category)}; display: inline-flex; align-items: center; gap: 4px; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem;">
-                                ${getCategoryIcon(r.category)} ${r.category}
-                            </span>
-                            <h4 style="margin: 0; margin-top: 0.25rem;">${r.name}</h4>
-                            <p class="result-subtext" style="margin: 0;">${r.subtext}</p>
-                        </div>
-                        <span style="color: var(--muted);">→</span>
-                    </a>
-                `;
-            }).join('');
+            countBar.textContent = `${filtered.length} result${filtered.length!==1?'s':''}${activeFilter!=='all'?' · filtered':''}`;
+            resultsCard.innerHTML = `<div class="results-list">${filtered.map(r=>renderCard(r,currentQuery)).join('')}</div>`;
         }
 
-        // Initialize Lucide icons on load
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.lucide) {
-                lucide.createIcons();
-            } else {
-                setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 500);
-            }
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(debounceTimer);
-            const query = e.target.value.trim();
-
-            if (query.length < 1) {
-                resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>';
-                return;
-            }
-
-            debounceTimer = setTimeout(() => performSearch(query), 300);
-        });
-
-        async function performSearch(query) {
+        // ── Search ────────────────────────────────────────────────────────────
+        async function performSearch(query, sort) {
+            sort = sort || document.getElementById('sortSelect').value;
+            currentQuery = query;
+            addRecent(query);
+            closeSuggestions();
+            toolbar.style.display = 'flex';
+            resultsCard.innerHTML = skeleton();
+            countBar.textContent  = 'Searching…';
             const token = localStorage.getItem('token');
             try {
-                const res = await fetch(`/api/users/global-search?q=${encodeURIComponent(query)}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await fetch(`/api/users/global-search?q=${encodeURIComponent(query)}&sort=${sort}`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const results = await res.json();
-
-                if (!Array.isArray(results) || results.length === 0) {
-                    allResults = [];
-                    resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">No results found for "' + query + '"</p>';
-                    if (results.error) {
-                        resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem; color: var(--danger);">' + results.error + '</p>';
-                    }
-                    return;
+                if (!Array.isArray(results) || !results.length) {
+                    allResults = []; updateCounts([]);
+                    resultsCard.innerHTML = `<div class="empty-state-adv"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h4>No results for "${escHtml(query)}"</h4><p>Check spelling or try a broader term.</p></div>`;
+                    countBar.textContent = '0 results'; return;
                 }
-
-                allResults = results;
-                renderResults();
-            } catch (err) {
-                console.error('Search error:', err);
-            }
+                allResults = results; updateCounts(results); renderResults();
+            } catch(err) { resultsCard.innerHTML = `<div class="empty-state-adv"><h4>Search unavailable</h4><p>Please try again.</p></div>`; countBar.textContent=''; }
         }
 
-        function getCategoryColor(cat) {
-            switch (cat) {
-                case 'Community': return '#10b981';
-                case 'Item': return '#3b82f6';
-                case 'User': return '#f59e0b';
-                default: return '#64748b';
-            }
+        // ── Suggestions ──────────────────────────────────────────────────────
+        async function fetchSuggestions(q) {
+            if (q.length < 1) { renderSuggestions([]); return; }
+            const token = localStorage.getItem('token');
+            try { const res = await fetch(`/api/users/search-suggestions?q=${encodeURIComponent(q)}`, { headers: { 'Authorization': `Bearer ${token}` } }); renderSuggestions(await res.json()); }
+            catch { renderSuggestions([]); }
         }
 
-        function getCategoryIcon(cat) {
-            const s = 'width:12px;height:12px;display:inline-block;vertical-align:middle;fill:none;stroke:white;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round';
-            switch (cat) {
-                case 'Community': return `<svg style="${s}" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
-                case 'Item': return `<svg style="${s}" viewBox="0 0 24 24"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>`;
-                case 'User': return `<svg style="${s}" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-                default: return `<svg style="${s}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
-            }
+        function renderSuggestions(items) {
+            suggList.innerHTML = '';
+            if (!items.length) { dropdown.classList.toggle('visible', recentBlock.classList.contains('visible')); return; }
+            dropdown.classList.add('visible');
+            suggList.innerHTML = `<div class="suggestions-section-label">Suggestions</div>` +
+                items.map((s,i) => `<div class="suggestion-item" data-idx="${i}" onclick="pickSuggestion(${JSON.stringify(s.name)})"><div class="suggestion-icon" style="background:${catColor(s.category)}">${catIcon(s.category)}</div><span>${highlight(s.name, input.value.trim())}</span><span class="suggestion-meta">${s.category}</span></div>`).join('');
         }
+
+        window.pickSuggestion = function(name) { input.value = name; closeSuggestions(); clearBtn.classList.add('visible'); performSearch(name); };
+
+        function openDropdown() {
+            renderRecentBlock();
+            if (getRecent().length > 0 || suggList.innerHTML.trim().length > 0) dropdown.classList.add('visible');
+        }
+        function closeSuggestions() { dropdown.classList.remove('visible'); suggestFocused = -1; }
+
+        // ── Input events ─────────────────────────────────────────────────────
+        input.addEventListener('input', e => {
+            const q = e.target.value.trim();
+            clearBtn.classList.toggle('visible', q.length > 0);
+            clearTimeout(debounceTimer); clearTimeout(suggestTimer);
+            if (q.length < 1) {
+                suggList.innerHTML = ''; openDropdown();
+                toolbar.style.display = 'none';
+                resultsCard.innerHTML = `<div class="empty-state-adv"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h4>Search LetsShare</h4><p>Find communities, items, and members.</p></div>`;
+                countBar.textContent = ''; allResults = []; return;
+            }
+            suggestTimer   = setTimeout(() => fetchSuggestions(q), 150);
+            debounceTimer  = setTimeout(() => performSearch(q), 380);
+        });
+
+        input.addEventListener('focus', openDropdown);
+        document.addEventListener('click', e => { if (!document.getElementById('searchBoxWrapper').contains(e.target)) closeSuggestions(); });
+
+        // Keyboard nav
+        input.addEventListener('keydown', e => {
+            const items = dropdown.querySelectorAll('.suggestion-item, .recent-item');
+            if (!dropdown.classList.contains('visible') || !items.length) { if(e.key==='Enter'&&input.value.trim()) performSearch(input.value.trim()); return; }
+            if (e.key==='ArrowDown') { e.preventDefault(); suggestFocused=Math.min(suggestFocused+1,items.length-1); items.forEach((el,i)=>el.classList.toggle('focused',i===suggestFocused)); }
+            else if (e.key==='ArrowUp') { e.preventDefault(); suggestFocused=Math.max(suggestFocused-1,-1); items.forEach((el,i)=>el.classList.toggle('focused',i===suggestFocused)); }
+            else if (e.key==='Enter') { e.preventDefault(); if(suggestFocused>=0&&items[suggestFocused]) items[suggestFocused].click(); else if(input.value.trim()) performSearch(input.value.trim()); }
+            else if (e.key==='Escape') closeSuggestions();
+        });
+
+        clearBtn.addEventListener('click', () => {
+            input.value = ''; clearBtn.classList.remove('visible');
+            toolbar.style.display='none'; countBar.textContent=''; allResults=[];
+            suggList.innerHTML='';
+            resultsCard.innerHTML=`<div class="empty-state-adv"><svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><h4>Search LetsShare</h4><p>Find communities, items, and members.</p></div>`;
+            openDropdown(); input.focus();
+        });
+
+        // Cmd/Ctrl+K
+        document.addEventListener('keydown', e => { if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();input.focus();input.select();openDropdown();} });
+
+        window.addRecent = addRecent;
+
+        // Pre-fill from URL param
+        const urlQ = new URLSearchParams(location.search).get('q');
+        if (urlQ) { input.value=urlQ; clearBtn.classList.add('visible'); performSearch(urlQ); }
+    })();
     </script>
 </body>
-
 </html>

@@ -134,30 +134,163 @@ router.get('/following/items', authenticateToken, async (req, res) => {
   }
 });
 
-// Global Search (Communities, Items, Users)
+// Global Search — full-text + fuzzy matching with rich metadata
 router.get('/global-search', authenticateToken, async (req, res) => {
   const query = (req.query.q || '').trim();
   const userId = req.user.id;
+  const sortBy = req.query.sort || 'relevance'; // 'relevance' | 'az' | 'za'
   if (!query) return res.json([]);
+
+  const searchTerm = `%${query}%`;
+  const tsQuery = query.split(/\s+/).filter(Boolean).map(w => w + ':*').join(' & ');
+
+  try {
+    // Ensure pg_trgm is available (safe to run repeatedly)
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
+
+    const result = await pool.query(`
+      SELECT * FROM (
+        -- Communities
+        (SELECT
+          c.id,
+          c.name,
+          'Community' AS category,
+          COALESCE(c.description, '') AS description,
+          COALESCE(c.city || ', ' || c.state, c.address, '') AS subtext,
+          c.is_private,
+          c.chat_enabled,
+          COUNT(cm.id)::int AS member_count,
+          GREATEST(
+            COALESCE(similarity(c.name, $1), 0),
+            COALESCE(similarity(c.description, $1), 0) * 0.5,
+            CASE WHEN c.name ILIKE $2 THEN 0.9 ELSE 0 END,
+            COALESCE(ts_rank(to_tsvector('english', COALESCE(c.name,'') || ' ' || COALESCE(c.description,'')),
+              to_tsquery('english', $3)), 0)
+          ) AS score,
+          NULL::text AS extra1,
+          NULL::text AS extra2,
+          NULL::text AS status,
+          NULL::decimal AS price
+        FROM communities c
+        LEFT JOIN community_members cm ON cm.community_id = c.id
+        WHERE
+          c.name ILIKE $2
+          OR c.address ILIKE $2
+          OR c.city ILIKE $2
+          OR c.description ILIKE $2
+          OR similarity(c.name, $1) > 0.2
+        GROUP BY c.id
+        LIMIT 15)
+
+        UNION ALL
+
+        -- Items
+        (SELECT
+          i.id,
+          i.name,
+          'Item' AS category,
+          COALESCE(id2.description, '') AS description,
+          COALESCE(id2.category, 'Uncategorized') AS subtext,
+          false AS is_private,
+          false AS chat_enabled,
+          0 AS member_count,
+          GREATEST(
+            COALESCE(similarity(i.name, $1), 0),
+            CASE WHEN i.name ILIKE $2 THEN 0.9 ELSE 0 END,
+            COALESCE(ts_rank(to_tsvector('english', COALESCE(i.name,'')),
+              to_tsquery('english', $3)), 0)
+          ) AS score,
+          i.owner_name AS extra1,
+          id2.condition AS extra2,
+          i.status,
+          i.price_per_day AS price
+        FROM items i
+        LEFT JOIN item_details id2 ON id2.item_id = i.id
+        WHERE
+          i.name ILIKE $2
+          OR id2.category ILIKE $2
+          OR id2.description ILIKE $2
+          OR i.owner_name ILIKE $2
+          OR similarity(i.name, $1) > 0.2
+        LIMIT 15)
+
+        UNION ALL
+
+        -- Users
+        (SELECT
+          u.id,
+          u.name,
+          'User' AS category,
+          COALESCE(u.bio, '') AS description,
+          COALESCE(u.username, u.email) AS subtext,
+          false AS is_private,
+          false AS chat_enabled,
+          0 AS member_count,
+          GREATEST(
+            COALESCE(similarity(u.name, $1), 0),
+            CASE WHEN u.name ILIKE $2 OR u.email ILIKE $2 THEN 0.9 ELSE 0 END,
+            COALESCE(ts_rank(to_tsvector('english', COALESCE(u.name,'') || ' ' || COALESCE(u.username,'')),
+              to_tsquery('english', $3)), 0)
+          ) AS score,
+          COALESCE(u.city || ', ' || u.state, u.city, u.locality, '') AS extra1,
+          u.plan_type AS extra2,
+          NULL::text AS status,
+          NULL::decimal AS price
+        FROM users u
+        WHERE
+          u.id <> $4
+          AND (
+            u.name ILIKE $2
+            OR u.email ILIKE $2
+            OR u.username ILIKE $2
+            OR similarity(u.name, $1) > 0.2
+          )
+        LIMIT 15)
+      ) AS combined
+      ORDER BY
+        CASE WHEN $5 = 'az' THEN name END ASC,
+        CASE WHEN $5 = 'za' THEN name END DESC,
+        score DESC,
+        name ASC
+      LIMIT 30
+    `, [query, searchTerm, tsQuery, userId, sortBy]);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Search error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Fast suggestions endpoint — top 5 quick matches for live dropdown
+router.get('/search-suggestions', authenticateToken, async (req, res) => {
+  const query = (req.query.q || '').trim();
+  const userId = req.user.id;
+  if (query.length < 1) return res.json([]);
 
   const searchTerm = `%${query}%`;
   try {
     const result = await pool.query(`
-      (SELECT id, name, 'Community' as category, COALESCE(city || ', ' || state, address) as subtext 
-       FROM communities 
-       WHERE name ILIKE $1 OR address ILIKE $1 OR city ILIKE $1 OR state ILIKE $1 OR locality ILIKE $1 
-       LIMIT 10)
-      UNION ALL
-      (SELECT id, name, 'Item' as category, 'Item' as subtext FROM items WHERE name ILIKE $1 LIMIT 10)
-      UNION ALL
-      (SELECT id, name, 'User' as category, email as subtext FROM users WHERE (name ILIKE $1 OR email ILIKE $1) AND id <> $2 LIMIT 10)
-      ORDER BY category, name
-    `, [searchTerm, userId]);
+      SELECT * FROM (
+        (SELECT id, name, 'Community' AS category FROM communities WHERE name ILIKE $1 LIMIT 3)
+        UNION ALL
+        (SELECT id, name, 'Item' AS category FROM items WHERE name ILIKE $1 LIMIT 3)
+        UNION ALL
+        (SELECT id, name, 'User' AS category FROM users WHERE (name ILIKE $1 OR username ILIKE $1) AND id <> $2 LIMIT 3)
+      ) s
+      ORDER BY
+        CASE WHEN lower(name) = lower($3) THEN 0
+             WHEN lower(name) LIKE lower($3) || '%' THEN 1
+             ELSE 2
+        END, name
+      LIMIT 5
+    `, [searchTerm, userId, query]);
     res.json(result.rows);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json([]);
   }
 });
+
 
 const bcrypt = require('bcryptjs');
 
