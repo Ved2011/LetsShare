@@ -2211,12 +2211,17 @@ html[data-theme="dark"] .custom-dropdown-menu {
 /* These rules use auto-fit and minmax to dynamically adjust columns 
    based on available width without strict media query breakpoints. */
 
+.dashboard-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+}
+
 @media (min-width: 769px) {
     .items-square-grid,
     .community-grid,
     .features-grid,
     .stats-grid,
-    .dashboard-grid,
     .grid-container,
     .items-responsive-grid {
         display: grid !important;
@@ -2230,7 +2235,6 @@ html[data-theme="dark"] .custom-dropdown-menu {
     .community-grid,
     .features-grid,
     .stats-grid,
-    .dashboard-grid,
     .grid-container,
     .items-responsive-grid {
         display: grid !important;
