@@ -4,19 +4,50 @@ function injectSidebar() {
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+    const path = window.location.pathname.toLowerCase();
+    const isAuthPage = path.includes('login') || path.includes('user_register') || path.includes('verify') || path.includes('welcome') || path === '/' || path.endsWith('/');
+    if (isAuthPage) {
+        return;
+    }
+
+
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
-    
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
-    sidebar.className = 'sidebar';
+    const isMobileDevice = window.innerWidth <= 1024;
+    const isSidebarExpanded = !isMobileDevice && localStorage.getItem('sidebarExpanded') === 'true';
+    if (isSidebarExpanded && (!isLandingPage || isLoggedIn)) {
+        sidebar.className = 'sidebar active';
+    } else {
+        sidebar.className = 'sidebar collapsed';
+    }
     sidebar.id = 'sidebar';
 
-    
+    // Create Mobile Header
+    const mobileHeader = document.createElement('div');
+    mobileHeader.className = 'mobile-header';
+    const pageTitle = document.title.split(' - ')[0];
+
+    mobileHeader.innerHTML = `
+        <div class="mobile-header-left">
+            <button class="menu-toggle" id="mobileMenuToggle">☰</button>
+            <a href="user_Dashboard.html" class="brand">
+                <img src="assets/${prefix}Logo1.png" alt="Logo" style="width: 32px; height: 32px; border-radius: 6px;">
+            </a>
+        </div>
+        <div class="mobile-header-center">
+            <h2>${pageTitle}</h2>
+        </div>
+        <div class="mobile-header-right">
+            ${isLoggedIn ? `<a href="user_Profile.html" class="header-avatar" style="width: 32px; height: 32px;">${user?.name?.charAt(0).toUpperCase()}</a>` : `<a href="login.html" class="btn small outline">Login</a>`}
+        </div>
+    `;
+
     // Create Overlay
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
@@ -100,11 +131,12 @@ function injectSidebar() {
     }
 
     sidebar.innerHTML = `
-        <div class="sidebar-header" style="justify-content: center; padding: 1rem 0; cursor: pointer;">
-            <div style="position: relative; display: flex; align-items: center; justify-content: center; height: 45px; width: 45px;">
-                <img src="/assets/Logo1.jpeg" alt="Logo" class="main-logo" style="height: 100%; width: 100%; border-radius: 6px; transition: opacity 0.2s;">
-                <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: var(--text-main); width: 28px; height: 28px;"></i>
+        <div class="sidebar-header" style="cursor: pointer;">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
+                <img src="assets/${prefix}Logo1.png" alt="Logo" class="main-logo" style="width: 100%; height: 100%; border-radius: 6px; transition: opacity 0.2s;">
+                <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: white; width: 24px; height: 24px;"></i>
             </div>
+            <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
@@ -122,6 +154,9 @@ function injectSidebar() {
             <a href="communities.html" class="nav-item ${window.location.pathname.includes('communities') ? 'active' : ''}">
                 <i data-lucide="users"></i> <span class="nav-text">Communities</span>
             </a>
+            <a href="Followers.html" class="nav-item ${window.location.pathname.includes('Followers') ? 'active' : ''}">
+                <i data-lucide="user-round"></i> <span class="nav-text">Followers</span>
+            </a>
             <a href="ItemForm.html" class="nav-item ${window.location.pathname.includes('ItemForm') ? 'active' : ''}">
                 <i data-lucide="square-plus"></i> <span class="nav-text">List Item</span>
             </a>
@@ -131,24 +166,36 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
+            ${user?.is_site_admin ? `
+            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
+                <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
+            </a>
+            ` : ''}
             <div class="sidebar-footer">
-                <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
-                    <i data-lucide="circle-user-round"></i> <span class="nav-text">My Profile</span>
+                <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
+                    <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
+                    <div class="nav-text" style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${user?.name || 'Login'}</div>
+                        <div style="font-size: 0.72rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${isLoggedIn ? 'View profile' : 'Sign in'}</div>
+                    </div>
                 </a>
-                <a href="#" class="nav-item" id="sidebarLogout">
+                <a href="#" class="nav-item" id="sidebarLogout" style="color: var(--danger, #ef4444);">
                     <i data-lucide="log-out"></i> <span class="nav-text">Logout</span>
                 </a>
             </div>
         </nav>
     `;
 
-    // Improved Wrapping: Wrap EVERYTHING in the body except scripts and sidebar elements
-    if (!document.getElementById('mainWrapper')) {
+    // Improved Wrapping: Wrap EVERYTHING in an app-container
+    if (!document.getElementById('appContainer')) {
+        const appContainer = document.createElement('div');
+        appContainer.className = 'app-container';
+        appContainer.id = 'appContainer';
+
         const mainWrapper = document.createElement('div');
         mainWrapper.className = 'main-wrapper';
         mainWrapper.id = 'mainWrapper';
 
-        
         // Move all current body children into mainWrapper (except scripts and the sidebar/overlay)
         const children = Array.from(document.body.children);
         children.forEach(child => {
@@ -157,24 +204,25 @@ function injectSidebar() {
             }
         });
 
-        
-        document.body.prepend(mainWrapper);
+        document.body.prepend(appContainer);
+        appContainer.appendChild(sidebar);
+        appContainer.appendChild(mainWrapper);
         document.body.prepend(overlay);
-        document.body.prepend(sidebar);
-    }
 
-    
+        mainWrapper.prepend(mobileHeader);
+
+        
         
         
         // Standardize Header across all pages
-        const headerMain = document.querySelector('.header');
+        const header = document.querySelector('.header');
         const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome');
         
-        if (headerMain && !isWelcomePage) {
+        if (header && !isWelcomePage) {
             let pageTitle = "LetsShare";
-            const existingSpan = headerMain.querySelector('span[style*="font-weight: 600"]');
-            const existingH2 = headerMain.querySelector('h2');
-            const existingH1 = headerMain.querySelector('h1');
+            const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
+            const existingH2 = header.querySelector('h2');
+            const existingH1 = header.querySelector('h1');
             if (existingSpan) pageTitle = existingSpan.textContent;
             else if (existingH2) pageTitle = existingH2.textContent;
             else if (existingH1) pageTitle = existingH1.textContent;
@@ -196,13 +244,13 @@ function injectSidebar() {
                    <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:34px; height:34px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user?.name?.charAt(0).toUpperCase() || 'U'}</a>`
                 : `<a href="login.html" class="btn small primary" style="text-decoration: none; padding:0.5rem 1.2rem; border-radius:999px; background:var(--accent); color:white; font-weight:bold; font-size:0.9rem; flex-shrink:0;">Login</a>`;
 
-            headerMain.style.display = 'flex';
-            headerMain.style.justifyContent = 'space-between';
-            headerMain.style.alignItems = 'center';
-            headerMain.style.width = '100%';
-            headerMain.style.gap = '0.5rem';
+            header.style.display = 'flex';
+            header.style.justifyContent = 'space-between';
+            header.style.alignItems = 'center';
+            header.style.width = '100%';
+            header.style.gap = '0.5rem';
 
-            headerMain.innerHTML = `
+            header.innerHTML = `
                 <div class="header-left" style="display:flex; align-items:center; flex-shrink:0;">
                     ${menuBtn}
                     <a href="${isLoggedIn ? 'user_Dashboard.html' : 'welcome.html'}" class="brand" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
@@ -231,31 +279,52 @@ function injectSidebar() {
         }
     }
 
-    // Toggle logic
+    // Toggle logic - Moved AFTER injection
     const menuToggle = document.getElementById('menuToggle');
-    const closeSidebar = () => {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+
+    const toggleSidebar = () => {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            sidebar.classList.add('active');
+            overlay.classList.add('active');
+            if (window.innerWidth > 1024) {
+                localStorage.setItem('sidebarExpanded', 'true');
+            }
+        } else {
+            sidebar.classList.add('collapsed');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            if (window.innerWidth > 1024) {
+                localStorage.setItem('sidebarExpanded', 'false');
+            }
+        }
     };
 
-    if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        });
-    }
-
-    overlay.addEventListener('click', closeSidebar);
+    if (menuToggle) menuToggle.addEventListener('click', toggleSidebar);
+    const sidebarLogo = document.querySelector('.sidebar-header');
+    if (sidebarLogo) sidebarLogo.addEventListener('click', toggleSidebar);
+    if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
 
     // Close sidebar on outside click
     document.addEventListener('click', (e) => {
         const sidebar = document.getElementById('sidebar');
-        if (sidebar && sidebar.classList.contains('active')) {
+        const overlay = document.getElementById('sidebarOverlay');
+        if (sidebar && !sidebar.classList.contains('collapsed')) {
             const clickedInsideSidebar = sidebar.contains(e.target);
-            const clickedMenuToggle = menuToggle && menuToggle.contains(e.target);
+            const clickedMenuToggle = (menuToggle && menuToggle.contains(e.target)) || (mobileMenuToggle && mobileMenuToggle.contains(e.target));
             
             if (!clickedInsideSidebar && !clickedMenuToggle) {
-                closeSidebar();
+                sidebar.classList.add('collapsed');
+                sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+                if (window.innerWidth > 1024) {
+                    localStorage.setItem('sidebarExpanded', 'false');
+                }
             }
         }
     });
@@ -264,12 +333,58 @@ function injectSidebar() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             const sidebar = document.getElementById('sidebar');
-            if (sidebar && sidebar.classList.contains('active')) {
-                closeSidebar();
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sidebar && !sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+                sidebar.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
+                if (window.innerWidth > 1024) {
+                    localStorage.setItem('sidebarExpanded', 'false');
+                }
             }
         }
     });
 
+
+    const overlayEl = document.getElementById('sidebarOverlay');
+    if (overlayEl) {
+        overlayEl.addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.add('collapsed');
+            overlay.classList.remove('active');
+        });
+    }
+
+    // Smart Sticky Header Logic
+    let lastScroll = 0;
+    const stickyHeader = document.querySelector('.header');
+    if (stickyHeader) {
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll <= 0) {
+                stickyHeader.classList.remove('header-hidden');
+                return;
+            }
+            if (currentScroll > lastScroll && !stickyHeader.classList.contains('header-hidden')) {
+                // Scroll Down
+                stickyHeader.classList.add('header-hidden');
+            } else if (currentScroll < lastScroll && stickyHeader.classList.contains('header-hidden')) {
+                // Scroll Up
+                stickyHeader.classList.remove('header-hidden');
+            }
+            lastScroll = currentScroll;
+        });
+    }
+
+    // Update logo on resize
+    window.addEventListener('resize', () => {
+        const logo = document.querySelector('.header-logo');
+        if (logo) {
+            const isMobile = window.innerWidth <= 1024;
+            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+        }
+    });
 
     // Logout logic
     const logoutBtn = document.getElementById('sidebarLogout');
@@ -385,6 +500,9 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
+
+        // Ensure main wrapper doesn't have padding
+        mainWrapper.style.paddingLeft = '0';
     }
 }
 

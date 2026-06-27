@@ -98,9 +98,9 @@
         <div class="search-container">
 
             <div class="search-box-wrapper">
-                <span class="search-icon-large">🔍</span>
+                <i data-lucide="search" class="search-icon-large" style="position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; color: var(--muted); pointer-events: none;"></i>
                 <input type="text" id="globalSearchInput" class="search-box"
-                    placeholder="Search communities, items, or users..." autofocus>
+                    placeholder="Search communities, items, or users..." autofocus style="padding-left: 3.5rem;">
             </div>
 
             <div id="searchResults" class="card" style="padding: 0; min-height: 200px;">
@@ -115,6 +115,15 @@
         const resultsContainer = document.getElementById('searchResults');
 
         let debounceTimer;
+
+        // Initialize Lucide icons on load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            } else {
+                setTimeout(() => { if (window.lucide) lucide.createIcons(); }, 500);
+            }
+        });
 
         searchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
@@ -154,14 +163,20 @@
                         <a href="${link}" class="result-item">
                             <div class="header-avatar" style="width: 40px; height: 40px; flex-shrink: 0;">${r.name.charAt(0).toUpperCase()}</div>
                             <div style="flex-grow: 1;">
-                                <span class="result-category" style="background: ${getCategoryColor(r.category)}">${r.category}</span>
-                                <h4 style="margin: 0;">${r.name}</h4>
+                                <span class="result-category" style="background: ${getCategoryColor(r.category)}; display: inline-flex; align-items: center; gap: 4px; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem;">
+                                    ${getCategoryIcon(r.category)} ${r.category}
+                                </span>
+                                <h4 style="margin: 0; margin-top: 0.25rem;">${r.name}</h4>
                                 <p class="result-subtext" style="margin: 0;">${r.subtext}</p>
                             </div>
                             <span style="color: var(--muted);">→</span>
                         </a>
                     `;
                 }).join('');
+
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
             } catch (err) {
                 console.error('Search error:', err);
             }
@@ -173,6 +188,15 @@
                 case 'Item': return '#3b82f6';
                 case 'User': return '#f59e0b';
                 default: return '#64748b';
+            }
+        }
+
+        function getCategoryIcon(cat) {
+            switch (cat) {
+                case 'Community': return '<i data-lucide="users" style="width: 12px; height: 12px; stroke-width: 2.5px;"></i>';
+                case 'Item': return '<i data-lucide="package" style="width: 12px; height: 12px; stroke-width: 2.5px;"></i>';
+                case 'User': return '<i data-lucide="user" style="width: 12px; height: 12px; stroke-width: 2.5px;"></i>';
+                default: return '<i data-lucide="help-circle" style="width: 12px; height: 12px; stroke-width: 2.5px;"></i>';
             }
         }
     </script>

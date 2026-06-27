@@ -1,8 +1,13 @@
-// sidebar.js
 function injectSidebar() {
     // Initialize Theme Globally First
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    const path = window.location.pathname.toLowerCase();
+    const isAuthPage = path.includes('login') || path.includes('user_register') || path.includes('verify') || path.includes('welcome') || path === '/' || path.endsWith('/');
+    if (isAuthPage) {
+        return;
+    }
 
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -159,6 +164,11 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
+            ${user?.is_site_admin ? `
+            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
+                <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
+            </a>
+            ` : ''}
             <div class="sidebar-footer">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
                     <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>

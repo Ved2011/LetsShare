@@ -1,27 +1,20 @@
-// sidebar.js
 function injectSidebar() {
     // Initialize Theme Globally First
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-    const path = window.location.pathname;
-    const isLandingPage = path.endsWith('welcome.html') || path === '/' || path === '';
-    const isPublicPage = isLandingPage || path.endsWith('login.html') || path.endsWith('User_Register.html');
+    const path = window.location.pathname.toLowerCase();
+    const isAuthPage = path.includes('login') || path.includes('user_register') || path.includes('verify') || path.includes('welcome') || path === '/' || path.endsWith('/');
+    if (isAuthPage) {
+        return;
+    }
+
+    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
-    // Don't inject sidebar at all on public pages if not logged in
-    if (!isLoggedIn && isPublicPage) {
-        return;
-    }
-
-    // Redirect logged-in users away from public pages to dashboard
-    if (isLoggedIn && isPublicPage) {
-        window.location.href = 'user_Dashboard.html';
-        return;
-    }
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     const isMobileDevice = window.innerWidth <= 1024;
@@ -171,9 +164,11 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
-            <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
-                <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
+            ${user?.is_site_admin ? `
+            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
+                <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
             </a>
+            ` : ''}
             <div class="sidebar-footer">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
                     <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>

@@ -1,13 +1,19 @@
-// sidebar.js
 function injectSidebar() {
-    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
-    const isLoggedIn = !!localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
+    // Initialize Theme Globally First
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', savedTheme);
 
-    // Don't inject sidebar at all on public pages if not logged in
-    if (!isLoggedIn && isPublicPage) {
+    const path = window.location.pathname.toLowerCase();
+    const isAuthPage = path.includes('login') || path.includes('user_register') || path.includes('verify') || path.includes('welcome') || path === '/' || path.endsWith('/');
+    if (isAuthPage) {
         return;
     }
+
+    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
+    const theme = document.documentElement.getAttribute('data-theme') || 'light';
+    const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
+    const isLoggedIn = !!localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
 
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
@@ -45,13 +51,13 @@ function injectSidebar() {
     overlay.className = 'sidebar-overlay';
     overlay.id = 'sidebarOverlay';
 
-
+    
     // Inject Lucide script and styles
     if (!document.getElementById('lucide-setup')) {
         const script = document.createElement('script');
         script.id = 'lucide-setup';
         script.src = "assets/lucide.min.js";
-
+        
         const style = document.createElement('style');
         style.innerHTML = `
             
@@ -114,7 +120,7 @@ function injectSidebar() {
         `;
         document.head.appendChild(style);
         document.head.appendChild(script);
-
+        
         script.onload = () => {
             if (window.lucide) lucide.createIcons();
         };
@@ -158,9 +164,11 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
-            <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
-                <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
+            ${user?.is_site_admin ? `
+            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
+                <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
             </a>
+            ` : ''}
             <div class="sidebar-footer">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
                     <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
@@ -205,14 +213,14 @@ function injectSidebar() {
         
         
         // Standardize Header across all pages
-        const headerMain = document.querySelector('.header');
+        const header = document.querySelector('.header');
         const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome');
         
-        if (headerMain && !isWelcomePage) {
+        if (header && !isWelcomePage) {
             let pageTitle = "LetsShare";
-            const existingSpan = headerMain.querySelector('span[style*="font-weight: 600"]');
-            const existingH2 = headerMain.querySelector('h2');
-            const existingH1 = headerMain.querySelector('h1');
+            const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
+            const existingH2 = header.querySelector('h2');
+            const existingH1 = header.querySelector('h1');
             if (existingSpan) pageTitle = existingSpan.textContent;
             else if (existingH2) pageTitle = existingH2.textContent;
             else if (existingH1) pageTitle = existingH1.textContent;
@@ -234,13 +242,13 @@ function injectSidebar() {
                    <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:34px; height:34px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user?.name?.charAt(0).toUpperCase() || 'U'}</a>`
                 : `<a href="login.html" class="btn small primary" style="text-decoration: none; padding:0.5rem 1.2rem; border-radius:999px; background:var(--accent); color:white; font-weight:bold; font-size:0.9rem; flex-shrink:0;">Login</a>`;
 
-            headerMain.style.display = 'flex';
-            headerMain.style.justifyContent = 'space-between';
-            headerMain.style.alignItems = 'center';
-            headerMain.style.width = '100%';
-            headerMain.style.gap = '0.5rem';
+            header.style.display = 'flex';
+            header.style.justifyContent = 'space-between';
+            header.style.alignItems = 'center';
+            header.style.width = '100%';
+            header.style.gap = '0.5rem';
 
-            headerMain.innerHTML = `
+            header.innerHTML = `
                 <div class="header-left" style="display:flex; align-items:center; flex-shrink:0;">
                     ${menuBtn}
                     <a href="${isLoggedIn ? 'user_Dashboard.html' : 'welcome.html'}" class="brand" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
@@ -277,7 +285,7 @@ function injectSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const isCollapsed = sidebar.classList.contains('collapsed');
-
+        
         if (isCollapsed) {
             sidebar.classList.remove('collapsed');
             sidebar.classList.add('active');
@@ -307,7 +315,7 @@ function injectSidebar() {
         if (sidebar && !sidebar.classList.contains('collapsed')) {
             const clickedInsideSidebar = sidebar.contains(e.target);
             const clickedMenuToggle = (menuToggle && menuToggle.contains(e.target)) || (mobileMenuToggle && mobileMenuToggle.contains(e.target));
-
+            
             if (!clickedInsideSidebar && !clickedMenuToggle) {
                 sidebar.classList.add('collapsed');
                 sidebar.classList.remove('active');
@@ -348,47 +356,45 @@ function injectSidebar() {
 
     // Smart Sticky Header Logic
     let lastScroll = 0;
-    const header = document.querySelector('.header');
-    if (header) {
+    const stickyHeader = document.querySelector('.header');
+    if (stickyHeader) {
         window.addEventListener('scroll', () => {
             const currentScroll = window.pageYOffset;
             if (currentScroll <= 0) {
-                header.classList.remove('header-hidden');
+                stickyHeader.classList.remove('header-hidden');
                 return;
             }
-            if (currentScroll > lastScroll && !header.classList.contains('header-hidden')) {
+            if (currentScroll > lastScroll && !stickyHeader.classList.contains('header-hidden')) {
                 // Scroll Down
-                header.classList.add('header-hidden');
-            } else if (currentScroll < lastScroll && header.classList.contains('header-hidden')) {
+                stickyHeader.classList.add('header-hidden');
+            } else if (currentScroll < lastScroll && stickyHeader.classList.contains('header-hidden')) {
                 // Scroll Up
-                const res = await fetch('/api/notifications', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!res.ok) {
-                    // If the endpoint is missing, show a friendly message
-                    list.innerHTML = '<p class="empty-state error">Unable to load notifications (service unavailable).</p>';
-                    return;
-                }
-                const rawData = await res.json();
-                const notifications = Array.isArray(rawData) ? rawData : [];
-                const list = document.getElementById('notificationsList');
-
-                if (notifications.length === 0) {
-                    const isMobile = window.innerWidth <= 1024;
-                    logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
-                }
-            });
-
-        // Update logo on resize
-        window.addEventListener('resize', () => {
-            const logo = document.querySelector('.header-logo');
-            if (logo) {
-                const isMobile = window.innerWidth <= 1024;
-                logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
+                stickyHeader.classList.remove('header-hidden');
             }
+            lastScroll = currentScroll;
         });
+    }
 
-<<<<<<< HEAD
+    // Update logo on resize
+    window.addEventListener('resize', () => {
+        const logo = document.querySelector('.header-logo');
+        if (logo) {
+            const isMobile = window.innerWidth <= 1024;
+            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+        }
+    });
+
+    // Logout logic
+    const logoutBtn = document.getElementById('sidebarLogout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'welcome.html';
+        });
+    }
+
     
     // Notification Dropdown Logic
     const notificationLinks = document.querySelectorAll('.notification-link');
@@ -492,30 +498,11 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
-=======
-        // Logout logic
-        const logoutBtn = document.getElementById('sidebarLogout');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                window.location.href = 'welcome.html';
-            });
-        }
->>>>>>> 5c7f5d3 (v)
 
-        // Hide sidebar on landing if not logged in (visual only)
-        if (isLandingPage && !isLoggedIn) {
-            sidebar.classList.add('collapsed');
-            sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
-            overlay.style.display = 'none';
-            if (menuToggle) menuToggle.style.display = 'none';
-
-            // Ensure main wrapper doesn't have padding
-            mainWrapper.style.paddingLeft = '0';
-        }
+        // Ensure main wrapper doesn't have padding
+        mainWrapper.style.paddingLeft = '0';
     }
+}
 
 
 
@@ -537,4 +524,4 @@ function injectSidebar() {
     });
     observer.observe(document.documentElement, { attributes: true });
 
-    document.addEventListener('DOMContentLoaded', injectSidebar);
+document.addEventListener('DOMContentLoaded', injectSidebar);

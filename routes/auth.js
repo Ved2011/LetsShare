@@ -185,7 +185,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin } });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -224,7 +224,7 @@ router.post('/verify-2fa', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '30d' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, is_site_admin: user.is_site_admin } });
   } catch (err) {
     console.error('2FA verification error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -240,7 +240,7 @@ router.get('/me', async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const result = await pool.query('SELECT id, name, email, phone, dob, address FROM users WHERE id = $1', [decoded.id]);
+    const result = await pool.query('SELECT id, name, email, phone, dob, address, is_site_admin FROM users WHERE id = $1', [decoded.id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
