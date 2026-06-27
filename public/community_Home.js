@@ -30,6 +30,7 @@ async function loadCommunityDetails() {
             document.getElementById('heroCommAddress').textContent = `📍 ${currentCommunity.address}`;
             document.getElementById('memberCount').textContent = currentCommunity.member_count;
             
+<<<<<<< HEAD
             const chatSectionHome = document.getElementById('chatSectionHome');
             const contentWrapper = document.querySelector('.community-content-wrapper');
             
@@ -41,6 +42,17 @@ async function loadCommunityDetails() {
             } else {
                 if (chatSectionHome) chatSectionHome.style.display = 'none';
                 if (contentWrapper) contentWrapper.style.gridTemplateColumns = '1fr';
+=======
+            if (currentCommunity.chat_enabled) {
+                document.getElementById('chatDisabledMsg').style.display = 'none';
+                document.getElementById('chatActiveArea').style.display = 'flex';
+                loadChatMessages();
+                // Polling for chat
+                setInterval(loadChatMessages, 5000);
+            } else {
+                document.getElementById('chatDisabledMsg').style.display = 'flex';
+                document.getElementById('chatActiveArea').style.display = 'none';
+>>>>>>> 5d0a726 (wer)
             }
         } else {
             window.location.href = 'user_Dashboard.html';
@@ -87,7 +99,12 @@ function displayItems(items) {
     }
     communityItemsGrid.innerHTML = items.map(item => `
         <div class="item-square" onclick="window.location.href='item_View.html?id=${item.id}'">
+<<<<<<< HEAD
         <img src="${item.imageBase64 || 'assets/untitled.png'}" class="item-image" alt="${item.name}" loading="lazy">
+=======
+            <img src="${item.imageBase64 || 'assets/untitled.png'}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; background: #f1f5f9;">
+            <img src="${item.imageBase64 || '/assets/untitled.png'}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; background: #f1f5f9;">
+>>>>>>> 5d0a726 (wer)
             <div class="item-name">${item.name}</div>
             <div class="item-category">${item.category || 'Miscellaneous'}</div>
             <div style="color: var(--accent); font-weight: 700; margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)}/day</div>

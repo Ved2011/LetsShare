@@ -94,11 +94,19 @@ async function loadUserItems(userId) {
         grid.innerHTML = items.map(item => `
             <div class="community-card">
                 ${item.imageBase64 ? `<img src="${item.imageBase64}" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:1rem;">` : ''}
+<<<<<<< HEAD
+=======
+                ${item.imageBase64 ? `<img src="${item.imageBase64}" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:1rem;">` : `<img src="/assets/untitled.png" style="width:100%; height:150px; object-fit:cover; border-radius:8px; margin-bottom:1rem;">`}
+>>>>>>> 5d0a726 (wer)
                 <h3>${item.name}</h3>
                 <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem;">${item.description || 'No description'}</p>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span class="status ${item.status.toLowerCase()}">${item.status}</span>
+<<<<<<< HEAD
                     <a href="item_View.html?id=${item.id}" class="btn small outline">Details</a>
+=======
+                    <a href="item_Details.html?id=${item.id}" class="btn small outline">Details</a>
+>>>>>>> 5d0a726 (wer)
                 </div>
             </div>
         `).join('');

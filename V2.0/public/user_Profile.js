@@ -106,6 +106,7 @@ async function loadUserProfile() {
       }
       if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
 
+<<<<<<< HEAD
       const missingFields = [];
       if (!user.username) missingFields.push('Username');
       if (!user.phone) missingFields.push('Phone Number');
@@ -120,6 +121,8 @@ async function loadUserProfile() {
         }, 300);
       }
 
+=======
+>>>>>>> 5d0a726 (wer)
       const walletBalance = document.getElementById('walletBalance');
       const editUpiId = document.getElementById('editUpiId');
       if (walletBalance) walletBalance.textContent = `Rs. ${Number(user.wallet_balance || 0).toFixed(2)}`;

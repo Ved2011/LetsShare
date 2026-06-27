@@ -134,6 +134,7 @@ router.get('/following/items', authenticateToken, async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Global Search — full-text + fuzzy matching with rich metadata
 router.get('/global-search', authenticateToken, async (req, res) => {
   const query = (req.query.q || '').trim();
@@ -258,10 +259,34 @@ router.get('/global-search', authenticateToken, async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Search error:', err);
+=======
+// Global Search (Communities, Items, Users)
+router.get('/global-search', authenticateToken, async (req, res) => {
+  const query = (req.query.q || '').trim();
+  const userId = req.user.id;
+  if (!query) return res.json([]);
+
+  const searchTerm = `%${query}%`;
+  try {
+    const result = await pool.query(`
+      (SELECT id, name, 'Community' as category, COALESCE(city || ', ' || state, address) as subtext 
+       FROM communities 
+       WHERE name ILIKE $1 OR address ILIKE $1 OR city ILIKE $1 OR state ILIKE $1 OR locality ILIKE $1 
+       LIMIT 10)
+      UNION ALL
+      (SELECT id, name, 'Item' as category, 'Item' as subtext FROM items WHERE name ILIKE $1 LIMIT 10)
+      UNION ALL
+      (SELECT id, name, 'User' as category, email as subtext FROM users WHERE (name ILIKE $1 OR email ILIKE $1) AND id <> $2 LIMIT 10)
+      ORDER BY category, name
+    `, [searchTerm, userId]);
+    res.json(result.rows);
+  } catch (err) {
+>>>>>>> 5d0a726 (wer)
     res.status(500).json({ error: 'Server error' });
   }
 });
 
+<<<<<<< HEAD
 // Fast suggestions endpoint — top 5 quick matches for live dropdown
 router.get('/search-suggestions', authenticateToken, async (req, res) => {
   const query = (req.query.q || '').trim();
@@ -292,6 +317,8 @@ router.get('/search-suggestions', authenticateToken, async (req, res) => {
 });
 
 
+=======
+>>>>>>> 5d0a726 (wer)
 const bcrypt = require('bcryptjs');
 
 
@@ -318,7 +345,11 @@ router.get('/me', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await pool.query(
+<<<<<<< HEAD
       'SELECT id, name, username, email, phone, dob, address, city, state, locality, country, two_factor_enabled, profile_picture, plan_type, borrows_this_month, last_borrow_reset, wallet_balance, upi_id, bio FROM users WHERE id = $1',
+=======
+      'SELECT id, name, username, email, phone, dob, address, two_factor_enabled, profile_picture, plan_type, borrows_this_month, last_borrow_reset, wallet_balance, upi_id, bio FROM users WHERE id = $1',
+>>>>>>> 5d0a726 (wer)
       [userId]
     );
     if (result.rows.length === 0) {
@@ -509,7 +540,11 @@ router.post('/add-money', authenticateToken, async (req, res) => {
 
 // Update current user profile
 router.put('/me', authenticateToken, upload.single('profilePicture'), async (req, res) => {
+<<<<<<< HEAD
   const { name, username, email, oldPassword, newPassword, phone, dob, address, city, state, locality, country, two_factor_enabled, upi_id, bio } = req.body;
+=======
+  const { name, username, email, oldPassword, newPassword, phone, dob, address, two_factor_enabled, upi_id } = req.body;
+>>>>>>> 5d0a726 (wer)
   const userId = req.user.id;
   const profilePicture = req.file ? req.file.buffer : null;
 
@@ -524,9 +559,15 @@ router.put('/me', authenticateToken, upload.single('profilePicture'), async (req
     const userResult = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
+<<<<<<< HEAD
     let updateQuery = 'UPDATE users SET name = $1, email = $2, phone = $3, dob = $4, address = $5, two_factor_enabled = $6, username = $7, bio = $8, city = $9, state = $10, locality = $11, country = $12';
     let values = [name, email, phone, dob, address, two_factor_enabled === 'true', username, bio, city || null, state || null, locality || null, country || 'India'];
     let paramIndex = 13;
+=======
+    let updateQuery = 'UPDATE users SET name = $1, email = $2, phone = $3, dob = $4, address = $5, two_factor_enabled = $6, username = $7, bio = $8';
+    let values = [name, email, phone, dob, address, two_factor_enabled === 'true', username, bio];
+    let paramIndex = 9;
+>>>>>>> 5d0a726 (wer)
 
     if (newPassword && newPassword.trim() !== '') {
       if (!oldPassword) {

@@ -1,5 +1,8 @@
 const express = require('express');
+<<<<<<< HEAD
 const bcrypt = require('bcryptjs');
+=======
+>>>>>>> 5d0a726 (wer)
 const { pool } = require('../db');
 const { authenticateToken, authenticateTokenOptional } = require('../middleware/auth');
 const multer = require('multer');
@@ -7,6 +10,14 @@ const upload = multer();
 
 const router = express.Router();
 
+<<<<<<< HEAD
+=======
+router.use((req, res, next) => {
+  console.log('User Router Request:', req.method, req.path);
+  next();
+});
+
+>>>>>>> 5d0a726 (wer)
 // Search users and items
 router.get('/search', authenticateToken, async (req, res) => {
   const query = (req.query.q || '').trim();
@@ -130,6 +141,7 @@ router.get('/following/items', authenticateToken, async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Global Search — full-text + fuzzy matching with rich metadata
 router.get('/global-search', authenticateToken, async (req, res) => {
   const query = (req.query.q || '').trim();
@@ -254,10 +266,34 @@ router.get('/global-search', authenticateToken, async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error('Search error:', err);
+=======
+// Global Search (Communities, Items, Users)
+router.get('/global-search', authenticateToken, async (req, res) => {
+  const query = (req.query.q || '').trim();
+  const userId = req.user.id;
+  if (!query) return res.json([]);
+
+  const searchTerm = `%${query}%`;
+  try {
+    const result = await pool.query(`
+      (SELECT id, name, 'Community' as category, COALESCE(city || ', ' || state, address) as subtext 
+       FROM communities 
+       WHERE name ILIKE $1 OR address ILIKE $1 OR city ILIKE $1 OR state ILIKE $1 OR locality ILIKE $1 
+       LIMIT 10)
+      UNION ALL
+      (SELECT id, name, 'Item' as category, 'Item' as subtext FROM items WHERE name ILIKE $1 LIMIT 10)
+      UNION ALL
+      (SELECT id, name, 'User' as category, email as subtext FROM users WHERE (name ILIKE $1 OR email ILIKE $1) AND id <> $2 LIMIT 10)
+      ORDER BY category, name
+    `, [searchTerm, userId]);
+    res.json(result.rows);
+  } catch (err) {
+>>>>>>> 5d0a726 (wer)
     res.status(500).json({ error: 'Server error' });
   }
 });
 
+<<<<<<< HEAD
 // Fast suggestions endpoint — top 5 quick matches for live dropdown
 router.get('/search-suggestions', authenticateToken, async (req, res) => {
   const query = (req.query.q || '').trim();
@@ -286,6 +322,10 @@ router.get('/search-suggestions', authenticateToken, async (req, res) => {
     res.status(500).json([]);
   }
 });
+=======
+const bcrypt = require('bcryptjs');
+
+>>>>>>> 5d0a726 (wer)
 
 
 // Get users who follow me
@@ -360,6 +400,7 @@ router.get('/warnings', authenticateToken, async (req, res) => {
 // Get specific user profile
 router.get('/:id', authenticateTokenOptional, async (req, res) => {
   const targetUserIdStr = req.params.id;
+<<<<<<< HEAD
 
   if (isNaN(targetUserIdStr)) {
     return res.status(400).json({ error: 'Invalid user ID' });
@@ -369,12 +410,35 @@ router.get('/:id', authenticateTokenOptional, async (req, res) => {
   const currentUserId = req.user ? req.user.id : null;
 
   try {
+=======
+  console.log('GET user profile hit for ID string:', targetUserIdStr);
+  
+  if (isNaN(targetUserIdStr)) {
+    return res.status(400).json({ error: 'Invalid user ID' });
+  }
+  
+  const targetUserId = parseInt(targetUserIdStr, 10);
+  const currentUserId = req.user ? req.user.id : null;
+  console.log('Fetching profile for targetUserId:', targetUserId, 'by viewer:', currentUserId);
+
+  try {
+    const allUsers = await pool.query('SELECT id FROM users');
+    console.log('Available User IDs in DB:', allUsers.rows.map(r => r.id));
+
+>>>>>>> 5d0a726 (wer)
     const result = await pool.query(
       `SELECT id, name, email, username, profile_picture, bio FROM users WHERE id = $1`,
       [targetUserId]
     );
 
+<<<<<<< HEAD
     if (result.rows.length === 0) {
+=======
+    console.log('Query result rows:', result.rows.length);
+
+    if (result.rows.length === 0) {
+      console.log('User not found in DB for ID:', targetUserId);
+>>>>>>> 5d0a726 (wer)
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -551,6 +615,24 @@ router.put('/me', authenticateToken, upload.single('profilePicture'), async (req
   }
 });
 
+<<<<<<< HEAD
+=======
+// Get current user warnings
+router.get('/warnings', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(
+      'SELECT id, reason, severity, created_at FROM warnings WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get warnings error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+>>>>>>> 5d0a726 (wer)
 // Delete current user account
 router.delete('/me', authenticateToken, async (req, res) => {
   const userId = req.user.id;

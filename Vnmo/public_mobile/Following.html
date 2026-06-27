@@ -16,6 +16,7 @@
 <body>
     <div class="page-wrapper">
         <header class="header">
+<<<<<<< HEAD
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <button class="menu-toggle" id="mobileMenuBtn" style="display: block !important;">
                     <i class="fas fa-bars"></i>
@@ -24,6 +25,15 @@
                     <h2 style="margin: 0; font-size: 1.25rem;">Following</h2>
                     <p style="margin: 0; font-size: 0.8rem; color: var(--muted);">Stay updated with people you follow.</p>
                 </div>
+=======
+            <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
+                <a href="user_Dashboard.html" class="brand" style="display: flex; align-items: center; gap: 0.4rem; text-decoration: none;">
+                    <img src="assets/Light_Logo2.png" alt="LetsShare" style="height: 32px; border-radius: 4px;">
+                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
+                </a>
+                <span style="font-weight: 600; color: var(--accent); flex-grow: 1; text-align: center;">Following</span>
+                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+>>>>>>> 5d0a726 (wer)
             </div>
         </header>
 
@@ -82,7 +92,11 @@
                             <p style="font-size: 0.8rem; color: var(--muted);">By ${item.owner_name}</p>
                             <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
                                 <span class="status-pill ${item.status}">${item.status}</span>
+<<<<<<< HEAD
                                 <a href="item_View.html?id=${item.id}" class="btn small">View</a>
+=======
+                                <a href="item_Details.html?id=${item.id}" class="btn small">View</a>
+>>>>>>> 5d0a726 (wer)
                             </div>
                         </div>
                     `).join('');

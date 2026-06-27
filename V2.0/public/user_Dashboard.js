@@ -102,7 +102,10 @@ function displayOverdueItems(items) {
     card.className = 'item-card';
     card.style.background = '#fff';
     card.style.border = '1px solid rgba(220, 53, 69, 0.2)';
+<<<<<<< HEAD
     card.style.border = '1px solid rgba(220, 53, 69, 0.2)'; // Corrected border color
+=======
+>>>>>>> 5d0a726 (wer)
     
     card.innerHTML = `
       <div class="card-info">
@@ -271,6 +274,10 @@ async function loadDashboard() {
       allItems = items; 
       const myItems = items.filter(item => item.owner_id === user.id);
       dashboardMyItems.textContent = myItems.length;
+<<<<<<< HEAD
+=======
+      displayMyItems(myItems);
+>>>>>>> 5d0a726 (wer)
     }
 
     const borrowsResponse = await fetch('/api/borrows', {
@@ -351,6 +358,7 @@ function displayJoinedCommunities(communities) {
 function renderCommunityCard(c) {
   const user = JSON.parse(localStorage.getItem('user'));
   return `
+<<<<<<< HEAD
     <div class="community-card" onclick="window.location.href='community_Home.html?id=${c.id}'" style="background: var(--card-bg); border: 1px solid var(--border); padding: 1.25rem; border-radius: 12px; cursor: pointer; transition: transform 0.2s; display: flex; flex-direction: column; gap: 0.5rem;">
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
           <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.name}</h3>
@@ -359,11 +367,53 @@ function renderCommunityCard(c) {
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted);">
           <span>👥 ${c.member_count} members</span>
           ${c.admin_id === user.id ? '<span style="color: #10b981; font-weight: bold; font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px;">Admin</span>' : ''}
+=======
+    <div class="community-card" onclick="window.location.href='community_Home.html?id=${c.id}'" style="background: var(--card-bg); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; cursor: pointer; transition: transform 0.2s;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <h3 style="margin: 0;">${c.name}</h3>
+          <span class="community-badge ${c.is_private ? 'badge-private' : 'badge-public'}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold;">${c.is_private ? 'Private' : 'Public'}</span>
+      </div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0;">📍 ${c.address}</p>
+      <div style="margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted);">
+          <span>👥 ${c.member_count} members</span>
+          ${c.is_member ? '<span style="color: var(--accent); font-weight: bold;">Joined</span>' : ''}
+          ${c.admin_id === user.id ? '<span style="color: #10b981; font-weight: bold;">Admin</span>' : ''}
+>>>>>>> 5d0a726 (wer)
       </div>
     </div>
   `;
 }
 
+<<<<<<< HEAD
+=======
+function displayMyItems(items) {
+  if (!myItemsContainer) return;
+  myItemsContainer.innerHTML = '';
+  if (!items.length) {
+    myItemsContainer.innerHTML = '<p class="empty-state">You haven\'t uploaded any items yet.</p>';
+    return;
+  }
+  
+  // Sort by newest and limit to 3
+  const recentItems = [...items].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3);
+  
+  myItemsContainer.innerHTML = recentItems.map(item => `
+    <div class="community-card" onclick="window.location.href='item_View.html?id=${item.id}'" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem;">
+      <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 100%; height: 160px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
+      <img src="${item.imageBase64 || '/assets/untitled.png'}" alt="${item.name}" style="width: 100%; height: 160px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
+      <div style="flex: 1;">
+        <h4 style="margin: 0; font-size: 1rem; line-height: 1.4;">${item.name}</h4>
+        <p style="color: var(--accent); font-weight: 700; margin-top: 0.25rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+        <button class="btn small outline" style="flex: 1; padding: 0.4rem;" onclick="event.stopPropagation(); editItem(${item.id})">Edit</button>
+        <button class="btn small danger" style="padding: 0.4rem;" onclick="event.stopPropagation(); deleteItem(${item.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+>>>>>>> 5d0a726 (wer)
 function displayBorrowedItems(borrows) {
   if (!borrowedItemsContainer) return;
   borrowedItemsContainer.innerHTML = '';
@@ -695,6 +745,10 @@ document.addEventListener('DOMContentLoaded', () => {
   dashboardBorrows = document.getElementById('dashboardBorrows');
   dashboardMyItems = document.getElementById('dashboardMyItems');
   joinedCommunitiesContainer = document.getElementById('joinedCommunitiesGrid');
+<<<<<<< HEAD
+=======
+  myItemsContainer = document.getElementById('dashboardMyItemsList');
+>>>>>>> 5d0a726 (wer)
   borrowedItemsContainer = document.getElementById('dashboardBorrowedItemsList');
   requestsContainer = document.getElementById('dashboardRequestsList');
   dashboardSearchInput = document.getElementById('dashboardSearchInput');

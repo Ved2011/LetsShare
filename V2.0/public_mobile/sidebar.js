@@ -4,6 +4,7 @@ function injectSidebar() {
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
 
+<<<<<<< HEAD
     const path = window.location.pathname.toLowerCase();
     const isAuthPage = path.includes('login') || path.includes('user_register') || path.includes('verify') || path.includes('welcome') || path === '/' || path.endsWith('/');
     if (isAuthPage) {
@@ -11,12 +12,15 @@ function injectSidebar() {
     }
 
 
+=======
+>>>>>>> 5d0a726 (wer)
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
+<<<<<<< HEAD
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     const isMobileDevice = window.innerWidth <= 1024;
@@ -48,6 +52,15 @@ function injectSidebar() {
         </div>
     `;
 
+=======
+    
+    // Create Sidebar HTML
+    const sidebar = document.createElement('aside');
+    sidebar.className = 'sidebar';
+    sidebar.id = 'sidebar';
+
+    
+>>>>>>> 5d0a726 (wer)
     // Create Overlay
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
@@ -131,20 +144,31 @@ function injectSidebar() {
     }
 
     sidebar.innerHTML = `
+<<<<<<< HEAD
         <div class="sidebar-header" style="cursor: pointer;">
             <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
                 <img src="assets/${prefix}Logo1.png" alt="Logo" class="main-logo" style="width: 100%; height: 100%; border-radius: 6px; transition: opacity 0.2s;">
                 <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: white; width: 24px; height: 24px;"></i>
             </div>
             <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
+=======
+        <div class="sidebar-header" style="justify-content: center; padding: 1rem 0; cursor: pointer;">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; height: 45px; width: 45px;">
+                <img src="/assets/Logo1.jpeg" alt="Logo" class="main-logo" style="height: 100%; width: 100%; border-radius: 6px; transition: opacity 0.2s;">
+                <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: var(--text-main); width: 28px; height: 28px;"></i>
+            </div>
+>>>>>>> 5d0a726 (wer)
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i data-lucide="layout-dashboard"></i> <span class="nav-text">Dashboard</span>
             </a>
+<<<<<<< HEAD
             <a href="MyItems.html" class="nav-item ${window.location.pathname.includes('MyItems') ? 'active' : ''}">
                 <i data-lucide="package"></i> <span class="nav-text">My Items</span>
             </a>
+=======
+>>>>>>> 5d0a726 (wer)
             <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
                 <i data-lucide="bell"></i> <span class="nav-text">Notifications</span>
             </a>
@@ -157,9 +181,12 @@ function injectSidebar() {
             <a href="communities.html" class="nav-item ${window.location.pathname.includes('communities') ? 'active' : ''}">
                 <i data-lucide="users"></i> <span class="nav-text">Communities</span>
             </a>
+<<<<<<< HEAD
             <a href="Followers.html" class="nav-item ${window.location.pathname.includes('Followers') ? 'active' : ''}">
                 <i data-lucide="user-round"></i> <span class="nav-text">Followers</span>
             </a>
+=======
+>>>>>>> 5d0a726 (wer)
             <a href="ItemForm.html" class="nav-item ${window.location.pathname.includes('ItemForm') ? 'active' : ''}">
                 <i data-lucide="square-plus"></i> <span class="nav-text">List Item</span>
             </a>
@@ -169,6 +196,7 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
+<<<<<<< HEAD
             ${user?.is_site_admin ? `
             <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
                 <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
@@ -183,22 +211,41 @@ function injectSidebar() {
                     </div>
                 </a>
                 <a href="#" class="nav-item" id="sidebarLogout" style="color: var(--danger, #ef4444);">
+=======
+            <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
+                <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
+            </a>
+            <div class="sidebar-footer">
+                <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
+                    <i data-lucide="circle-user-round"></i> <span class="nav-text">My Profile</span>
+                </a>
+                <a href="#" class="nav-item" id="sidebarLogout">
+>>>>>>> 5d0a726 (wer)
                     <i data-lucide="log-out"></i> <span class="nav-text">Logout</span>
                 </a>
             </div>
         </nav>
     `;
 
+<<<<<<< HEAD
     // Improved Wrapping: Wrap EVERYTHING in an app-container
     if (!document.getElementById('appContainer')) {
         const appContainer = document.createElement('div');
         appContainer.className = 'app-container';
         appContainer.id = 'appContainer';
 
+=======
+    // Improved Wrapping: Wrap EVERYTHING in the body except scripts and sidebar elements
+    if (!document.getElementById('mainWrapper')) {
+>>>>>>> 5d0a726 (wer)
         const mainWrapper = document.createElement('div');
         mainWrapper.className = 'main-wrapper';
         mainWrapper.id = 'mainWrapper';
 
+<<<<<<< HEAD
+=======
+        
+>>>>>>> 5d0a726 (wer)
         // Move all current body children into mainWrapper (except scripts and the sidebar/overlay)
         const children = Array.from(document.body.children);
         children.forEach(child => {
@@ -207,6 +254,7 @@ function injectSidebar() {
             }
         });
 
+<<<<<<< HEAD
         document.body.prepend(appContainer);
         appContainer.appendChild(sidebar);
         appContainer.appendChild(mainWrapper);
@@ -294,6 +342,14 @@ function injectSidebar() {
 <<<<<<< HEAD
     // Toggle logic - Moved AFTER injection
 =======
+=======
+        
+        document.body.prepend(mainWrapper);
+        document.body.prepend(overlay);
+        document.body.prepend(sidebar);
+    }
+
+>>>>>>> 5d0a726 (wer)
     
         
         
@@ -363,6 +419,7 @@ function injectSidebar() {
     }
 
     // Toggle logic
+<<<<<<< HEAD
 >>>>>>> ef777ae (ew)
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -393,10 +450,27 @@ function injectSidebar() {
     const sidebarLogo = document.querySelector('.sidebar-header');
     if (sidebarLogo) sidebarLogo.addEventListener('click', toggleSidebar);
     if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
+=======
+    const menuToggle = document.getElementById('menuToggle');
+    const closeSidebar = () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+    };
+
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+    }
+
+    overlay.addEventListener('click', closeSidebar);
+>>>>>>> 5d0a726 (wer)
 
     // Close sidebar on outside click
     document.addEventListener('click', (e) => {
         const sidebar = document.getElementById('sidebar');
+<<<<<<< HEAD
         const overlay = document.getElementById('sidebarOverlay');
         if (sidebar && !sidebar.classList.contains('collapsed')) {
             const clickedInsideSidebar = sidebar.contains(e.target);
@@ -409,6 +483,14 @@ function injectSidebar() {
                 if (window.innerWidth > 1024) {
                     localStorage.setItem('sidebarExpanded', 'false');
                 }
+=======
+        if (sidebar && sidebar.classList.contains('active')) {
+            const clickedInsideSidebar = sidebar.contains(e.target);
+            const clickedMenuToggle = menuToggle && menuToggle.contains(e.target);
+            
+            if (!clickedInsideSidebar && !clickedMenuToggle) {
+                closeSidebar();
+>>>>>>> 5d0a726 (wer)
             }
         }
     });
@@ -417,6 +499,7 @@ function injectSidebar() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             const sidebar = document.getElementById('sidebar');
+<<<<<<< HEAD
             const overlay = document.getElementById('sidebarOverlay');
             if (sidebar && !sidebar.classList.contains('collapsed')) {
                 sidebar.classList.add('collapsed');
@@ -425,11 +508,16 @@ function injectSidebar() {
                 if (window.innerWidth > 1024) {
                     localStorage.setItem('sidebarExpanded', 'false');
                 }
+=======
+            if (sidebar && sidebar.classList.contains('active')) {
+                closeSidebar();
+>>>>>>> 5d0a726 (wer)
             }
         }
     });
 
 
+<<<<<<< HEAD
     const overlayEl = document.getElementById('sidebarOverlay');
     if (overlayEl) {
         overlayEl.addEventListener('click', () => {
@@ -470,6 +558,8 @@ function injectSidebar() {
         }
     });
 
+=======
+>>>>>>> 5d0a726 (wer)
     // Logout logic
     const logoutBtn = document.getElementById('sidebarLogout');
     if (logoutBtn) {
@@ -584,9 +674,12 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
+<<<<<<< HEAD
 
         // Ensure main wrapper doesn't have padding
         mainWrapper.style.paddingLeft = '0';
+=======
+>>>>>>> 5d0a726 (wer)
     }
 }
 

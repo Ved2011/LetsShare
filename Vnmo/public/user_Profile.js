@@ -90,6 +90,7 @@ async function loadUserProfile() {
       }
       if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
 
+<<<<<<< HEAD
       const missingFields = [];
       if (!user.username) missingFields.push('Username');
       if (!user.phone) missingFields.push('Phone Number');
@@ -105,6 +106,11 @@ async function loadUserProfile() {
       }
 
       const displayBio = document.getElementById('displayBio');
+=======
+
+
+    const displayBio = document.getElementById('displayBio');
+>>>>>>> 5d0a726 (wer)
     if (displayBio) displayBio.textContent = user.bio || 'Sharing is caring! Looking forward to connecting with the community.';
 
     // Pre-fill edit form

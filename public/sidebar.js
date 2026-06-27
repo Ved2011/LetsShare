@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 function injectSidebar() {
     // Initialize Theme Globally First
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -15,6 +16,19 @@ function injectSidebar() {
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
+=======
+// sidebar.js
+function injectSidebar() {
+    const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
+    const isLoggedIn = !!localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // Don't inject sidebar at all on public pages if not logged in
+    if (!isLoggedIn && isPublicPage) {
+        return;
+    }
+
+>>>>>>> 5d0a726 (wer)
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     const isMobileDevice = window.innerWidth <= 1024;
@@ -51,13 +65,21 @@ function injectSidebar() {
     overlay.className = 'sidebar-overlay';
     overlay.id = 'sidebarOverlay';
 
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 5d0a726 (wer)
     // Inject Lucide script and styles
     if (!document.getElementById('lucide-setup')) {
         const script = document.createElement('script');
         script.id = 'lucide-setup';
         script.src = "assets/lucide.min.js";
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> 5d0a726 (wer)
         const style = document.createElement('style');
         style.innerHTML = `
             
@@ -120,7 +142,11 @@ function injectSidebar() {
         `;
         document.head.appendChild(style);
         document.head.appendChild(script);
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> 5d0a726 (wer)
         script.onload = () => {
             if (window.lucide) lucide.createIcons();
         };
@@ -140,9 +166,12 @@ function injectSidebar() {
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i data-lucide="layout-dashboard"></i> <span class="nav-text">Dashboard</span>
             </a>
+<<<<<<< HEAD
             <a href="MyItems.html" class="nav-item ${window.location.pathname.includes('MyItems') ? 'active' : ''}">
                 <i data-lucide="package"></i> <span class="nav-text">My Items</span>
             </a>
+=======
+>>>>>>> 5d0a726 (wer)
             <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
                 <i data-lucide="bell"></i> <span class="nav-text">Notifications</span>
             </a>
@@ -167,11 +196,17 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
+<<<<<<< HEAD
             ${user?.is_site_admin ? `
             <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
                 <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
             </a>
             ` : ''}
+=======
+            <a href="Pricing.html" class="nav-item ${window.location.pathname.includes('Pricing') ? 'active' : ''}">
+                <i data-lucide="gem"></i> <span class="nav-text">Upgrade Plan</span>
+            </a>
+>>>>>>> 5d0a726 (wer)
             <div class="sidebar-footer">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
                     <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
@@ -212,6 +247,7 @@ function injectSidebar() {
 
         mainWrapper.prepend(mobileHeader);
 
+<<<<<<< HEAD
         
         
         
@@ -286,6 +322,37 @@ function injectSidebar() {
                     if (overlay) overlay.classList.toggle('active');
                 });
             }
+=======
+        // Standardize Header across all pages
+        const header = document.querySelector('.header');
+        if (header) {
+            const pageTitle = document.title.split(' - ')[0];
+            const user = JSON.parse(localStorage.getItem('user'));
+            const isMobile = window.innerWidth <= 1024;
+
+            const theme = document.documentElement.getAttribute('data-theme') || 'light';
+            const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
+            const logoSrc = isMobile ? `assets/${prefix}Logo2.png` : `assets/${prefix}Logo3.png`;
+
+
+            // Build header right content (notification bell + avatar or login)
+            const headerRightContent = isLoggedIn
+                ? `<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:0.5rem;" title="Notifications"><i data-lucide="bell"></i><span class="notification-dot" style="position:absolute; top:-4px; right:-4px; background:red; width:8px; height:8px; border-radius:50%; display:none;"></span></a><a href="user_Profile.html" class="header-avatar">${user?.name?.charAt(0).toUpperCase()}</a>`
+                : `<a href="login.html" class="btn small outline">Login</a>`;
+
+            header.innerHTML = `
+                <div class="header-left">
+                    <img src="${logoSrc}" alt="Logo" class="header-logo">
+                    </a>
+                </div>
+                <div class="header-center">
+                    <h1 class="page-title">${pageTitle === 'LetsShare' ? '' : pageTitle}</h1>
+                </div>
+                <div class="header-right">${headerRightContent}</div>
+                </div>
+            `;
+            if (window.lucide) setTimeout(() => window.lucide.createIcons(), 0);
+>>>>>>> 5d0a726 (wer)
         }
     }
 
@@ -297,7 +364,11 @@ function injectSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const isCollapsed = sidebar.classList.contains('collapsed');
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> 5d0a726 (wer)
         if (isCollapsed) {
             sidebar.classList.remove('collapsed');
             sidebar.classList.add('active');
@@ -327,7 +398,11 @@ function injectSidebar() {
         if (sidebar && !sidebar.classList.contains('collapsed')) {
             const clickedInsideSidebar = sidebar.contains(e.target);
             const clickedMenuToggle = (menuToggle && menuToggle.contains(e.target)) || (mobileMenuToggle && mobileMenuToggle.contains(e.target));
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 5d0a726 (wer)
             if (!clickedInsideSidebar && !clickedMenuToggle) {
                 sidebar.classList.add('collapsed');
                 sidebar.classList.remove('active');
@@ -368,6 +443,7 @@ function injectSidebar() {
 
     // Smart Sticky Header Logic
     let lastScroll = 0;
+<<<<<<< HEAD
     const stickyHeader = document.querySelector('.header');
     if (stickyHeader) {
         window.addEventListener('scroll', () => {
@@ -409,6 +485,49 @@ function injectSidebar() {
         });
     }
 
+=======
+    const header = document.querySelector('.header');
+    if (header) {
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll <= 0) {
+                header.classList.remove('header-hidden');
+                return;
+            }
+            if (currentScroll > lastScroll && !header.classList.contains('header-hidden')) {
+                // Scroll Down
+                header.classList.add('header-hidden');
+            } else if (currentScroll < lastScroll && header.classList.contains('header-hidden')) {
+                // Scroll Up
+                const res = await fetch('/api/notifications', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    // If the endpoint is missing, show a friendly message
+                    list.innerHTML = '<p class="empty-state error">Unable to load notifications (service unavailable).</p>';
+                    return;
+                }
+                const rawData = await res.json();
+                const notifications = Array.isArray(rawData) ? rawData : [];
+                const list = document.getElementById('notificationsList');
+
+                if (notifications.length === 0) {
+                    const isMobile = window.innerWidth <= 1024;
+                    logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
+                }
+            });
+
+        // Update logo on resize
+        window.addEventListener('resize', () => {
+            const logo = document.querySelector('.header-logo');
+            if (logo) {
+                const isMobile = window.innerWidth <= 1024;
+                logo.src = isMobile ? 'assets/Logo2.jpeg' : 'assets/Logo1.png';
+            }
+        });
+
+<<<<<<< HEAD
+>>>>>>> 5d0a726 (wer)
     
     // Notification Dropdown Logic
     const notificationLinks = document.querySelectorAll('.notification-link');
@@ -432,10 +551,17 @@ function injectSidebar() {
         if (!dropdown) {
             dropdown = document.createElement('div');
             dropdown.className = 'notification-dropdown';
+<<<<<<< HEAD
             dropdown.style.cssText = 'display:none; position:absolute; top:45px; right:0; width:280px; max-height:400px; background:var(--card-bg, #1e1e2f); border:1px solid var(--border, #2d2d3f); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; flex-direction:column; overflow:hidden;';
             
             dropdown.innerHTML = `
                 <div style="padding:10px 12px; border-bottom:1px solid var(--border, #2d2d3f); font-weight:bold; color:var(--text, #fff); font-size:0.9rem;">Unread Notifications</div>
+=======
+            dropdown.style.cssText = 'display:none; position:absolute; top:45px; right:0; width:280px; max-height:400px; background:var(--card, #1e1e2f); border:1px solid var(--border, #2d2d3f); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; flex-direction:column; overflow:hidden;';
+            
+            dropdown.innerHTML = `
+                <div style="padding:10px 12px; border-bottom:1px solid var(--border, #2d2d3f); font-weight:bold; color:var(--text-main, #fff); font-size:0.9rem;">Unread Notifications</div>
+>>>>>>> 5d0a726 (wer)
                 <div class="notification-dropdown-list" style="display:flex; flex-direction:column; max-height:300px; overflow-y:auto;">
                     <div style="padding:15px 10px; text-align:center; color:var(--muted, #9ca3af); font-size:0.85rem;">Loading...</div>
                 </div>
@@ -469,7 +595,11 @@ function injectSidebar() {
                             badge.style.display = 'block';
                             badge.textContent = unread.length;
                             list.innerHTML = unread.map(n => `
+<<<<<<< HEAD
                                 <a href="Notifications.html" style="padding:12px; border-bottom:1px solid var(--border, #2d2d3f); text-decoration:none; color:var(--text, #fff); font-size:0.85rem; display:block; transition:background 0.2s;">
+=======
+                                <a href="Notifications.html" style="padding:12px; border-bottom:1px solid var(--border, #2d2d3f); text-decoration:none; color:var(--text-main, #fff); font-size:0.85rem; display:block; transition:background 0.2s;">
+>>>>>>> 5d0a726 (wer)
                                     <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${n.message}</div>
                                 </a>
                             `).join('');
@@ -512,11 +642,38 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
+<<<<<<< HEAD
 
         // Ensure main wrapper doesn't have padding
         mainWrapper.style.paddingLeft = '0';
     }
 }
+=======
+=======
+        // Logout logic
+        const logoutBtn = document.getElementById('sidebarLogout');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'welcome.html';
+            });
+        }
+>>>>>>> 5c7f5d3 (v)
+
+        // Hide sidebar on landing if not logged in (visual only)
+        if (isLandingPage && !isLoggedIn) {
+            sidebar.classList.add('collapsed');
+            sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
+            overlay.style.display = 'none';
+            if (menuToggle) menuToggle.style.display = 'none';
+
+            // Ensure main wrapper doesn't have padding
+            mainWrapper.style.paddingLeft = '0';
+        }
+    }
+>>>>>>> 5d0a726 (wer)
 
 
 
@@ -538,4 +695,8 @@ function injectSidebar() {
     });
     observer.observe(document.documentElement, { attributes: true });
 
+<<<<<<< HEAD
 document.addEventListener('DOMContentLoaded', injectSidebar);
+=======
+    document.addEventListener('DOMContentLoaded', injectSidebar);
+>>>>>>> 5d0a726 (wer)

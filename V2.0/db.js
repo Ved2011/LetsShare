@@ -166,6 +166,7 @@ const createTables = async () => {
         message TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+<<<<<<< HEAD
 
       CREATE TABLE IF NOT EXISTS direct_chat_invites (
         id SERIAL PRIMARY KEY,
@@ -184,6 +185,8 @@ const createTables = async () => {
         is_read BOOLEAN DEFAULT false,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+=======
+>>>>>>> 5d0a726 (wer)
     `);
 
     await client.query(`

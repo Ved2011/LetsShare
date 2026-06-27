@@ -10,7 +10,10 @@ const returnRoutes = require('./routes/returns');
 const complaintRoutes = require('./routes/complaints');
 const statsRoutes = require('./routes/stats');
 const communitiesRoutes = require('./routes/communities');
+<<<<<<< HEAD
 const adminRoutes = require('./routes/admin');
+=======
+>>>>>>> 5d0a726 (wer)
 
 const useragent = require('express-useragent');
 const cookieParser = require('cookie-parser');
@@ -25,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(useragent.express());
 
+<<<<<<< HEAD
 // Request Logging — development only
 if (process.env.NODE_ENV !== 'production') {
   app.use((req, res, next) => {
@@ -32,6 +36,16 @@ if (process.env.NODE_ENV !== 'production') {
     next();
   });
 }
+=======
+// Request Logging
+app.use((req, res, next) => {
+  console.log('--- Incoming Request ---');
+  console.log('Method:', req.method);
+  console.log('Path:', req.path);
+  console.log('Headers:', req.headers.authorization ? 'Bearer [hidden]' : 'None');
+  next();
+});
+>>>>>>> 5d0a726 (wer)
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -43,7 +57,10 @@ app.use('/api/complaints', complaintRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/communities', communitiesRoutes);
 app.use('/api/notifications', require('./routes/notifications'));
+<<<<<<< HEAD
 app.use('/api/admin', adminRoutes);
+=======
+>>>>>>> 5d0a726 (wer)
 
 // Static File Routing
 const publicStatic = express.static('public', { index: 'welcome.html' });

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+=======
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+>>>>>>> 5d0a726 (wer)
 
 :root {
     --bg-color-start: #4f46e5;
@@ -52,7 +56,11 @@ html, body {
     overflow-x: clip;
     margin: 0;
     padding: 0;
+<<<<<<< HEAD
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+=======
+    font-family: 'Outfit', sans-serif;
+>>>>>>> 5d0a726 (wer)
     background-color: var(--bg-main);
     color: var(--text);
     line-height: 1.5;
@@ -405,7 +413,11 @@ html, body {
 
 body {
     margin: 0;
+<<<<<<< HEAD
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+=======
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+>>>>>>> 5d0a726 (wer)
     background: radial-gradient(circle at top right, rgba(79, 124, 222, 0.05), transparent),
                 radial-gradient(circle at bottom left, rgba(99, 179, 237, 0.05), transparent),
                 var(--bg-main);
@@ -504,17 +516,29 @@ body {
 }
 
 .item-square {
+<<<<<<< HEAD
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 16px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+=======
+    aspect-ratio: 1 / 1;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+>>>>>>> 5d0a726 (wer)
     align-items: center;
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
     box-shadow: var(--shadow);
+<<<<<<< HEAD
     padding-bottom: 1rem;
 }
 
@@ -527,6 +551,8 @@ body {
     margin-bottom: 0.75rem;
     display: block;
     flex-shrink: 0;
+=======
+>>>>>>> 5d0a726 (wer)
 }
 
 .item-square:hover {
@@ -1716,7 +1742,10 @@ select:hover {
     color: white;
     cursor: pointer;
     font-size: 0.9rem;
+<<<<<<< HEAD
     font-family: inherit;
+=======
+>>>>>>> 5d0a726 (wer)
 }
 
 .btn:hover {
@@ -2222,6 +2251,7 @@ html[data-theme="dark"] .custom-dropdown-menu {
 /* These rules use auto-fit and minmax to dynamically adjust columns 
    based on available width without strict media query breakpoints. */
 
+<<<<<<< HEAD
 .dashboard-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
@@ -2254,3 +2284,28 @@ html[data-theme="dark"] .custom-dropdown-menu {
     }
 }
 
+=======
+.items-square-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+    gap: 1.25rem !important;
+}
+
+.dashboard-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+    gap: 1rem !important;
+}
+
+.grid-container, .community-grid, .stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+    gap: 1.25rem !important;
+}
+
+.features-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+    gap: 1.5rem !important;
+}
+>>>>>>> 5d0a726 (wer)
