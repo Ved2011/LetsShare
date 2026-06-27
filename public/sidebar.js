@@ -389,7 +389,9 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
-            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const pfx = currentTheme === 'dark' ? 'Dark_' : 'Light_';
+            logo.src = isMobile ? `assets/${pfx}Logo2.png` : `assets/${pfx}Logo3.png`;
         }
     });
 

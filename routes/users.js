@@ -1,15 +1,11 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const { authenticateToken, authenticateTokenOptional } = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer();
 
 const router = express.Router();
-
-router.use((req, res, next) => {
-  console.log('User Router Request:', req.method, req.path);
-  next();
-});
 
 // Search users and items
 router.get('/search', authenticateToken, async (req, res) => {
@@ -292,10 +288,6 @@ router.get('/search-suggestions', authenticateToken, async (req, res) => {
 });
 
 
-const bcrypt = require('bcryptjs');
-
-
-
 // Get users who follow me
 router.get('/followers', authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -368,29 +360,21 @@ router.get('/warnings', authenticateToken, async (req, res) => {
 // Get specific user profile
 router.get('/:id', authenticateTokenOptional, async (req, res) => {
   const targetUserIdStr = req.params.id;
-  console.log('GET user profile hit for ID string:', targetUserIdStr);
-  
+
   if (isNaN(targetUserIdStr)) {
     return res.status(400).json({ error: 'Invalid user ID' });
   }
-  
+
   const targetUserId = parseInt(targetUserIdStr, 10);
   const currentUserId = req.user ? req.user.id : null;
-  console.log('Fetching profile for targetUserId:', targetUserId, 'by viewer:', currentUserId);
 
   try {
-    const allUsers = await pool.query('SELECT id FROM users');
-    console.log('Available User IDs in DB:', allUsers.rows.map(r => r.id));
-
     const result = await pool.query(
       `SELECT id, name, email, username, profile_picture, bio FROM users WHERE id = $1`,
       [targetUserId]
     );
 
-    console.log('Query result rows:', result.rows.length);
-
     if (result.rows.length === 0) {
-      console.log('User not found in DB for ID:', targetUserId);
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -563,21 +547,6 @@ router.put('/me', authenticateToken, upload.single('profilePicture'), async (req
     if (err.code === '23505') {
       return res.status(400).json({ error: 'Email already in use' });
     }
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get current user warnings
-router.get('/warnings', authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const result = await pool.query(
-      'SELECT id, reason, severity, created_at FROM warnings WHERE user_id = $1 ORDER BY created_at DESC',
-      [userId]
-    );
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Get warnings error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

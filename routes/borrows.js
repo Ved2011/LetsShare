@@ -192,12 +192,7 @@ router.put('/:id/approve', authenticateToken, async (req, res) => {
         'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
         [userId, ownerEarning, 'credit', 'earning', `Earning from ${itemName} rental`]
       );
-
-      // Log platform fee
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [null, platformFee, 'credit', 'platform_fee', `10% commission from ${itemName} rental`]
-      );
+      // Note: platform commission (10%) is the difference between totalPrice and ownerEarning
     }
 
     // Update borrow with details and status

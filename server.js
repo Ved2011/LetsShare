@@ -25,14 +25,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(useragent.express());
 
-// Request Logging
-app.use((req, res, next) => {
-  console.log('--- Incoming Request ---');
-  console.log('Method:', req.method);
-  console.log('Path:', req.path);
-  console.log('Headers:', req.headers.authorization ? 'Bearer [hidden]' : 'None');
-  next();
-});
+// Request Logging — development only
+if (process.env.NODE_ENV !== 'production') {
+  app.use((req, res, next) => {
+    console.log(`[${req.method}] ${req.path}`);
+    next();
+  });
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
