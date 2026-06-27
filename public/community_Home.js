@@ -85,7 +85,7 @@ function displayItems(items) {
     }
     communityItemsGrid.innerHTML = items.map(item => `
         <div class="item-square" onclick="window.location.href='item_View.html?id=${item.id}'">
-            <img src="${item.imageBase64 || 'assets/untitled.png'}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; background: #f1f5f9;">
+        <img src="${item.imageBase64 || 'assets/untitled.png'}" class="item-image" alt="${item.name}" loading="lazy">
             <div class="item-name">${item.name}</div>
             <div class="item-category">${item.category || 'Miscellaneous'}</div>
             <div style="color: var(--accent); font-weight: 700; margin-top: 0.5rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)}/day</div>
