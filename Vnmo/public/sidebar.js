@@ -221,6 +221,7 @@ function injectSidebar() {
         
         if (header && !isWelcomePage) {
             let pageTitle = "LetsShare";
+<<<<<<< HEAD
             let pageTitleId = "";
             const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
             const existingH2 = header.querySelector('h2');
@@ -237,6 +238,15 @@ function injectSidebar() {
             } else if (document.title.includes(' - ')) {
                 pageTitle = document.title.split(' - ')[0];
             }
+=======
+            const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
+            const existingH2 = header.querySelector('h2');
+            const existingH1 = header.querySelector('h1');
+            if (existingSpan) pageTitle = existingSpan.textContent;
+            else if (existingH2) pageTitle = existingH2.textContent;
+            else if (existingH1) pageTitle = existingH1.textContent;
+            else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
+>>>>>>> ef777ae (ew)
 
             const isNotifPage = window.location.pathname.toLowerCase().includes('notifications');
             
@@ -268,7 +278,11 @@ function injectSidebar() {
                     </a>
                 </div>
                 <div class="header-center" style="flex:1; text-align:center; padding:0; min-width:0; pointer-events:none;">
+<<<<<<< HEAD
                     <h1 class="page-title" ${pageTitleId ? `id="${pageTitleId}"` : ''} style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare' || pageTitle.toLowerCase() === 'no communities') ? '' : pageTitle}</h1>
+=======
+                    <h1 class="page-title" style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare') ? '' : pageTitle}</h1>
+>>>>>>> ef777ae (ew)
                 </div>
                 <div class="header-right" style="display:flex; align-items:center; justify-content:flex-end; flex-shrink:0;">
                     ${uniformRight}

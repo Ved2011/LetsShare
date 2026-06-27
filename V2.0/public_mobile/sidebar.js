@@ -291,7 +291,79 @@ function injectSidebar() {
         }
     }
 
+<<<<<<< HEAD
     // Toggle logic - Moved AFTER injection
+=======
+    
+        
+        
+        // Standardize Header across all pages
+        const headerMain = document.querySelector('.header');
+        const isWelcomePage = window.location.pathname.toLowerCase().includes('welcome');
+        
+        if (headerMain && !isWelcomePage) {
+            let pageTitle = "LetsShare";
+            const existingSpan = headerMain.querySelector('span[style*="font-weight: 600"]');
+            const existingH2 = headerMain.querySelector('h2');
+            const existingH1 = headerMain.querySelector('h1');
+            if (existingSpan) pageTitle = existingSpan.textContent;
+            else if (existingH2) pageTitle = existingH2.textContent;
+            else if (existingH1) pageTitle = existingH1.textContent;
+            else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
+
+            const isNotifPage = window.location.pathname.toLowerCase().includes('notifications');
+            
+            const user = JSON.parse(localStorage.getItem('user'));
+            const isMobile = window.innerWidth <= 1024;
+            const theme = document.documentElement.getAttribute('data-theme') || 'light';
+            const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
+            
+            const logoSrc = isMobile ? `assets/${prefix}Logo2.png` : `assets/${prefix}Logo3.png`;
+
+            const menuBtn = isMobile ? `<button id="menuToggle" class="menu-toggle" style="background:none; border:none; color:var(--text); font-size:1.5rem; cursor:pointer; padding:0.25rem 0.5rem 0.25rem 0; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i data-lucide="menu"></i></button>` : '';
+
+            const uniformRight = isLoggedIn 
+                ? `${!isNotifPage ? '<a href="Notifications.html" class="notification-link" style="position:relative; text-decoration:none; margin-right:0.75rem; display:flex; align-items:center; justify-content:center; color:var(--text);" title="Notifications"><i data-lucide="bell"></i></a>' : ''}
+                   <a href="user_Profile.html" class="header-avatar" style="text-decoration:none; width:34px; height:34px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${user?.name?.charAt(0).toUpperCase() || 'U'}</a>`
+                : `<a href="login.html" class="btn small primary" style="text-decoration: none; padding:0.5rem 1.2rem; border-radius:999px; background:var(--accent); color:white; font-weight:bold; font-size:0.9rem; flex-shrink:0;">Login</a>`;
+
+            headerMain.style.display = 'flex';
+            headerMain.style.justifyContent = 'space-between';
+            headerMain.style.alignItems = 'center';
+            headerMain.style.width = '100%';
+            headerMain.style.gap = '0.5rem';
+
+            headerMain.innerHTML = `
+                <div class="header-left" style="display:flex; align-items:center; flex-shrink:0;">
+                    ${menuBtn}
+                    <a href="${isLoggedIn ? 'user_Dashboard.html' : 'welcome.html'}" class="brand" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
+                        <img src="${logoSrc}" alt="Logo" class="header-logo" onerror="this.src='assets/Logo3.jpeg'" style="height:38px; width:auto; max-width:140px; border-radius:6px; object-fit:contain; flex-shrink:0;">
+                    </a>
+                </div>
+                <div class="header-center" style="flex:1; text-align:center; padding:0; min-width:0; pointer-events:none;">
+                    <h1 class="page-title" style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare') ? '' : pageTitle}</h1>
+                </div>
+                <div class="header-right" style="display:flex; align-items:center; justify-content:flex-end; flex-shrink:0;">
+                    ${uniformRight}
+                </div>
+            `;
+            if (window.lucide) setTimeout(() => window.lucide.createIcons(), 0);
+            
+            // Toggle Logic Rebind for new menuToggle button
+            const injectedMenuToggle = document.getElementById('menuToggle');
+            if (injectedMenuToggle) {
+                injectedMenuToggle.addEventListener('click', () => {
+                    const sidebar = document.getElementById('sidebar');
+                    const overlay = document.getElementById('sidebarOverlay');
+                    if (sidebar) sidebar.classList.toggle('active');
+                    if (overlay) overlay.classList.toggle('active');
+                });
+            }
+        }
+    }
+
+    // Toggle logic
+>>>>>>> ef777ae (ew)
     const menuToggle = document.getElementById('menuToggle');
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
 
