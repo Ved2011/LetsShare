@@ -76,6 +76,40 @@
             font-size: 0.85rem;
             color: var(--muted);
         }
+        .category-filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+        .cat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            border: 2px solid var(--border);
+            background: var(--card-bg);
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .cat-chip:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+        .cat-chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        .cat-chip svg {
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -101,6 +135,25 @@
                 <input type="text" id="globalSearchInput" class="search-box" placeholder="Search communities, items, or users..." autofocus style="padding-left: 3.5rem;">
             </div>
 
+            <div class="category-filters">
+                <button class="cat-chip active" data-filter="all" onclick="setFilter('all')">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    All
+                </button>
+                <button class="cat-chip" data-filter="Community" onclick="setFilter('Community')">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Communities
+                </button>
+                <button class="cat-chip" data-filter="Item" onclick="setFilter('Item')">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    Items
+                </button>
+                <button class="cat-chip" data-filter="User" onclick="setFilter('User')">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Users
+                </button>
+            </div>
+
             <div id="searchResults" class="card" style="padding: 0; min-height: 200px;">
                 <p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>
             </div>
@@ -113,6 +166,42 @@
         const resultsContainer = document.getElementById('searchResults');
 
         let debounceTimer;
+        let activeFilter = 'all';
+        let allResults = [];
+
+        function setFilter(filter) {
+            activeFilter = filter;
+            document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.cat-chip[data-filter="${filter}"]`).classList.add('active');
+            renderResults();
+        }
+
+        function renderResults() {
+            const filtered = activeFilter === 'all' ? allResults : allResults.filter(r => r.category === activeFilter);
+            if (!filtered.length) {
+                resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">No results in this category.</p>';
+                return;
+            }
+            resultsContainer.innerHTML = filtered.map(r => {
+                let link = '#';
+                if (r.category === 'Community') link = `community_Home.html?id=${r.id}`;
+                else if (r.category === 'Item') link = `item_Details.html?id=${r.id}`;
+                else if (r.category === 'User') link = `user_View.html?id=${r.id}`;
+                return `
+                    <a href="${link}" class="result-item">
+                        <div class="header-avatar" style="width: 40px; height: 40px; flex-shrink: 0;">${r.name.charAt(0).toUpperCase()}</div>
+                        <div style="flex-grow: 1;">
+                            <span class="result-category" style="background: ${getCategoryColor(r.category)}; display: inline-flex; align-items: center; gap: 4px; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem;">
+                                ${getCategoryIcon(r.category)} ${r.category}
+                            </span>
+                            <h4 style="margin: 0; margin-top: 0.25rem;">${r.name}</h4>
+                            <p class="result-subtext" style="margin: 0;">${r.subtext}</p>
+                        </div>
+                        <span style="color: var(--muted);">→</span>
+                    </a>
+                `;
+            }).join('');
+        }
 
         // Initialize Lucide icons on load
         document.addEventListener('DOMContentLoaded', () => {
@@ -142,8 +231,9 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const results = await res.json();
-                
+
                 if (!Array.isArray(results) || results.length === 0) {
+                    allResults = [];
                     resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">No results found for "' + query + '"</p>';
                     if (results.error) {
                         resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem; color: var(--danger);">' + results.error + '</p>';
@@ -151,30 +241,8 @@
                     return;
                 }
 
-                resultsContainer.innerHTML = results.map(r => {
-                    let link = '#';
-                    if (r.category === 'Community') link = `community_Home.html?id=${r.id}`;
-                    else if (r.category === 'Item') link = `item_Details.html?id=${r.id}`;
-                    else if (r.category === 'User') link = `user_View.html?id=${r.id}`; 
-
-                    return `
-                        <a href="${link}" class="result-item">
-                            <div class="header-avatar" style="width: 40px; height: 40px; flex-shrink: 0;">${r.name.charAt(0).toUpperCase()}</div>
-                            <div style="flex-grow: 1;">
-                                <span class="result-category" style="background: ${getCategoryColor(r.category)}; display: inline-flex; align-items: center; gap: 4px; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem;">
-                                    ${getCategoryIcon(r.category)} ${r.category}
-                                </span>
-                                <h4 style="margin: 0; margin-top: 0.25rem;">${r.name}</h4>
-                                <p class="result-subtext" style="margin: 0;">${r.subtext}</p>
-                            </div>
-                            <span style="color: var(--muted);">→</span>
-                        </a>
-                    `;
-                }).join('');
-
-                if (window.lucide) {
-                    lucide.createIcons();
-                }
+                allResults = results;
+                renderResults();
             } catch (err) {
                 console.error('Search error:', err);
             }
