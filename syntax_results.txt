@@ -1,0 +1,46 @@
+FAILED: V2.0/public_mobile/sidebar.js
+/Users/ved/Documents/Coding/LetsShare/LetsShare/V2.0/public_mobile/sidebar.js:392
+}
+^
+
+SyntaxError: Unexpected token '}'
+    at wrapSafe (node:internal/modules/cjs/loader:1762:18)
+    at checkSyntax (node:internal/main/check_syntax:76:3)
+
+Node.js v25.9.0
+
+OK: V2.0/public/sidebar.js
+FAILED: public_mobile/sidebar.js
+/Users/ved/Documents/Coding/LetsShare/LetsShare/public_mobile/sidebar.js:392
+}
+^
+
+SyntaxError: Unexpected token '}'
+    at wrapSafe (node:internal/modules/cjs/loader:1762:18)
+    at checkSyntax (node:internal/main/check_syntax:76:3)
+
+Node.js v25.9.0
+
+FAILED: Vnmo/public_mobile/sidebar.js
+/Users/ved/Documents/Coding/LetsShare/LetsShare/Vnmo/public_mobile/sidebar.js:389
+}
+^
+
+SyntaxError: Unexpected token '}'
+    at wrapSafe (node:internal/modules/cjs/loader:1762:18)
+    at checkSyntax (node:internal/main/check_syntax:76:3)
+
+Node.js v25.9.0
+
+OK: Vnmo/public/sidebar.js
+FAILED: public/sidebar.js
+/Users/ved/Documents/Coding/LetsShare/LetsShare/public/sidebar.js:364
+                const res = await fetch('/api/notifications', {
+                            ^^^^^
+
+SyntaxError: await is only valid in async functions and the top level bodies of modules
+    at wrapSafe (node:internal/modules/cjs/loader:1762:18)
+    at checkSyntax (node:internal/main/check_syntax:76:3)
+
+Node.js v25.9.0
+

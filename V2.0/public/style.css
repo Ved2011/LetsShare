@@ -1706,6 +1706,7 @@ select:hover {
     color: white;
     cursor: pointer;
     font-size: 0.9rem;
+    font-family: inherit;
 }
 
 .btn:hover {
