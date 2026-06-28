@@ -504,19 +504,29 @@ body {
 }
 
 .item-square {
-    aspect-ratio: 1 / 1;
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 1rem;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     text-align: center;
     transition: all 0.3s ease;
     cursor: pointer;
     box-shadow: var(--shadow);
+    padding-bottom: 1rem;
+}
+
+/* Image styling for item tiles */
+.item-image {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 0;
+    margin-bottom: 0.75rem;
+    display: block;
+    flex-shrink: 0;
 }
 
 .item-square:hover {
@@ -2226,7 +2236,7 @@ html[data-theme="dark"] .custom-dropdown-menu {
     .grid-container,
     .items-responsive-grid {
         display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
         gap: 1.5rem !important;
     }
 }
