@@ -297,7 +297,6 @@ async function loadDashboard() {
       allItems = items; 
       const myItems = items.filter(item => item.owner_id === user.id);
       dashboardMyItems.textContent = myItems.length;
-      displayMyItems(myItems);
     }
 
     const borrowsResponse = await fetch('/api/borrows', {
@@ -439,32 +438,6 @@ function renderCommunityCard(c) {
       </div>
     </div>
   `;
-}
-
-function displayMyItems(items) {
-  if (!myItemsContainer) return;
-  myItemsContainer.innerHTML = '';
-  if (!items.length) {
-    myItemsContainer.innerHTML = '<p class="empty-state">You haven\'t uploaded any items yet.</p>';
-    return;
-  }
-  
-  // Sort by newest and limit to 3
-  const recentItems = [...items].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 3);
-  
-  myItemsContainer.innerHTML = recentItems.map(item => `
-    <div class="community-card" onclick="window.location.href='item_View.html?id=${item.id}'" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem;">
-      <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}" style="width: 100%; height: 160px; border-radius: 12px; object-fit: cover; background: #f1f5f9;">
-      <div style="flex: 1;">
-        <h4 style="margin: 0; font-size: 1rem; line-height: 1.4;">${item.name}</h4>
-        <p style="color: var(--accent); font-weight: 700; margin-top: 0.25rem;">Rs. ${Number(item.price_per_day || 0).toFixed(2)} / day</p>
-      </div>
-      <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-        <button class="btn small outline" style="flex: 1; padding: 0.4rem;" onclick="event.stopPropagation(); editItem(${item.id})">Edit</button>
-        <button class="btn small danger" style="padding: 0.4rem;" onclick="event.stopPropagation(); deleteItem(${item.id})">🗑️</button>
-      </div>
-    </div>
-  `).join('');
 }
 
 function displayBorrowedItems(borrows) {
@@ -798,7 +771,6 @@ document.addEventListener('DOMContentLoaded', () => {
   dashboardBorrows = document.getElementById('dashboardBorrows');
   dashboardMyItems = document.getElementById('dashboardMyItems');
   joinedCommunitiesContainer = document.getElementById('joinedCommunitiesGrid');
-  myItemsContainer = document.getElementById('dashboardMyItemsList');
   borrowedItemsContainer = document.getElementById('dashboardBorrowedItemsList');
   requestsContainer = document.getElementById('dashboardRequestsList');
   dashboardSearchInput = document.getElementById('dashboardSearchInput');

@@ -131,16 +131,10 @@
                 </div>
             </section>
 
-            <!-- Right Side: Chat -->
-            <section id="chatSectionHome">
+            <!-- Right Side: Chat (hidden by default, shown by JS when chat_enabled) -->
+            <section id="chatSectionHome" style="display: none;">
                 <div class="section-heading">
                     <h3>Community Chat</h3>
-                </div>
-                <div class="chat-container-home" id="chatDisabledMsg" style="display: none; justify-content: center; align-items: center; text-align: center; padding: 2rem;">
-                    <div>
-                        <span style="font-size: 3rem;">🔒</span>
-                        <p style="margin-top: 1rem; color: var(--muted);">Chat is disabled for this community.</p>
-                    </div>
                 </div>
                 <div class="chat-container-home" id="chatActiveArea">
                     <div id="chatBox"></div>

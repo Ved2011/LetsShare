@@ -164,6 +164,24 @@ const createTables = async () => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS direct_chat_invites (
+        id SERIAL PRIMARY KEY,
+        sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(sender_id, receiver_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS direct_messages (
+        id SERIAL PRIMARY KEY,
+        sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS warnings (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -266,6 +284,7 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_site_admin BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
     `);
 
     console.log('Tables created successfully');

@@ -166,6 +166,24 @@ const createTables = async () => {
         message TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS direct_chat_invites (
+        id SERIAL PRIMARY KEY,
+        sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        status TEXT DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(sender_id, receiver_id)
+      );
+
+      CREATE TABLE IF NOT EXISTS direct_messages (
+        id SERIAL PRIMARY KEY,
+        sender_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     await client.query(`

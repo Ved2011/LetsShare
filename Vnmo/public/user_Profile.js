@@ -90,9 +90,21 @@ async function loadUserProfile() {
       }
       if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
 
+      const missingFields = [];
+      if (!user.username) missingFields.push('Username');
+      if (!user.phone) missingFields.push('Phone Number');
+      if (!user.dob) missingFields.push('Date of Birth');
+      if (!user.address) missingFields.push('Address');
 
+      if (missingFields.length > 0) {
+        const msg = `${missingFields.join(', ')} is not filled and you must fill it!`;
+        setTimeout(() => {
+          if (window.showAlert) window.showAlert(msg, 'warning');
+          else alert(msg);
+        }, 300);
+      }
 
-    const displayBio = document.getElementById('displayBio');
+      const displayBio = document.getElementById('displayBio');
     if (displayBio) displayBio.textContent = user.bio || 'Sharing is caring! Looking forward to connecting with the community.';
 
     // Pre-fill edit form

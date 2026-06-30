@@ -30,15 +30,17 @@ async function loadCommunityDetails() {
             document.getElementById('heroCommAddress').textContent = `📍 ${currentCommunity.address}`;
             document.getElementById('memberCount').textContent = currentCommunity.member_count;
             
+            const chatSectionHome = document.getElementById('chatSectionHome');
+            const contentWrapper = document.querySelector('.community-content-wrapper');
+            
             if (currentCommunity.chat_enabled) {
-                document.getElementById('chatDisabledMsg').style.display = 'none';
-                document.getElementById('chatActiveArea').style.display = 'flex';
+                if (chatSectionHome) chatSectionHome.style.display = 'block';
+                if (contentWrapper) contentWrapper.style.gridTemplateColumns = '1.2fr 0.8fr';
                 loadChatMessages();
-                // Polling for chat
                 setInterval(loadChatMessages, 5000);
             } else {
-                document.getElementById('chatDisabledMsg').style.display = 'flex';
-                document.getElementById('chatActiveArea').style.display = 'none';
+                if (chatSectionHome) chatSectionHome.style.display = 'none';
+                if (contentWrapper) contentWrapper.style.gridTemplateColumns = '1fr';
             }
         } else {
             window.location.href = 'user_Dashboard.html';

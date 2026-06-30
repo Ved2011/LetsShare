@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - LetsShare</title>
+    <link rel="icon" href="assets/Light_Logo1.png" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .messages-layout {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 0;
+            height: calc(100vh - 80px);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+
+        @media (max-width: 768px) {
+            .messages-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: calc(100vh - 80px);
+            }
+            .chat-panel { display: none; }
+            .chat-panel.active { display: flex; }
+            .conversations-panel.hidden-mobile { display: none; }
+        }
+
+        /* Left Panel - Conversations */
+        .conversations-panel {
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .conversations-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .conversations-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .tab-bar {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.85rem;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--muted);
+            position: relative;
+            transition: color 0.2s;
+            font-family: inherit;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            width: 60%;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 99px;
+        }
+
+        .tab-btn .badge {
+            display: inline-block;
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: 99px;
+            margin-left: 0.3rem;
+            font-weight: 700;
+        }
+
+        .conversations-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            display: flex;
+            gap: 0.85rem;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+            align-items: center;
+        }
+
+        .conversation-item:hover {
+            background: rgba(99, 102, 241, 0.06);
+        }
+
+        .conversation-item.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--accent);
+        }
+
+        .conv-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .conv-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .conv-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .conv-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .conv-preview {
+            font-size: 0.82rem;
+            color: var(--muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .conv-meta {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .conv-time {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .conv-unread {
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 99px;
+            margin-top: 0.25rem;
+            display: inline-block;
+        }
+
+        /* Invite Items */
+        .invite-item {
+            display: flex;
+            gap: 0.85rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .invite-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        .invite-actions .btn {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .invite-direction {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* Right Panel - Chat */
+        .chat-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 0.85rem;
+            align-items: center;
+        }
+
+        .chat-header .back-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--text-main);
+            padding: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .chat-header .back-btn { display: block; }
+        }
+
+        .chat-header-info h4 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .chat-header-info p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .msg-bubble {
+            max-width: 75%;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .msg-bubble.mine {
+            align-self: flex-end;
+            background: var(--accent);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-bubble.theirs {
+            align-self: flex-start;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-time {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.6);
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+
+        .msg-bubble.theirs .msg-time {
+            color: var(--muted);
+        }
+
+        .chat-input-bar {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .chat-input-bar input {
+            flex: 1;
+            padding: 0.85rem 1.25rem;
+            border-radius: 99px;
+            border: 1px solid var(--border);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-size: 0.92rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input-bar input:focus {
+            border-color: var(--accent);
+        }
+
+        .chat-input-bar button {
+            padding: 0.85rem 1.5rem;
+            border-radius: 99px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--muted);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .empty-state .emoji {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 0.5rem;
+            color: var(--text-main);
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 0.9rem;
+            max-width: 300px;
+        }
+
+        /* Date separator */
+        .date-separator {
+            text-align: center;
+            padding: 0.5rem 0;
+        }
+
+        .date-separator span {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            padding: 0.25rem 1rem;
+            border-radius: 99px;
+            font-size: 0.72rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <div class="header">
+            <div style="flex-grow: 1;">
+                <h2>Messages</h2>
+                <p>Chat with your community members.</p>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="messages-layout">
+                <!-- Left: Conversations List -->
+                <div class="conversations-panel" id="conversationsPanel">
+                    <div class="conversations-header">
+                        <h3>💬 Chats</h3>
+                    </div>
+                    <div class="tab-bar">
+                        <button class="tab-btn active" data-tab="conversations" onclick="switchTab('conversations')">
+                            Conversations
+                        </button>
+                        <button class="tab-btn" data-tab="invites" onclick="switchTab('invites')">
+                            Invites <span class="badge" id="inviteBadge" style="display: none;">0</span>
+                        </button>
+                    </div>
+                    <div class="conversations-list" id="conversationsList">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="conversations-list" id="invitesList" style="display: none;">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Right: Chat Area -->
+                <div class="chat-panel" id="chatPanel">
+                    <div id="chatEmptyState" class="empty-state">
+                        <span class="emoji">💬</span>
+                        <h3>Start a Conversation</h3>
+                        <p>Select a chat from the sidebar or invite community members to start messaging.</p>
+                    </div>
+                    <div id="chatActiveView" style="display: none; flex-direction: column; height: 100%;">
+                        <div class="chat-header" id="chatHeader">
+                            <button class="back-btn" onclick="closeChatMobile()">←</button>
+                            <div class="conv-avatar" id="chatAvatar">?</div>
+                            <div class="chat-header-info">
+                                <h4 id="chatUserName">Select a conversation</h4>
+                                <p id="chatUserHandle">@username</p>
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="chatMessages">
+                            <!-- Messages loaded here -->
+                        </div>
+                        <div class="chat-input-bar">
+                            <input type="text" id="msgInput" placeholder="Type a message..." autocomplete="off">
+                            <button class="btn primary" id="sendMsgBtn" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="messages.js"></script>
+</body>
+</html>

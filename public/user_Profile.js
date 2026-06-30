@@ -115,6 +115,20 @@ async function loadUserProfile() {
         displayAddress.textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Not provided';
       }
 
+      const missingFields = [];
+      if (!user.username) missingFields.push('Username');
+      if (!user.phone) missingFields.push('Phone Number');
+      if (!user.dob) missingFields.push('Date of Birth');
+      if (!user.address) missingFields.push('Address');
+
+      if (missingFields.length > 0) {
+        const msg = `${missingFields.join(', ')} is not filled and you must fill it!`;
+        setTimeout(() => {
+          if (window.showAlert) window.showAlert(msg, 'warning');
+          else alert(msg);
+        }, 300);
+      }
+
       const walletBalance = document.getElementById('walletBalance');
       const editUpiId = document.getElementById('editUpiId');
       if (walletBalance) walletBalance.textContent = `Rs. ${Number(user.wallet_balance || 0).toFixed(2)}`;
