@@ -533,20 +533,7 @@ router.get('/:id/items', authenticateToken, async (req, res) => {
             WHERE cm.community_id = $1
             ORDER BY i.created_at DESC
         `, [communityId]);
-<<<<<<< HEAD
-
-        const rows = items.rows.map(item => {
-            if (item.image) {
-                item.imageBase64 = `data:image/jpeg;base64,${item.image.toString('base64')}`;
-            }
-            delete item.image;
-            return item;
-        });
-
-        res.json(rows);
-=======
         res.json(items.rows);
->>>>>>> 5d0a726 (wer)
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
