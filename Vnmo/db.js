@@ -6,11 +6,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
-<<<<<<< HEAD
-  password: process.env.DB_PASSWORD,
-=======
   password: 'abc123',
->>>>>>> 5d0a726 (wer)
 });
 
 const createTables = async () => {
