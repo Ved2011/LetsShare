@@ -9,37 +9,172 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Borrow Item - LetsShare</title>
+    <title>Browse Items - LetsShare</title>
     <link rel="icon" href="assets/Light_Logo1.png" type="image/jpeg">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .browse-page { padding: 0 0 6rem 0; min-height: 100vh; }
+
+        /* Sticky search+filter */
+        .search-bar-sticky {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--bg); border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+        }
+        .search-row { display: flex; gap: 0.5rem; align-items: center; }
+        .search-input-wrap { flex: 1; position: relative; }
+        .search-input-wrap input {
+            width: 100%; padding: 0.65rem 1rem 0.65rem 2.4rem;
+            border: 1.5px solid var(--border); border-radius: 12px;
+            background: var(--card-bg); color: var(--text);
+            font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .search-input-wrap input:focus { border-color: var(--accent); }
+        .search-icon {
+            position: absolute; left: 0.7rem; top: 50%;
+            transform: translateY(-50%); pointer-events: none; font-size: 0.85rem;
+        }
+        .filter-toggle-btn {
+            display: flex; align-items: center; gap: 0.3rem;
+            padding: 0.65rem 0.85rem; border: 1.5px solid var(--border);
+            border-radius: 12px; background: var(--card-bg); color: var(--text);
+            font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .filter-toggle-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* Filter panel */
+        .filter-panel { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+        .filter-panel.open { max-height: 320px; }
+        .filter-panel-inner { padding: 0.85rem 0 0.25rem; display: flex; flex-direction: column; gap: 0.65rem; }
+        .filter-row-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.2rem; }
+        .filter-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+        .filter-chip {
+            padding: 0.28rem 0.7rem; border-radius: 99px; border: 1.5px solid var(--border);
+            background: var(--card-bg); font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; color: var(--text); transition: all 0.15s;
+        }
+        .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        /* Section header */
+        .browse-section-head {
+            padding: 1rem 1rem 0.5rem;
+            display: flex; justify-content: space-between; align-items: baseline;
+        }
+        .browse-section-head h2 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .item-count-badge { font-size: 0.78rem; color: var(--muted); }
+
+        /* Product grid */
+        .product-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 0.75rem; padding: 0 0.75rem 1rem;
+        }
+        .product-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden; cursor: pointer;
+            transition: transform 0.18s; display: flex; flex-direction: column;
+        }
+        .product-card:active { transform: scale(0.97); }
+        .product-img-wrap {
+            aspect-ratio: 1/1; overflow: hidden;
+            background: #f1f5f9; position: relative;
+        }
+        [data-theme="dark"] .product-img-wrap { background: #1e293b; }
+        .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .product-card:hover .product-img-wrap img { transform: scale(1.04); }
+        .product-status-badge {
+            position: absolute; top: 0.5rem; left: 0.5rem;
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.04em; padding: 0.18rem 0.45rem; border-radius: 6px;
+            background: rgba(16,185,129,0.92); color: white; backdrop-filter: blur(4px);
+        }
+        .product-info { padding: 0.6rem 0.65rem 0.7rem; display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
+        .product-name {
+            font-size: 0.83rem; font-weight: 600; line-height: 1.35;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+            color: var(--text-main);
+        }
+        .product-owner { font-size: 0.7rem; color: var(--muted); }
+        .product-price { font-size: 0.98rem; font-weight: 800; color: var(--accent); margin-top: auto; padding-top: 0.35rem; }
+        .product-price small { font-size: 0.68rem; font-weight: 400; color: var(--muted); }
+        .product-borrow-btn {
+            margin: 0.1rem 0.65rem 0.65rem;
+            padding: 0.52rem; border-radius: 10px;
+            background: var(--accent); color: white;
+            font-size: 0.78rem; font-weight: 700;
+            text-align: center; border: none; cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .product-borrow-btn:active { opacity: 0.8; }
+        .empty-browse { grid-column: 1/-1; text-align: center; padding: 4rem 1rem; color: var(--muted); }
+        .empty-browse .empty-icon { font-size: 3rem; margin-bottom: 0.75rem; display: block; }
+    </style>
 </head>
 <body>
     <div class="page-wrapper">
-        <div class="header">
-            <a href="user_Profile.html" class="brand">
-                <img src="assets/Light_Logo2.png" class="logo">
-            </a>
-            <div class="auth-buttons">
-                <a href="ItemForm.html" class="btn small primary">List Item</a>
-                <!-- Dashboard in sidebar -->
-                <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <button class="menu-toggle" id="mobileMenuBtn" style="display: block !important;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span style="font-weight: 700; font-size: 1rem; color: var(--text-main);">Browse Items</span>
             </div>
-        </div>
+            <a href="user_Profile.html" class="header-avatar" id="headerAvatar">?</a>
+        </header>
 
-        <div class="form-card">
-            <div id="confirmationMessage" class="message"></div>
-            <div id="errorMessage" class="message"></div>
+        <div class="browse-page">
+            <!-- Sticky Search + Filter -->
+            <div class="search-bar-sticky">
+                <div class="search-row">
+                    <div class="search-input-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search items…" oninput="filterItems()">
+                    </div>
+                    <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleFilters()">⚙️ Filter</button>
+                </div>
+                <div class="filter-panel" id="filterPanel">
+                    <div class="filter-panel-inner">
+                        <div>
+                            <div class="filter-row-label">Category</div>
+                            <div class="filter-chips" id="categoryChips">
+                                <div class="filter-chip active" data-category="" onclick="selectCategory(this)">All</div>
+                                <div class="filter-chip" data-category="Electronics" onclick="selectCategory(this)">Electronics</div>
+                                <div class="filter-chip" data-category="Sports" onclick="selectCategory(this)">Sports</div>
+                                <div class="filter-chip" data-category="Tools" onclick="selectCategory(this)">Tools</div>
+                                <div class="filter-chip" data-category="Books" onclick="selectCategory(this)">Books</div>
+                                <div class="filter-chip" data-category="Clothing" onclick="selectCategory(this)">Clothing</div>
+                                <div class="filter-chip" data-category="Other" onclick="selectCategory(this)">Other</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="filter-row-label">Sort By</div>
+                            <div class="filter-chips">
+                                <div class="filter-chip active" data-sort="newest" onclick="selectSort(this)">Newest</div>
+                                <div class="filter-chip" data-sort="price_asc" onclick="selectSort(this)">Price ↑</div>
+                                <div class="filter-chip" data-sort="price_desc" onclick="selectSort(this)">Price ↓</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <h2>Browse & Request Items</h2>
-            <p>Select an item below to send a borrow request to the owner.</p>
-
-            <div id="itemsList" class="items-responsive-grid">
-                <p>Loading items...</p>
+            <!-- Results -->
+            <div class="browse-section-head">
+                <h2>Available Items</h2>
+                <span class="item-count-badge" id="itemCount"></span>
+            </div>
+            <div class="product-grid" id="itemsList">
+                <div class="empty-browse">
+                    <span class="empty-icon">🔄</span>
+                    <p>Loading items…</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
     <script src="issue_Item.js"></script>
 </body>
 </html>

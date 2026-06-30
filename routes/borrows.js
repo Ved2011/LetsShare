@@ -93,6 +93,24 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Lookup a borrow by ID (for complaint form auto-fill)
+router.get('/lookup/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(`
+      SELECT b.id, b.borrow_id, i.name as item_name, u.name as borrower_name, b.status
+      FROM borrows b
+      JOIN items i ON b.item_id = i.id
+      JOIN users u ON b.borrower_id = u.id
+      WHERE b.id = $1
+    `, [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Borrow not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get borrow requests for items owned by the current user
 router.get('/requests', authenticateToken, async (req, res) => {
   const userId = req.user.id;

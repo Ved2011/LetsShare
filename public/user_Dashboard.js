@@ -425,16 +425,14 @@ function displayJoinedCommunities(communities) {
 function renderCommunityCard(c) {
   const user = JSON.parse(localStorage.getItem('user'));
   return `
-    <div class="community-card" onclick="window.location.href='community_Home.html?id=${c.id}'" style="background: var(--card-bg); border: 1px solid var(--border); padding: 1.5rem; border-radius: 12px; cursor: pointer; transition: transform 0.2s;">
-      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <h3 style="margin: 0;">${c.name}</h3>
-          <span class="community-badge ${c.is_private ? 'badge-private' : 'badge-public'}" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold;">${c.is_private ? 'Private' : 'Public'}</span>
+    <div class="community-card" onclick="window.location.href='community_Home.html?id=${c.id}'" style="background: var(--card-bg); border: 1px solid var(--border); padding: 1.25rem; border-radius: 12px; cursor: pointer; transition: transform 0.2s; display: flex; flex-direction: column; gap: 0.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.name}</h3>
+          <span class="community-badge ${c.is_private ? 'badge-private' : 'badge-public'}" style="font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: bold; flex-shrink: 0;">${c.is_private ? 'Private' : 'Public'}</span>
       </div>
-      <p style="color: var(--muted); font-size: 0.85rem; margin: 0.5rem 0;">📍 ${c.address}</p>
-      <div style="margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted);">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted);">
           <span>👥 ${c.member_count} members</span>
-          ${c.is_member ? '<span style="color: var(--accent); font-weight: bold;">Joined</span>' : ''}
-          ${c.admin_id === user.id ? '<span style="color: #10b981; font-weight: bold;">Admin</span>' : ''}
+          ${c.admin_id === user.id ? '<span style="color: #10b981; font-weight: bold; font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px;">Admin</span>' : ''}
       </div>
     </div>
   `;
