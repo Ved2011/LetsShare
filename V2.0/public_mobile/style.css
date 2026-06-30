@@ -239,7 +239,7 @@ html, body {
 }
 
 .mobile-header {
-    display: flex;
+    display: none !important;
     height: var(--header-height);
     background: var(--sidebar-bg);
     border-bottom: 1px solid var(--border);

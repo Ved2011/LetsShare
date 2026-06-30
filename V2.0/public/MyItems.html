@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Items - LetsShare</title>
+    <link class="favicon-link" rel="icon" href="assets/Light_Logo1.png" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <header class="header">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="user_Dashboard.html" class="brand">
+                    <img src="assets/Light_Logo2.png" alt="LetsShare" class="logo" style="max-height: 40px; border-radius: 4px;">
+                </a>
+                <span style="font-weight: 600; color: var(--accent);">My Items</span>
+            </div>
+        </header>
+
+        <section class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h2>My Uploaded Items</h2>
+                    <p style="color: var(--muted); font-size: 0.9rem; margin-top: 0.25rem;">Manage the items you have listed for sharing.</p>
+                </div>
+                <a href="ItemForm.html" class="btn small primary" style="display: inline-flex; align-items: center; gap: 0.35rem; border-radius: 50px; padding: 0.5rem 1.25rem; font-weight: 600; text-decoration: none; font-size: 0.9rem; box-shadow: var(--shadow);">
+                    <i>➕</i> List New Item
+                </a>
+            </div>
+            <div id="myItemsList" class="items-square-grid"></div>
+        </section>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="sidebar.js"></script>
+    <script src="MyItems.js"></script>
+</body>
+</html>

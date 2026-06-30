@@ -140,6 +140,9 @@ function injectSidebar() {
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i data-lucide="layout-dashboard"></i> <span class="nav-text">Dashboard</span>
             </a>
+            <a href="MyItems.html" class="nav-item ${window.location.pathname.includes('MyItems') ? 'active' : ''}">
+                <i data-lucide="package"></i> <span class="nav-text">My Items</span>
+            </a>
             <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
                 <i data-lucide="bell"></i> <span class="nav-text">Notifications</span>
             </a>
@@ -389,7 +392,9 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
-            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const pfx = currentTheme === 'dark' ? 'Dark_' : 'Light_';
+            logo.src = isMobile ? `assets/${pfx}Logo2.png` : `assets/${pfx}Logo3.png`;
         }
     });
 
