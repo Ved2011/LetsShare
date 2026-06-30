@@ -1,21 +1,9 @@
-<<<<<<< HEAD
-=======
 // sidebar.js
->>>>>>> 5d0a726 (wer)
 function injectSidebar() {
     // Initialize Theme Globally First
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-<<<<<<< HEAD
-    const path = window.location.pathname.toLowerCase();
-    const isAuthPage = path.includes('login') || path.includes('user_register') || path.includes('verify') || path.includes('welcome') || path === '/' || path.endsWith('/');
-    if (isAuthPage) {
-        return;
-    }
-
-=======
->>>>>>> 5d0a726 (wer)
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
@@ -147,12 +135,6 @@ function injectSidebar() {
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i data-lucide="layout-dashboard"></i> <span class="nav-text">Dashboard</span>
             </a>
-<<<<<<< HEAD
-            <a href="MyItems.html" class="nav-item ${window.location.pathname.includes('MyItems') ? 'active' : ''}">
-                <i data-lucide="package"></i> <span class="nav-text">My Items</span>
-            </a>
-=======
->>>>>>> 5d0a726 (wer)
             <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
                 <i data-lucide="bell"></i> <span class="nav-text">Notifications</span>
             </a>
@@ -177,14 +159,6 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
-<<<<<<< HEAD
-            ${user?.is_site_admin ? `
-            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
-                <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
-            </a>
-            ` : ''}
-=======
->>>>>>> 5d0a726 (wer)
             <div class="sidebar-footer">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
                     <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
@@ -234,27 +208,7 @@ function injectSidebar() {
         
         if (header && !isWelcomePage) {
             let pageTitle = "LetsShare";
-<<<<<<< HEAD
-<<<<<<< HEAD
-            let pageTitleId = "";
-            const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
-            const existingH2 = header.querySelector('h2');
-            const existingH1 = header.querySelector('h1');
-            if (existingSpan) {
-                pageTitle = existingSpan.textContent;
-                pageTitleId = existingSpan.id || "";
-            } else if (existingH2) {
-                pageTitle = existingH2.textContent;
-                pageTitleId = existingH2.id || "";
-            } else if (existingH1) {
-                pageTitle = existingH1.textContent;
-                pageTitleId = existingH1.id || "";
-            } else if (document.title.includes(' - ')) {
-                pageTitle = document.title.split(' - ')[0];
-            }
-=======
-=======
->>>>>>> 5d0a726 (wer)
+
             const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
             const existingH2 = header.querySelector('h2');
             const existingH1 = header.querySelector('h1');
@@ -262,10 +216,6 @@ function injectSidebar() {
             else if (existingH2) pageTitle = existingH2.textContent;
             else if (existingH1) pageTitle = existingH1.textContent;
             else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
-<<<<<<< HEAD
->>>>>>> ef777ae (ew)
-=======
->>>>>>> 5d0a726 (wer)
 
             const isNotifPage = window.location.pathname.toLowerCase().includes('notifications');
             
@@ -429,13 +379,10 @@ function injectSidebar() {
         const logo = document.querySelector('.header-logo');
         if (logo) {
             const isMobile = window.innerWidth <= 1024;
-<<<<<<< HEAD
+
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const pfx = currentTheme === 'dark' ? 'Dark_' : 'Light_';
             logo.src = isMobile ? `assets/${pfx}Logo2.png` : `assets/${pfx}Logo3.png`;
-=======
-            logo.src = isMobile ? 'assets/Logo2.png' : 'assets/Logo1.png';
->>>>>>> 5d0a726 (wer)
         }
     });
 
