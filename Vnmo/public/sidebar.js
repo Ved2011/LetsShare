@@ -249,7 +249,7 @@ function injectSidebar() {
                 <div class="header-center" style="flex:1; text-align:center; padding:0; min-width:0; pointer-events:none;">
 
                     <h1 class="page-title" style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare' || pageTitle.toLowerCase() === 'no communities') ? '' : pageTitle}</h1>
-                </div>
+11                </div>
                 <div class="header-right" style="display:flex; align-items:center; justify-content:flex-end; flex-shrink:0;">
                     ${uniformRight}
                 </div>
