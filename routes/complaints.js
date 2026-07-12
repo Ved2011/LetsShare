@@ -40,7 +40,6 @@ router.get('/', authenticateToken, async (req, res) => {
   const userId = req.user.id;
   try {
     const result = await pool.query(`
-<<<<<<< HEAD
       SELECT c.*, b.borrow_id as borrow_ref, i.name as item_name,
         u_complainant.name as complainant_name, u_accused.name as accused_name
       FROM complaints c
@@ -50,13 +49,6 @@ router.get('/', authenticateToken, async (req, res) => {
       LEFT JOIN users u_accused ON c.accused_id = u_accused.id
       WHERE c.complainant_id = $1 OR c.accused_id = $1
       ORDER BY c.id DESC
-=======
-      SELECT c.*, b.borrow_id, i.name as item_name
-      FROM complaints c
-      JOIN borrows b ON c.borrow_id = b.id
-      JOIN items i ON b.item_id = i.id
-      WHERE c.complainant_id = $1 OR c.accused_id = $1
->>>>>>> 5d0a726 (wer)
     `, [userId]);
     res.json(result.rows);
   } catch (err) {

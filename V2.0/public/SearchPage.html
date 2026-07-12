@@ -13,7 +13,6 @@
     <link rel="icon" href="assets/Light_Logo1.png" type="image/jpeg">
     <link rel="stylesheet" href="style.css">
     <style>
-<<<<<<< HEAD
         .search-wrap {
             max-width: 860px;
             margin: 0 auto;
@@ -36,31 +35,10 @@
             font-family: inherit;
             transition: border-color 0.2s, box-shadow 0.2s;
             box-sizing: border-box;
-=======
-        .search-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        .search-box-wrapper {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-        .search-box {
-            width: 100%;
-            padding: 1.25rem 1.5rem 1.25rem 3.5rem;
-            font-size: 1.2rem;
-            border-radius: 16px;
-            border: 2px solid var(--border);
-            background: var(--card-bg);
-            color: var(--text);
-            transition: all 0.3s ease;
->>>>>>> 5d0a726 (wer)
         }
         .search-box:focus {
             border-color: var(--accent);
             outline: none;
-<<<<<<< HEAD
             box-shadow: 0 0 0 4px rgba(79,124,222,0.12);
         }
         .search-icon {
@@ -381,48 +359,6 @@
             border: 1px solid var(--border);
             background: var(--card-bg);
             min-height: 120px;
-=======
-            box-shadow: 0 0 0 4px rgba(79, 124, 222, 0.1);
-        }
-        .search-icon-large {
-            position: absolute;
-            left: 1.25rem;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 1.5rem;
-            color: var(--muted);
-        }
-        .result-item {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: background 0.2s ease;
-            text-decoration: none;
-            color: inherit;
-        }
-        .result-item:hover {
-            background: rgba(0,0,0,0.02);
-        }
-        html[data-theme="dark"] .result-item:hover {
-            background: rgba(255,255,255,0.02);
-        }
-        .result-category {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            background: var(--accent);
-            color: white;
-            margin-bottom: 0.25rem;
-            display: inline-block;
-        }
-        .result-subtext {
-            font-size: 0.85rem;
-            color: var(--muted);
->>>>>>> 5d0a726 (wer)
         }
     </style>
 </head>
@@ -438,7 +374,6 @@
             <div class="header-center">
                 <h1 class="page-title">Global Search</h1>
             </div>
-<<<<<<< HEAD
             <div class="header-right"></div>
         </header>
 
@@ -504,28 +439,12 @@
                     <h4>Search LetsShare</h4>
                     <p>Find communities, items to borrow, and members.</p>
                 </div>
-=======
-            <div class="header-right">
-                <!-- Dashboard in sidebar -->
-            </div>
-        </header>
-
-        <div class="search-container" style="max-width: 1200px;">
-            <div class="search-box-wrapper">
-                <span class="search-icon-large">🔍</span>
-                <input type="text" id="globalSearchInput" class="search-box" placeholder="Search communities, items, or users..." autofocus>
-            </div>
-
-            <div id="searchResults" class="card" style="padding: 0; min-height: 200px;">
-                <p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>
->>>>>>> 5d0a726 (wer)
             </div>
         </div>
     </div>
 
     <script src="sidebar.js"></script>
     <script>
-<<<<<<< HEAD
     (() => {
         // ── State ──────────────────────────────────────────────────────────────
         const input        = document.getElementById('globalSearchInput');
@@ -948,72 +867,6 @@
             performSearch(urlQ);
         }
     })();
-=======
-        const searchInput = document.getElementById('globalSearchInput');
-        const resultsContainer = document.getElementById('searchResults');
-
-        let debounceTimer;
-
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(debounceTimer);
-            const query = e.target.value.trim();
-            
-            if (query.length < 1) {
-                resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">Start typing to search across the platform.</p>';
-                return;
-            }
-
-            debounceTimer = setTimeout(() => performSearch(query), 300);
-        });
-
-        async function performSearch(query) {
-            const token = localStorage.getItem('token');
-            try {
-                const res = await fetch(`/api/users/global-search?q=${encodeURIComponent(query)}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const results = await res.json();
-                
-                if (!Array.isArray(results) || results.length === 0) {
-                    resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem;">No results found for "' + query + '"</p>';
-                    if (results.error) {
-                        resultsContainer.innerHTML = '<p class="empty-state" style="padding: 3rem; color: var(--danger);">' + results.error + '</p>';
-                    }
-                    return;
-                }
-
-                resultsContainer.innerHTML = results.map(r => {
-                    let link = '#';
-                    if (r.category === 'Community') link = `community_Home.html?id=${r.id}`;
-                    else if (r.category === 'Item') link = `item_Details.html?id=${r.id}`;
-                    else if (r.category === 'User') link = `user_View.html?id=${r.id}`; 
-
-                    return `
-                        <a href="${link}" class="result-item">
-                            <div class="header-avatar" style="width: 40px; height: 40px; flex-shrink: 0;">${r.name.charAt(0).toUpperCase()}</div>
-                            <div style="flex-grow: 1;">
-                                <span class="result-category" style="background: ${getCategoryColor(r.category)}">${r.category}</span>
-                                <h4 style="margin: 0;">${r.name}</h4>
-                                <p class="result-subtext" style="margin: 0;">${r.subtext}</p>
-                            </div>
-                            <span style="color: var(--muted);">→</span>
-                        </a>
-                    `;
-                }).join('');
-            } catch (err) {
-                console.error('Search error:', err);
-            }
-        }
-
-        function getCategoryColor(cat) {
-            switch(cat) {
-                case 'Community': return '#10b981';
-                case 'Item': return '#3b82f6';
-                case 'User': return '#f59e0b';
-                default: return '#64748b';
-            }
-        }
->>>>>>> 5d0a726 (wer)
     </script>
 </body>
 </html>

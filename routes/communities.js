@@ -528,11 +528,7 @@ router.get('/:id/items', authenticateToken, async (req, res) => {
     try {
         const communityId = req.params.id;
         const items = await pool.query(`
-<<<<<<< HEAD
             SELECT i.*, idt.category, idt.description, idt.image
-=======
-            SELECT i.*, idt.category, idt.description, encode(idt.image, 'base64') as "imageBase64"
->>>>>>> 5d0a726 (wer)
             FROM items i
             JOIN users u ON i.owner_id = u.id
             JOIN community_members cm ON u.id = cm.user_id
@@ -540,7 +536,6 @@ router.get('/:id/items', authenticateToken, async (req, res) => {
             WHERE cm.community_id = $1
             ORDER BY i.created_at DESC
         `, [communityId]);
-<<<<<<< HEAD
 
         const rows = items.rows.map(item => {
             if (item.image) {
@@ -551,9 +546,6 @@ router.get('/:id/items', authenticateToken, async (req, res) => {
         });
 
         res.json(rows);
-=======
-        res.json(items.rows);
->>>>>>> 5d0a726 (wer)
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });

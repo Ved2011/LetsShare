@@ -19,27 +19,7 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 // Mark all as read  — MUST be before /:id/read so Express doesn't treat "read-all" as an ID
-=======
-// Mark notification as read
-router.put('/:id/read', authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-  const notificationId = req.params.id;
-  try {
-    await pool.query(
-      'UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2',
-      [notificationId, userId]
-    );
-    res.json({ message: 'Notification marked as read' });
-  } catch (err) {
-    console.error('Error marking notification read:', err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Mark all as read
->>>>>>> 5d0a726 (wer)
 router.put('/read-all', authenticateToken, async (req, res) => {
   const userId = req.user.id;
   try {
@@ -54,7 +34,6 @@ router.put('/read-all', authenticateToken, async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 // Mark notification as read
 router.put('/:id/read', authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -90,6 +69,4 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   }
 });
 
-=======
->>>>>>> 5d0a726 (wer)
 module.exports = router;

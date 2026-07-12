@@ -4,7 +4,6 @@ function injectSidebar() {
     const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', savedTheme);
 
-<<<<<<< HEAD
     const path = window.location.pathname.toLowerCase();
     const isAuthPage = path.includes('login') || path.includes('user_register') || path.includes('verify') || path.includes('welcome') || path === '/' || path.endsWith('/');
     if (isAuthPage) {
@@ -12,15 +11,12 @@ function injectSidebar() {
     }
 
 
-=======
->>>>>>> 5d0a726 (wer)
     const isLandingPage = window.location.pathname.endsWith('welcome.html') || window.location.pathname === '/';
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
     const prefix = theme === 'dark' ? 'Dark_' : 'Light_';
     const isLoggedIn = !!localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
 
-<<<<<<< HEAD
     // Create Sidebar HTML
     const sidebar = document.createElement('aside');
     const isMobileDevice = window.innerWidth <= 1024;
@@ -52,15 +48,6 @@ function injectSidebar() {
         </div>
     `;
 
-=======
-    
-    // Create Sidebar HTML
-    const sidebar = document.createElement('aside');
-    sidebar.className = 'sidebar';
-    sidebar.id = 'sidebar';
-
-    
->>>>>>> 5d0a726 (wer)
     // Create Overlay
     const overlay = document.createElement('div');
     overlay.className = 'sidebar-overlay';
@@ -144,31 +131,20 @@ function injectSidebar() {
     }
 
     sidebar.innerHTML = `
-<<<<<<< HEAD
         <div class="sidebar-header" style="cursor: pointer;">
             <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
                 <img src="assets/${prefix}Logo1.png" alt="Logo" class="main-logo" style="width: 100%; height: 100%; border-radius: 6px; transition: opacity 0.2s;">
                 <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: white; width: 24px; height: 24px;"></i>
             </div>
             <span class="nav-text" style="font-weight: 700; font-size: 1.25rem; color: #fff; letter-spacing: -0.01em;">LetsShare</span>
-=======
-        <div class="sidebar-header" style="justify-content: center; padding: 1rem 0; cursor: pointer;">
-            <div style="position: relative; display: flex; align-items: center; justify-content: center; height: 45px; width: 45px;">
-                <img src="/assets/Logo1.jpeg" alt="Logo" class="main-logo" style="height: 100%; width: 100%; border-radius: 6px; transition: opacity 0.2s;">
-                <i data-lucide="panel-left" class="hover-icon" style="position: absolute; opacity: 0; transition: opacity 0.2s; color: var(--text-main); width: 28px; height: 28px;"></i>
-            </div>
->>>>>>> 5d0a726 (wer)
         </div>
         <nav class="sidebar-nav">
             <a href="user_Dashboard.html" class="nav-item ${window.location.pathname.includes('Dashboard') ? 'active' : ''}">
                 <i data-lucide="layout-dashboard"></i> <span class="nav-text">Dashboard</span>
             </a>
-<<<<<<< HEAD
             <a href="MyItems.html" class="nav-item ${window.location.pathname.includes('MyItems') ? 'active' : ''}">
                 <i data-lucide="package"></i> <span class="nav-text">My Items</span>
             </a>
-=======
->>>>>>> 5d0a726 (wer)
             <a href="Notifications.html" class="nav-item ${window.location.pathname.includes('Notifications') ? 'active' : ''}">
                 <i data-lucide="bell"></i> <span class="nav-text">Notifications</span>
             </a>
@@ -181,12 +157,9 @@ function injectSidebar() {
             <a href="communities.html" class="nav-item ${window.location.pathname.includes('communities') ? 'active' : ''}">
                 <i data-lucide="users"></i> <span class="nav-text">Communities</span>
             </a>
-<<<<<<< HEAD
             <a href="Followers.html" class="nav-item ${window.location.pathname.includes('Followers') ? 'active' : ''}">
                 <i data-lucide="user-round"></i> <span class="nav-text">Followers</span>
             </a>
-=======
->>>>>>> 5d0a726 (wer)
             <a href="ItemForm.html" class="nav-item ${window.location.pathname.includes('ItemForm') ? 'active' : ''}">
                 <i data-lucide="square-plus"></i> <span class="nav-text">List Item</span>
             </a>
@@ -196,7 +169,6 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
-<<<<<<< HEAD
             ${user?.is_site_admin ? `
             <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
                 <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
@@ -211,38 +183,22 @@ function injectSidebar() {
                     </div>
                 </a>
                 <a href="#" class="nav-item" id="sidebarLogout" style="color: var(--danger, #ef4444);">
-=======
-            <div class="sidebar-footer">
-                <a href="user_Profile.html" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}">
-                    <i data-lucide="circle-user-round"></i> <span class="nav-text">My Profile</span>
-                </a>
-                <a href="#" class="nav-item" id="sidebarLogout">
->>>>>>> 5d0a726 (wer)
                     <i data-lucide="log-out"></i> <span class="nav-text">Logout</span>
                 </a>
             </div>
         </nav>
     `;
 
-<<<<<<< HEAD
     // Improved Wrapping: Wrap EVERYTHING in an app-container
     if (!document.getElementById('appContainer')) {
         const appContainer = document.createElement('div');
         appContainer.className = 'app-container';
         appContainer.id = 'appContainer';
 
-=======
-    // Improved Wrapping: Wrap EVERYTHING in the body except scripts and sidebar elements
-    if (!document.getElementById('mainWrapper')) {
->>>>>>> 5d0a726 (wer)
         const mainWrapper = document.createElement('div');
         mainWrapper.className = 'main-wrapper';
         mainWrapper.id = 'mainWrapper';
 
-<<<<<<< HEAD
-=======
-        
->>>>>>> 5d0a726 (wer)
         // Move all current body children into mainWrapper (except scripts and the sidebar/overlay)
         const children = Array.from(document.body.children);
         children.forEach(child => {
@@ -251,7 +207,6 @@ function injectSidebar() {
             }
         });
 
-<<<<<<< HEAD
         document.body.prepend(appContainer);
         appContainer.appendChild(sidebar);
         appContainer.appendChild(mainWrapper);
@@ -366,61 +321,10 @@ function injectSidebar() {
     const sidebarLogo = document.querySelector('.sidebar-header');
     if (sidebarLogo) sidebarLogo.addEventListener('click', toggleSidebar);
     if (mobileMenuToggle) mobileMenuToggle.addEventListener('click', toggleSidebar);
-=======
-        
-        document.body.prepend(mainWrapper);
-        document.body.prepend(overlay);
-        document.body.prepend(sidebar);
-    }
-
-    // Auto-unify Header
-    const header = document.querySelector('.header');
-    if (header) {
-        // Determine Page Title
-        let pageTitle = "LetsShare";
-        const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
-        const existingH2 = header.querySelector('h2');
-        const existingH1 = header.querySelector('h1');
-        if (existingSpan) pageTitle = existingSpan.textContent;
-        else if (existingH2) pageTitle = existingH2.textContent;
-        else if (existingH1) pageTitle = existingH1.textContent;
-        else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
-
-        header.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
-                <div id="menuToggle" style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer;">
-                    <img src="/assets/Logo2.jpeg" alt="LetsShare" style="height: 32px; border-radius: 4px;">
-                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--accent); margin-right: 0.5rem;">LetsShare</span>
-                </div>
-                <h2 style="font-size: 1.1rem; margin: 0; color: var(--text); flex-grow: 1; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${pageTitle}</h2>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <a href="user_Profile.html" class="header-avatar" style="text-decoration: none; width: 32px; height: 32px; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; background: var(--accent); color: white; border-radius: 50%;">${user?.name?.charAt(0).toUpperCase() || '?'}</a>
-                </div>
-            </div>
-        `;
-    }
-
-    // Toggle logic
-    const menuToggle = document.getElementById('menuToggle');
-    const closeSidebar = () => {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-    };
-
-    if (menuToggle) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-        });
-    }
-
-    overlay.addEventListener('click', closeSidebar);
->>>>>>> 5d0a726 (wer)
 
     // Close sidebar on outside click
     document.addEventListener('click', (e) => {
         const sidebar = document.getElementById('sidebar');
-<<<<<<< HEAD
         const overlay = document.getElementById('sidebarOverlay');
         if (sidebar && !sidebar.classList.contains('collapsed')) {
             const clickedInsideSidebar = sidebar.contains(e.target);
@@ -433,14 +337,6 @@ function injectSidebar() {
                 if (window.innerWidth > 1024) {
                     localStorage.setItem('sidebarExpanded', 'false');
                 }
-=======
-        if (sidebar && sidebar.classList.contains('active')) {
-            const clickedInsideSidebar = sidebar.contains(e.target);
-            const clickedMenuToggle = menuToggle && menuToggle.contains(e.target);
-            
-            if (!clickedInsideSidebar && !clickedMenuToggle) {
-                closeSidebar();
->>>>>>> 5d0a726 (wer)
             }
         }
     });
@@ -449,7 +345,6 @@ function injectSidebar() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             const sidebar = document.getElementById('sidebar');
-<<<<<<< HEAD
             const overlay = document.getElementById('sidebarOverlay');
             if (sidebar && !sidebar.classList.contains('collapsed')) {
                 sidebar.classList.add('collapsed');
@@ -458,16 +353,11 @@ function injectSidebar() {
                 if (window.innerWidth > 1024) {
                     localStorage.setItem('sidebarExpanded', 'false');
                 }
-=======
-            if (sidebar && sidebar.classList.contains('active')) {
-                closeSidebar();
->>>>>>> 5d0a726 (wer)
             }
         }
     });
 
 
-<<<<<<< HEAD
     const overlayEl = document.getElementById('sidebarOverlay');
     if (overlayEl) {
         overlayEl.addEventListener('click', () => {
@@ -508,8 +398,6 @@ function injectSidebar() {
         }
     });
 
-=======
->>>>>>> 5d0a726 (wer)
     // Logout logic
     const logoutBtn = document.getElementById('sidebarLogout');
     if (logoutBtn) {
@@ -544,17 +432,10 @@ function injectSidebar() {
         if (!dropdown) {
             dropdown = document.createElement('div');
             dropdown.className = 'notification-dropdown';
-<<<<<<< HEAD
             dropdown.style.cssText = 'display:none; position:absolute; top:45px; right:0; width:280px; max-height:400px; background:var(--card-bg, #1e1e2f); border:1px solid var(--border, #2d2d3f); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; flex-direction:column; overflow:hidden;';
             
             dropdown.innerHTML = `
                 <div style="padding:10px 12px; border-bottom:1px solid var(--border, #2d2d3f); font-weight:bold; color:var(--text, #fff); font-size:0.9rem;">Unread Notifications</div>
-=======
-            dropdown.style.cssText = 'display:none; position:absolute; top:45px; right:0; width:280px; max-height:400px; background:var(--card, #1e1e2f); border:1px solid var(--border, #2d2d3f); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; flex-direction:column; overflow:hidden;';
-            
-            dropdown.innerHTML = `
-                <div style="padding:10px 12px; border-bottom:1px solid var(--border, #2d2d3f); font-weight:bold; color:var(--text-main, #fff); font-size:0.9rem;">Unread Notifications</div>
->>>>>>> 5d0a726 (wer)
                 <div class="notification-dropdown-list" style="display:flex; flex-direction:column; max-height:300px; overflow-y:auto;">
                     <div style="padding:15px 10px; text-align:center; color:var(--muted, #9ca3af); font-size:0.85rem;">Loading...</div>
                 </div>
@@ -588,11 +469,7 @@ function injectSidebar() {
                             badge.style.display = 'block';
                             badge.textContent = unread.length;
                             list.innerHTML = unread.map(n => `
-<<<<<<< HEAD
                                 <a href="Notifications.html" style="padding:12px; border-bottom:1px solid var(--border, #2d2d3f); text-decoration:none; color:var(--text, #fff); font-size:0.85rem; display:block; transition:background 0.2s;">
-=======
-                                <a href="Notifications.html" style="padding:12px; border-bottom:1px solid var(--border, #2d2d3f); text-decoration:none; color:var(--text-main, #fff); font-size:0.85rem; display:block; transition:background 0.2s;">
->>>>>>> 5d0a726 (wer)
                                     <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${n.message}</div>
                                 </a>
                             `).join('');
@@ -635,12 +512,9 @@ function injectSidebar() {
         sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
         overlay.style.display = 'none';
         if (menuToggle) menuToggle.style.display = 'none';
-<<<<<<< HEAD
 
         // Ensure main wrapper doesn't have padding
         mainWrapper.style.paddingLeft = '0';
-=======
->>>>>>> 5d0a726 (wer)
     }
 }
 

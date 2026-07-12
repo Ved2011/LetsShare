@@ -93,7 +93,6 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
 // Lookup a borrow by ID (for complaint form auto-fill)
 router.get('/lookup/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
@@ -112,8 +111,6 @@ router.get('/lookup/:id', authenticateToken, async (req, res) => {
   }
 });
 
-=======
->>>>>>> 5d0a726 (wer)
 // Get borrow requests for items owned by the current user
 router.get('/requests', authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -213,16 +210,7 @@ router.put('/:id/approve', authenticateToken, async (req, res) => {
         'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
         [userId, ownerEarning, 'credit', 'earning', `Earning from ${itemName} rental`]
       );
-<<<<<<< HEAD
       // Note: platform commission (10%) is the difference between totalPrice and ownerEarning
-=======
-
-      // Log platform fee
-      await pool.query(
-        'INSERT INTO transactions (user_id, amount, type, category, description) VALUES ($1, $2, $3, $4, $5)',
-        [null, platformFee, 'credit', 'platform_fee', `10% commission from ${itemName} rental`]
-      );
->>>>>>> 5d0a726 (wer)
     }
 
     // Update borrow with details and status
