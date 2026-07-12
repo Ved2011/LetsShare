@@ -282,9 +282,24 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS locality TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code TEXT;
-      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_site_admin BOOLEAN DEFAULT false;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
+
+      -- Add communities location columns
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS city TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS state TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS locality TEXT;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS country TEXT DEFAULT 'India';
+
+      -- Add community members admin column
+      ALTER TABLE community_members ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
+
+      -- Add items exclusive community column
+      ALTER TABLE items ADD COLUMN IF NOT EXISTS exclusive_community_id INTEGER REFERENCES communities(id) ON DELETE SET NULL;
+
+      -- Add notifications related columns
+      ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type TEXT;
+      ALTER TABLE notifications ADD COLUMN IF NOT EXISTS related_id INTEGER;
     `);
 
     console.log('Tables created successfully');

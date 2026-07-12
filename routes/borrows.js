@@ -168,7 +168,7 @@ router.put('/:id/approve', authenticateToken, async (req, res) => {
     const borrowerId = borrow.borrower_id;
     const itemId = borrow.item_id;
     
-    if (Number(borrow.owner_id) != Number(userId)) {
+    if (Number(borrow.owner_id) !== Number(userId)) {
       return res.status(403).json({ error: 'Not authorized to approve this request' });
     }
 

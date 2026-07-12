@@ -22,6 +22,9 @@ router.post('/', authenticateToken, async (req, res) => {
 
     const borrowId = borrowResult.rows[0].id;
 
+    // Start Transaction
+    await pool.query('BEGIN');
+
     const result = await pool.query(
       'INSERT INTO returns (borrow_id, item_name, owner_email, borrower_email, condition, notes, return_date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
       [borrowId, itemName || null, ownerEmail || null, borrowerEmail || null, condition || null, notes || null, returnDate || null]
@@ -33,8 +36,11 @@ router.post('/', authenticateToken, async (req, res) => {
     // Update item status
     await pool.query('UPDATE items SET status = $1 WHERE id = $2', ['available', itemId]);
 
+    await pool.query('COMMIT');
+
     res.status(201).json({ message: 'Return logged successfully' });
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error('Return create error:', err);
     res.status(500).json({ error: 'Server error' });
   }
