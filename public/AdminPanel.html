@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <script>
+        (function() {
+            var savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - LetsShare</title>
+    <link rel="icon" href="assets/Light_Logo1.png" type="image/jpeg">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0;
+            flex-wrap: wrap;
+        }
+        .admin-tab {
+            padding: 0.65rem 1.25rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--muted);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            border-radius: 6px 6px 0 0;
+        }
+        .admin-tab:hover { color: #4f46e5; background: rgba(79,70,229,0.05); }
+        .admin-tab.active { color: #4f46e5; border-bottom-color: #4f46e5; font-weight: 600; }
+
+        .admin-section { display: none; }
+        .admin-section.active { display: block; }
+
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+        .admin-table th {
+            background: rgba(79,70,229,0.07);
+            color: #4f46e5;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(79,70,229,0.15);
+            white-space: nowrap;
+        }
+        .admin-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .admin-table tr:hover td { background: rgba(79,70,229,0.03); }
+        .admin-table tr:last-child td { border-bottom: none; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-admin   { background: rgba(79,70,229,0.12); color: #4f46e5; }
+        .badge-free    { background: rgba(100,116,139,0.12); color: #64748b; }
+        .badge-pro     { background: rgba(245,158,11,0.12); color: #d97706; }
+        .badge-ok      { background: rgba(16,185,129,0.12); color: #10b981; }
+        .badge-warn    { background: rgba(220,53,69,0.1); color: #dc3545; }
+        .badge-private { background: rgba(239,68,68,0.1); color: #ef4444; }
+        .badge-public  { background: rgba(16,185,129,0.1); color: #10b981; }
+
+        .btn-del {
+            padding: 0.3rem 0.65rem;
+            background: rgba(220,53,69,0.1);
+            color: #dc3545;
+            border: 1px solid rgba(220,53,69,0.25);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+        .btn-del:hover { background: #dc3545; color: #fff; }
+
+        .btn-view {
+            padding: 0.3rem 0.65rem;
+            background: rgba(79,70,229,0.1);
+            color: #4f46e5;
+            border: 1px solid rgba(79,70,229,0.25);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.15s;
+            margin-right: 0.35rem;
+        }
+        .btn-view:hover { background: #4f46e5; color: #fff; }
+
+        .stat-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .stat-pill {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .stat-pill strong { font-size: 1.5rem; color: #4f46e5; }
+        .stat-pill span { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
+
+        .search-bar {
+            width: 100%;
+            max-width: 360px;
+            padding: 0.55rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            outline: none;
+        }
+        .search-bar:focus { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.1); }
+
+        /* User detail modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            padding: 2rem;
+        }
+        .modal-box h3 { color: #4f46e5; margin-bottom: 1rem; }
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--muted);
+            margin-top: -0.5rem;
+        }
+        .modal-close:hover { color: #dc3545; }
+        .detail-section { margin-bottom: 1.25rem; }
+        .detail-section h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; }
+        .table-scroll { overflow-x: auto; }
+        .empty-admin { text-align: center; color: var(--muted); padding: 2rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">☰</button>
+                <a href="welcome.html" class="brand" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                    <img src="assets/Light_Logo3.png" alt="LetsShare" style="height: 40px; width: auto; border-radius: 4px;">
+                </a>
+            </div>
+            <div class="header-center">
+                <h1 class="page-title">🛡️ Admin Panel</h1>
+            </div>
+            <div class="header-right">
+                <!-- Dashboard in sidebar -->
+            </div>
+        </header>
+
+        <div class="container">
+
+            <!-- Stats bar -->
+            <div class="stat-bar" id="statsBar">
+                <div class="stat-pill"><strong id="statUsers">—</strong><span>Users</span></div>
+                <div class="stat-pill"><strong id="statItems">—</strong><span>Items</span></div>
+                <div class="stat-pill"><strong id="statCommunities">—</strong><span>Communities</span></div>
+                <div class="stat-pill"><strong id="statComplaints">—</strong><span>Open Complaints</span></div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchTab('users', this)" id="tab-users">👤 Users</button>
+                <button class="admin-tab" onclick="switchTab('items', this)" id="tab-items">📦 Items</button>
+                <button class="admin-tab" onclick="switchTab('communities', this)" id="tab-communities">👥 Communities</button>
+                <button class="admin-tab" onclick="switchTab('complaints', this)" id="tab-complaints">⚠️ Complaints</button>
+            </div>
+
+            <!-- USERS TAB -->
+            <div class="admin-section active card" id="section-users">
+                <input class="search-bar" id="userSearch" placeholder="🔍 Search users by name or email…" oninput="filterTable('usersTable', this.value)">
+                <div class="table-scroll">
+                    <table class="admin-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Plan</th>
+                                <th>Items</th>
+                                <th>Communities</th>
+                                <th>Verified</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                            <tr><td colspan="8" class="empty-admin">Loading users…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ITEMS TAB -->
+            <div class="admin-section card" id="section-items">
+                <input class="search-bar" id="itemSearch" placeholder="🔍 Search items by name or owner…" oninput="filterTable('itemsTable', this.value)">
+                <div class="table-scroll">
+                    <table class="admin-table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Owner</th>
+                                <th>Status</th>
+                                <th>Brand</th>
+                                <th>Condition</th>
+                                <th>Listed On</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr><td colspan="7" class="empty-admin">Loading items…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- COMMUNITIES TAB -->
+            <div class="admin-section card" id="section-communities">
+                <input class="search-bar" id="communitySearch" placeholder="🔍 Search communities…" oninput="filterTable('communitiesTable', this.value)">
+                <div class="table-scroll">
+                    <table class="admin-table" id="communitiesTable">
+                        <thead>
+                            <tr>
+                                <th>Community</th>
+                                <th>Admin</th>
+                                <th>Members</th>
+                                <th>Privacy</th>
+                                <th>Location</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="communitiesBody">
+                            <tr><td colspan="7" class="empty-admin">Loading communities…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- COMPLAINTS TAB -->
+            <div class="admin-section card" id="section-complaints">
+                <div class="filters-row" style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: rgba(79, 124, 222, 0.05); padding: 1rem; border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em;">Filter by Severity</label>
+                        <select id="complaintFilterSeverity" onchange="filterComplaints()" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text); min-width: 160px; outline: none;">
+                            <option value="">All Severities</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                        <label style="font-size: 0.75rem; font-weight: 700; color: var(--text); text-transform: uppercase; letter-spacing: 0.05em;">Filter by Category</label>
+                        <select id="complaintFilterCategory" onchange="filterComplaints()" style="padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--card-bg); color: var(--text); min-width: 180px; outline: none;">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-scroll">
+                    <table class="admin-table" id="complaintsTable">
+                        <thead>
+                            <tr>
+                                <th>Issue Type</th>
+                                <th>Severity</th>
+                                <th>Item</th>
+                                <th>Complainant</th>
+                                <th>Accused</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="complaintsBody">
+                            <tr><td colspan="8" class="empty-admin">Loading complaints…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- User Detail Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <h3 id="modalUserName">User Details</h3>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script src="AdminPanel.js"></script>
+</body>
+</html>
