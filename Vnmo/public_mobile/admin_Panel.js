@@ -146,7 +146,7 @@ async function viewUser(id, name) {
             <div class="detail-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; margin-bottom: 0.6rem;">
                     <h4 style="margin: 0;">Warning History (${data.warnings ? data.warnings.length : 0})</h4>
-                    <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; margin: 0; background: rgba(220,53,69,0.1); color: #dc3545; border-color: rgba(220,53,69,0.2);">⚠️ Issue Warning</button>
+                    <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; margin: 0; background: rgba(220,53,69,0.1); color: #dc3545; border-color: rgba(220,53,69,0.2);">Issue Warning</button>
                 </div>
                 
                 <div id="warningFormContainer-${u.id}" style="display: none; background: rgba(220, 53, 69, 0.03); border: 1px dashed rgba(220, 53, 69, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
@@ -189,7 +189,7 @@ async function viewUser(id, name) {
         console.error('[Admin] Error loading user details:', err);
         document.getElementById('modalContent').innerHTML = `
             <div style="text-align: center; padding: 2rem; color: #dc3545;">
-                <p>⚠️ Error: ${err.message || 'Failed to load user details.'}</p>
+                <p>Error: ${err.message || 'Failed to load user details.'}</p>
                 <button class="btn-view" onclick="viewUser(${id}, '${name.replace(/'/g, "\\'")}')" style="margin-top: 1rem;">Retry</button>
             </div>`;
     }
@@ -241,7 +241,7 @@ async function loadCommunities() {
                 <td><a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name}</a><br><small class="muted">${(c.description || '').slice(0,40)}${c.description?.length > 40 ? '…' : ''}</small></td>
                 <td class="hide-xs" style="font-size:0.78rem">${c.admin_name || '—'}</td>
                 <td>${c.member_count}/${c.max_limit}</td>
-                <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '🔒' : '🌐'}</span></td>
+                <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'}</span></td>
                 <td class="hide-xs">${fmt(c.created_at)}</td>
                 <td><button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}', 'community', loadCommunities)">Delete</button></td>
             </tr>

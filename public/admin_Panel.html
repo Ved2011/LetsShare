@@ -200,15 +200,15 @@
 
             <!-- Tabs -->
             <div class="admin-tabs">
-                <button class="admin-tab active" onclick="switchTab('users', this)" id="tab-users">👤 Users</button>
+                <button class="admin-tab active" onclick="switchTab('users', this)" id="tab-users">Users</button>
                 <button class="admin-tab" onclick="switchTab('items', this)" id="tab-items">Items</button>
-                <button class="admin-tab" onclick="switchTab('communities', this)" id="tab-communities">👥 Communities</button>
+                <button class="admin-tab" onclick="switchTab('communities', this)" id="tab-communities">Communities</button>
                 <button class="admin-tab" onclick="switchTab('complaints', this)" id="tab-complaints">Complaints</button>
             </div>
 
             <!-- USERS TAB -->
             <div class="admin-section active card" id="section-users">
-                <input class="search-bar" id="userSearch" placeholder="🔍 Search users by name or email…" oninput="filterTable('usersTable', this.value)">
+                <input class="search-bar" id="userSearch" placeholder="Search users by name or email…" oninput="filterTable('usersTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="usersTable">
                         <thead>
@@ -232,7 +232,7 @@
 
             <!-- ITEMS TAB -->
             <div class="admin-section card" id="section-items">
-                <input class="search-bar" id="itemSearch" placeholder="🔍 Search items by name or owner…" oninput="filterTable('itemsTable', this.value)">
+                <input class="search-bar" id="itemSearch" placeholder="Search items by name or owner…" oninput="filterTable('itemsTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="itemsTable">
                         <thead>
@@ -255,7 +255,7 @@
 
             <!-- COMMUNITIES TAB -->
             <div class="admin-section card" id="section-communities">
-                <input class="search-bar" id="communitySearch" placeholder="🔍 Search communities…" oninput="filterTable('communitiesTable', this.value)">
+                <input class="search-bar" id="communitySearch" placeholder="Search communities…" oninput="filterTable('communitiesTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="communitiesTable">
                         <thead>

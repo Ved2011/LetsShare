@@ -126,7 +126,7 @@ const createTables = async () => {
         description TEXT,
         max_limit INTEGER DEFAULT 100,
         is_private BOOLEAN DEFAULT false,
-        chat_enabled BOOLEAN DEFAULT false,
+        chat_enabled BOOLEAN DEFAULT true,
         admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -267,7 +267,7 @@ const createTables = async () => {
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS state TEXT;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS locality TEXT;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS country TEXT;
-      ALTER TABLE communities ADD COLUMN IF NOT EXISTS chat_enabled BOOLEAN DEFAULT false;
+      ALTER TABLE communities ADD COLUMN IF NOT EXISTS chat_enabled BOOLEAN DEFAULT true;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS latitude NUMERIC;
       ALTER TABLE communities ADD COLUMN IF NOT EXISTS longitude NUMERIC;
 

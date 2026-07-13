@@ -226,7 +226,7 @@ if (toggleProfileEditBtn && profileEditSection) {
       profileDetailsSection.style.display = isHidden ? 'none' : 'block';
     }
     
-    toggleProfileEditBtn.innerHTML = isHidden ? '❌ Cancel Edit' : '✏️ Manage Profile';
+    toggleProfileEditBtn.innerHTML = isHidden ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cancel Edit' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Manage Profile';
     
     if (isHidden) {
       profileEditSection.scrollIntoView({ behavior: 'smooth' });
@@ -376,7 +376,7 @@ if (profileUpdateForm) {
         // Hide edit section and show details
         if (profileEditSection) profileEditSection.style.display = 'none';
         if (profileDetailsSection) profileDetailsSection.style.display = 'block';
-        if (toggleProfileEditBtn) toggleProfileEditBtn.innerHTML = '✏️ Manage Profile';
+        if (toggleProfileEditBtn) toggleProfileEditBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Manage Profile';
         
         // Reset password fields
         const passwordFieldsContainer = document.getElementById('passwordFieldsContainer');
@@ -461,11 +461,11 @@ if (verifyUpiBtn) {
 
       if (validUpiHandles.includes(handle)) {
         isUpiVerified = true;
-        upiVerificationStatus.innerHTML = '✅ <strong>Verified:</strong> Valid UPI Provider detected.';
+        upiVerificationStatus.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> <strong>Verified:</strong> Valid UPI Provider detected.';
         upiVerificationStatus.style.color = '#10b981';
       } else {
         isUpiVerified = false;
-        upiVerificationStatus.innerHTML = '❌ <strong>Unrecognized Provider:</strong> The bank handle (@' + handle + ') is not recognized.';
+        upiVerificationStatus.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> <strong>Unrecognized Provider:</strong> The bank handle (@' + handle + ') is not recognized.';
         upiVerificationStatus.style.color = '#dc3545';
       }
     }, 1500);

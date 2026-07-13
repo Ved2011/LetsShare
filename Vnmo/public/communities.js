@@ -210,11 +210,11 @@ function renderCommunities(filter = '') {
                 <h3 style="margin: 0;">${c.name}</h3>
                 <span class="community-badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? 'Private' : 'Public'}</span>
             </div>
-            <p style="color: var(--muted); font-size: 0.85rem;">📍 ${c.address}</p>
+            <p style="color: var(--muted); font-size: 0.85rem;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${c.address}</p>
             <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem; color: var(--muted);">
                 <div style="display: flex; justify-content: space-between;">
-                    <span>👥 ${c.member_count} / ${c.max_limit} members</span>
-                    <span>📦 ${c.item_count} items</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${c.member_count} / ${c.max_limit} members</span>
+                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> ${c.item_count} items</span>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     ${c.is_member ? '<span style="color: var(--accent); font-weight: bold;">Joined</span>' : '<span></span>'}

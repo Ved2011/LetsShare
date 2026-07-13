@@ -129,7 +129,7 @@ function renderComplaintCard(c, showAgainst = false) {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
         <span class="complaint-status-badge ${statusClass}">${statusLabel}</span>
         ${showAgainst && c.complainant_name ? `<span class="complaint-against-tag">🚨 by ${c.complainant_name}</span>` : ''}
-        ${!showAgainst && c.accused_name ? `<span class="complaint-against-tag">👤 against ${c.accused_name}</span>` : ''}
+        ${!showAgainst && c.accused_name ? `<span class="complaint-against-tag">against ${c.accused_name}</span>` : ''}
       </div>
     </div>
   `;
@@ -162,7 +162,7 @@ function renderLists() {
   if (unresolvedList) {
     unresolvedList.innerHTML = unresolved.length
       ? unresolved.map(c => renderComplaintCard(c, false)).join('')
-      : '<div class="empty-complaints"><span class="ei">✅</span><p>No open complaints.</p></div>';
+      : '<div class="empty-complaints"><span class="ei"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><p>No open complaints.</p></div>';
   }
 
   // Against me
@@ -171,7 +171,7 @@ function renderLists() {
   if (againstList) {
     againstList.innerHTML = against.length
       ? against.map(c => renderComplaintCard(c, true)).join('')
-      : '<div class="empty-complaints"><span class="ei">🎉</span><p>No complaints against you.</p></div>';
+      : '<div class="empty-complaints"><span class="ei"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span><p>No complaints against you.</p></div>';
   }
 }
 

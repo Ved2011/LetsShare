@@ -71,7 +71,7 @@ async function loadFeaturedCommunities() {
                     <h4 style="margin-top: 0; color: var(--accent);">${c.name}</h4>
                     <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem;">${c.description || 'A vibrant community of sharers.'}</p>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; opacity: 0.8;">
-                        <span>📍 ${c.city || 'Global'}</span>
+                        <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${c.city || 'Global'}</span>
                         <span class="btn small outline">Visit</span>
                     </div>
                 </div>

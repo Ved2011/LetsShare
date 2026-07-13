@@ -140,14 +140,14 @@
             </div>
 
             <div class="admin-tabs">
-                <button class="admin-tab active" onclick="switchTab('users', this)">👤 Users</button>
+                <button class="admin-tab active" onclick="switchTab('users', this)">Users</button>
                 <button class="admin-tab" onclick="switchTab('items', this)">Items</button>
-                <button class="admin-tab" onclick="switchTab('communities', this)">👥 Communities</button>
+                <button class="admin-tab" onclick="switchTab('communities', this)">Communities</button>
                 <button class="admin-tab" onclick="switchTab('complaints', this)">Complaints</button>
             </div>
 
             <div class="admin-section active card" id="section-users">
-                <input class="search-bar" id="userSearch" placeholder="🔍 Search users…" oninput="filterTable('usersTable', this.value)">
+                <input class="search-bar" id="userSearch" placeholder="Search users…" oninput="filterTable('usersTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="usersTable">
                         <thead><tr><th>Name</th><th class="hide-xs">Email</th><th>Plan</th><th class="hide-xs">Items</th><th class="hide-xs">Comms</th><th>Verified</th><th>Actions</th></tr></thead>
@@ -157,7 +157,7 @@
             </div>
 
             <div class="admin-section card" id="section-items">
-                <input class="search-bar" id="itemSearch" placeholder="🔍 Search items…" oninput="filterTable('itemsTable', this.value)">
+                <input class="search-bar" id="itemSearch" placeholder="Search items…" oninput="filterTable('itemsTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="itemsTable">
                         <thead><tr><th>Item</th><th class="hide-xs">Owner</th><th>Status</th><th class="hide-xs">Condition</th><th class="hide-xs">Listed</th><th>Actions</th></tr></thead>
@@ -167,7 +167,7 @@
             </div>
 
             <div class="admin-section card" id="section-communities">
-                <input class="search-bar" id="communitySearch" placeholder="🔍 Search communities…" oninput="filterTable('communitiesTable', this.value)">
+                <input class="search-bar" id="communitySearch" placeholder="Search communities…" oninput="filterTable('communitiesTable', this.value)">
                 <div class="table-scroll">
                     <table class="admin-table" id="communitiesTable">
                         <thead><tr><th>Community</th><th class="hide-xs">Admin</th><th>Members</th><th>Privacy</th><th class="hide-xs">Created</th><th>Actions</th></tr></thead>

@@ -55,7 +55,7 @@ function renderItems(items) {
   if (countEl) countEl.textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
 
   if (!items.length) {
-    grid.innerHTML = `<div class="empty-browse"><span class="empty-icon">🔍</span><p>No items found.</p></div>`;
+    grid.innerHTML = `<div class="empty-browse"><span class="empty-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><p>No items found.</p></div>`;
     return;
   }
 
@@ -94,7 +94,7 @@ async function loadItems() {
   } catch (e) {
     console.error('Error loading items:', e);
     const grid = document.getElementById('itemsList');
-    if (grid) grid.innerHTML = `<div class="empty-browse"><span class="empty-icon">⚠️</span><p>Failed to load items.</p></div>`;
+    if (grid) grid.innerHTML = `<div class="empty-browse"><span class="empty-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><p>Failed to load items.</p></div>`;
   }
 }
 

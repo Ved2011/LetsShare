@@ -122,7 +122,7 @@ async function viewUser(id, name) {
                 <table class="admin-table">
                     <tr><td><strong>Email</strong></td><td>${u.email}</td><td><strong>Plan</strong></td><td>${u.plan_type || 'Free'}</td></tr>
                     <tr><td><strong>Location</strong></td><td>${[u.locality, u.city, u.state, u.country].filter(Boolean).join(', ') || '—'}</td><td><strong>Joined</strong></td><td>${fmt(u.created_at)}</td></tr>
-                    <tr><td><strong>Last Login</strong></td><td>${fmt(u.last_login)}</td><td><strong>Verified</strong></td><td>${u.is_verified ? '✅ Yes' : '❌ No'}</td></tr>
+                    <tr><td><strong>Last Login</strong></td><td>${fmt(u.last_login)}</td><td><strong>Verified</strong></td><td>${u.is_verified ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Yes' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> No'}</td></tr>
                 </table>
             </div>
             <div class="detail-section">
@@ -159,7 +159,7 @@ async function viewUser(id, name) {
             <div class="detail-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; margin-bottom: 0.6rem;">
                     <h4 style="margin: 0;">Warning History (${data.warnings ? data.warnings.length : 0})</h4>
-                    <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; margin: 0; background: rgba(220,53,69,0.1); color: #dc3545; border-color: rgba(220,53,69,0.2);">⚠️ Issue Warning</button>
+                    <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="font-size: 0.75rem; padding: 0.25rem 0.5rem; margin: 0; background: rgba(220,53,69,0.1); color: #dc3545; border-color: rgba(220,53,69,0.2);">Issue Warning</button>
                 </div>
                 
                 <div id="warningFormContainer-${u.id}" style="display: none; background: rgba(220, 53, 69, 0.03); border: 1px dashed rgba(220, 53, 69, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
@@ -204,7 +204,7 @@ async function viewUser(id, name) {
         console.error('[Admin] Error loading user details:', err);
         document.getElementById('modalContent').innerHTML = `
             <div style="text-align: center; padding: 2rem; color: #dc3545;">
-                <p>⚠️ Error: ${err.message || 'Failed to load user details.'}</p>
+                <p>Error: ${err.message || 'Failed to load user details.'}</p>
                 <button class="btn-view" onclick="viewUser(${id}, '${name.replace(/'/g, "\\'")}')" style="margin-top: 1rem;">Retry</button>
             </div>`;
     }

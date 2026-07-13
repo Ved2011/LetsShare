@@ -346,7 +346,7 @@
             }
             if (r.category === 'User') {
                 if (r.extra1) pills.push(`<span class="meta-pill">${escHtml(r.extra1)}</span>`);
-                if (r.extra2 && r.extra2 !== 'Free') pills.push(`<span class="meta-pill">⭐ ${escHtml(r.extra2)}</span>`);
+                if (r.extra2 && r.extra2 !== 'Free') pills.push(`<span class="meta-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;color:#f59e0b"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${escHtml(r.extra2)}</span>`);
             }
             return pills.length ? `<div class="result-meta">${pills.join('')}</div>` : '';
         }

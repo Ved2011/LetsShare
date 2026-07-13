@@ -137,7 +137,7 @@ router.post('/', authenticateToken, async (req, res) => {
       );
 
       const communityResult = await pool.query(
-        'INSERT INTO communities (name, address, description, max_limit, is_private, admin_id, city, state, locality, country) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+        'INSERT INTO communities (name, address, description, max_limit, is_private, admin_id, city, state, locality, country, chat_enabled) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true) RETURNING *',
         [name, address || '', description || '', max_limit || 100, is_private || false, userId, city || null, state || null, locality || null, country || 'India']
       );
     
@@ -302,12 +302,9 @@ router.put('/:id/chat', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
+    // Premium plan restriction bypassed for development/testing
     const userResult = await pool.query('SELECT plan_type FROM users WHERE id = $1', [userId]);
     if (userResult.rows.length === 0) return res.status(404).json({ error: 'User not found' });
-    
-    if (userResult.rows[0].plan_type !== 'Premium') {
-      return res.status(403).json({ error: 'Only admins with a Premium plan can enable or disable chat.' });
-    }
 
     // Check if user is an admin in this community
     const adminCheck = await pool.query('SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2 AND is_admin = true', [communityId, userId]);
@@ -502,6 +499,7 @@ router.get('/:id/chat', authenticateToken, async (req, res) => {
     
     res.json(messages.rows);
   } catch (err) {
+    console.error('Error in GET /chat:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -525,6 +523,7 @@ router.post('/:id/chat', authenticateToken, async (req, res) => {
     await pool.query('INSERT INTO community_messages (community_id, user_id, message) VALUES ($1, $2, $3)', [communityId, userId, message]);
     res.status(201).json({ message: 'Sent' });
   } catch (err) {
+    console.error('Error in POST /chat:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

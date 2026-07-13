@@ -134,7 +134,7 @@ const createTables = async () => {
         description TEXT,
         max_limit INTEGER DEFAULT 100,
         is_private BOOLEAN DEFAULT false,
-        chat_enabled BOOLEAN DEFAULT false,
+        chat_enabled BOOLEAN DEFAULT true,
         admin_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
