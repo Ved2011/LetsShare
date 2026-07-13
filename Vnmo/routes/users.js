@@ -185,7 +185,7 @@ router.get('/me', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await pool.query(
-      'SELECT id, name, username, email, phone, dob, address, two_factor_enabled, profile_picture, plan_type, borrows_this_month, last_borrow_reset, wallet_balance, upi_id, bio FROM users WHERE id = $1',
+      'SELECT id, name, username, email, phone, dob, address, locality, city, state, country, two_factor_enabled, profile_picture, plan_type, borrows_this_month, last_borrow_reset, wallet_balance, upi_id, bio FROM users WHERE id = $1',
       [userId]
     );
     if (result.rows.length === 0) {
@@ -376,7 +376,7 @@ router.post('/add-money', authenticateToken, async (req, res) => {
 
 // Update current user profile
 router.put('/me', authenticateToken, upload.single('profilePicture'), async (req, res) => {
-  const { name, username, email, oldPassword, newPassword, phone, dob, address, two_factor_enabled, upi_id } = req.body;
+  const { name, username, email, oldPassword, newPassword, phone, dob, address, two_factor_enabled, upi_id, bio, locality, city, state, country } = req.body;
   const userId = req.user.id;
   const profilePicture = req.file ? req.file.buffer : null;
 
@@ -391,9 +391,9 @@ router.put('/me', authenticateToken, upload.single('profilePicture'), async (req
     const userResult = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
-    let updateQuery = 'UPDATE users SET name = $1, email = $2, phone = $3, dob = $4, address = $5, two_factor_enabled = $6, username = $7, bio = $8';
-    let values = [name, email, phone, dob, address, two_factor_enabled === 'true', username, bio];
-    let paramIndex = 9;
+    let updateQuery = 'UPDATE users SET name = $1, email = $2, phone = $3, dob = $4, address = $5, two_factor_enabled = $6, username = $7, bio = $8, locality = $9, city = $10, state = $11, country = $12';
+    let values = [name, email, phone, dob, address, two_factor_enabled === 'true', username, bio, locality, city, state, country];
+    let paramIndex = 13;
 
     if (newPassword && newPassword.trim() !== '') {
       if (!oldPassword) {
