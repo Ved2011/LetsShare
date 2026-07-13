@@ -518,17 +518,6 @@ function injectSidebar() {
     }
 }
 
-        // Hide sidebar on landing if not logged in (visual only)
-        if (isLandingPage && !isLoggedIn) {
-            sidebar.classList.add('collapsed');
-            sidebar.style.display = 'none'; // Completely hide on landing for non-logged-in users
-            overlay.style.display = 'none';
-            if (menuToggle) menuToggle.style.display = 'none';
-
-            // Ensure main wrapper doesn't have padding
-            mainWrapper.style.paddingLeft = '0';
-        }
-    }
 
 
 
