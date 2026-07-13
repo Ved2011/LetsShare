@@ -75,7 +75,7 @@ async function loadUsers() {
         tbody.innerHTML = users.map(u => `
             <tr data-id="${u.id}">
                 <td>
-                    <strong>${u.name}</strong>
+                    <a href="user_View.html?id=${u.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${u.name} 🔗</a>
                     ${u.is_site_admin ? '<span class="badge badge-admin" style="margin-left:0.4rem;">Admin</span>' : ''}
                     <br><small class="muted">@${u.username || '—'}</small>
                 </td>
@@ -232,7 +232,7 @@ async function loadItems() {
 
         tbody.innerHTML = items.map(i => `
             <tr>
-                <td><strong>${i.name}</strong>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
+                <td><a href="item_View.html?id=${i.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${i.name} 🔗</a>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
                 <td>${i.owner_name}<br><small class="muted">${i.owner_email}</small></td>
                 <td><span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status || '—'}</span></td>
                 <td>${i.brand || '—'}</td>
@@ -262,7 +262,7 @@ async function loadCommunities() {
         tbody.innerHTML = communities.map(c => `
             <tr>
                 <td>
-                    <strong>${c.name}</strong>
+                    <a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name} 🔗</a>
                     ${c.chat_enabled ? '<span class="badge badge-ok" style="margin-left:0.4rem;">Chat</span>' : ''}
                     <br><small class="muted">${c.description ? c.description.slice(0,50) + (c.description.length > 50 ? '…' : '') : 'No description'}</small>
                 </td>

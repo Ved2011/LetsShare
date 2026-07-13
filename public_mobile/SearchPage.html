@@ -310,7 +310,7 @@
             if (!arr.length) { recentBlock.classList.remove('visible'); return; }
             recentBlock.classList.add('visible');
             recentList.innerHTML = arr.map(q => `
-                <div class="recent-item" onclick="useRecent(${JSON.stringify(q)})">
+                <div class="recent-item" data-q="${escHtml(q)}">
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     ${escHtml(q)}
                     <button class="recent-remove" onclick="event.stopPropagation();removeRecent(${JSON.stringify(q)})" title="Remove">✕</button>
@@ -428,7 +428,7 @@
             if (!items.length) { dropdown.classList.toggle('visible', recentBlock.classList.contains('visible')); return; }
             dropdown.classList.add('visible');
             suggList.innerHTML = `<div class="suggestions-section-label">Suggestions</div>` +
-                items.map((s,i) => `<div class="suggestion-item" data-idx="${i}" onclick="pickSuggestion(${JSON.stringify(s.name)})"><div class="suggestion-icon" style="background:${catColor(s.category)}">${catIcon(s.category)}</div><span>${highlight(s.name, input.value.trim())}</span><span class="suggestion-meta">${s.category}</span></div>`).join('');
+                items.map((s,i) => `<div class="suggestion-item" data-idx="${i}" data-name="${escHtml(s.name)}"><div class="suggestion-icon" style="background:${catColor(s.category)}">${catIcon(s.category)}</div><span>${highlight(s.name, input.value.trim())}</span><span class="suggestion-meta">${s.category}</span></div>`).join('');
         }
 
         window.pickSuggestion = function(name) { input.value = name; closeSuggestions(); clearBtn.classList.add('visible'); performSearch(name); };

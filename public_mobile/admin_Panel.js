@@ -66,7 +66,7 @@ async function loadUsers() {
         tbody.innerHTML = users.map(u => `
             <tr>
                 <td>
-                    <strong>${u.name}</strong>
+                    <a href="user_View.html?id=${u.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${u.name} 🔗</a>
                     ${u.is_site_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
                     <br><small class="muted">${u.username ? '@' + u.username : ''}</small>
                 </td>
@@ -139,7 +139,7 @@ async function viewUser(id, name) {
                 <h4>Communities (${data.communities.length})</h4>
                 ${data.communities.length ? data.communities.map(c => `
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-                        <span style="font-size:0.82rem"><strong>${c.name}</strong> <span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? 'Private' : 'Public'}</span></span>
+                        <span style="font-size:0.82rem"><a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name} 🔗</a> <span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? 'Private' : 'Public'}</span></span>
                         <button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}/members/${u.id}', 'member', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Remove</button>
                     </div>`).join('') : '<p class="empty-admin">No communities.</p>'}
             </div>
@@ -214,7 +214,7 @@ async function loadItems() {
 
         tbody.innerHTML = items.map(i => `
             <tr>
-                <td><strong>${i.name}</strong>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
+                <td><a href="item_View.html?id=${i.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${i.name} 🔗</a>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
                 <td class="hide-xs" style="font-size:0.78rem">${i.owner_name}</td>
                 <td><span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status || '—'}</span></td>
                 <td class="hide-xs">${i.condition || '—'}</td>
@@ -238,7 +238,7 @@ async function loadCommunities() {
 
         tbody.innerHTML = communities.map(c => `
             <tr>
-                <td><strong>${c.name}</strong><br><small class="muted">${(c.description || '').slice(0,40)}${c.description?.length > 40 ? '…' : ''}</small></td>
+                <td><a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name} 🔗</a><br><small class="muted">${(c.description || '').slice(0,40)}${c.description?.length > 40 ? '…' : ''}</small></td>
                 <td class="hide-xs" style="font-size:0.78rem">${c.admin_name || '—'}</td>
                 <td>${c.member_count}/${c.max_limit}</td>
                 <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '🔒' : '🌐'}</span></td>
