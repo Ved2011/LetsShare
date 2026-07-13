@@ -25,10 +25,10 @@ async function loadCommunityDetails() {
         });
         if (res.ok) {
             currentCommunity = await res.json();
-            document.getElementById('communityName').textContent = currentCommunity.name;
-            document.getElementById('heroCommName').textContent = currentCommunity.name;
-            document.getElementById('heroCommAddress').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${currentCommunity.address}`;
-            document.getElementById('memberCount').textContent = currentCommunity.member_count;
+            const elName = document.getElementById('communityName'); if (elName) elName.textContent = currentCommunity.name;
+            const elHeroName = document.getElementById('heroCommName'); if (elHeroName) elHeroName.textContent = currentCommunity.name;
+            const elAddress = document.getElementById('heroCommAddress'); if (elAddress) elAddress.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${currentCommunity.address}`;
+            const elMemCount = document.getElementById('memberCount'); if (elMemCount) elMemCount.textContent = currentCommunity.member_count;
             
             const chatSectionHome = document.getElementById('chatSectionHome');
             const contentWrapper = document.querySelector('.community-content-wrapper');
@@ -45,7 +45,7 @@ async function loadCommunityDetails() {
                 if (adminPanelBtn) adminPanelBtn.style.display = 'none';
             }
 
-            if (currentCommunity.chat_enabled) {
+            if (currentCommunity.chat_enabled && currentCommunity.is_member) {
                 if (chatSectionHome) chatSectionHome.style.display = 'block';
                 if (contentWrapper) contentWrapper.style.gridTemplateColumns = '1.2fr 0.8fr';
                 loadChatMessages();
@@ -70,7 +70,7 @@ async function loadCommunityItems() {
         });
         if (res.ok) {
             allCommunityItems = await res.json();
-            document.getElementById('itemCount').textContent = allCommunityItems.length;
+            const elItemCount = document.getElementById('itemCount'); if (elItemCount) elItemCount.textContent = allCommunityItems.length;
             displayItems(allCommunityItems);
         }
     } catch (err) {
