@@ -170,7 +170,7 @@ function injectSidebar() {
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
             ${user?.is_site_admin ? `
-            <a href="AdminPanel.html" class="nav-item ${window.location.pathname.includes('AdminPanel') ? 'active' : ''}">
+            <a href="admin_Panel.html" class="nav-item ${window.location.pathname.includes('admin_Panel') ? 'active' : ''}">
                 <i data-lucide="shield-alert"></i> <span class="nav-text">Admin Panel</span>
             </a>
             ` : ''}

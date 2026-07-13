@@ -251,6 +251,7 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS country TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_code TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_site_admin BOOLEAN DEFAULT false;
     `);
 
     console.log('Tables created successfully');

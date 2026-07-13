@@ -310,7 +310,7 @@ router.get('/me', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const result = await pool.query(
-      'SELECT id, name, username, email, phone, dob, address, city, state, locality, country, two_factor_enabled, profile_picture, plan_type, borrows_this_month, last_borrow_reset, wallet_balance, upi_id, bio FROM users WHERE id = $1',
+      'SELECT id, name, username, email, phone, dob, address, city, state, locality, country, two_factor_enabled, profile_picture, plan_type, borrows_this_month, last_borrow_reset, wallet_balance, upi_id, bio, is_site_admin FROM users WHERE id = $1',
       [userId]
     );
     if (result.rows.length === 0) {
