@@ -30,6 +30,18 @@ async function loadCommunityDetails() {
             document.getElementById('heroCommAddress').innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${currentCommunity.address}`;
             document.getElementById('memberCount').textContent = currentCommunity.member_count;
             
+            const adminPanelBtn = document.getElementById('adminPanelBtn');
+            if (currentCommunity.is_current_user_admin) {
+                if (adminPanelBtn) {
+                    adminPanelBtn.style.display = 'inline-flex';
+                    adminPanelBtn.onclick = () => {
+                        document.getElementById('adminModal').style.display = 'flex';
+                    };
+                }
+            } else {
+                if (adminPanelBtn) adminPanelBtn.style.display = 'none';
+            }
+
             if (currentCommunity.chat_enabled) {
                 document.getElementById('chatDisabledMsg').style.display = 'none';
                 document.getElementById('chatActiveArea').style.display = 'flex';
@@ -206,4 +218,81 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCommunityDetails();
     loadCommunityItems();
     loadMembers();
+});
+
+// Admin Modal Controls
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleChatBtn = document.getElementById('adminToggleChatBtn');
+    const sendInviteBtn = document.getElementById('adminSendInviteBtn');
+    const deleteCommBtn = document.getElementById('adminDeleteCommBtn');
+
+    if (toggleChatBtn) {
+        toggleChatBtn.addEventListener('click', async () => {
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/communities/${communityId}/chat`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.showAlert(`Chat toggled ${data.chat_enabled ? 'ON' : 'OFF'}!`);
+                    location.reload();
+                } else {
+                    window.showAlert(data.error || 'Failed to toggle chat', 'error');
+                }
+            } catch (err) {
+                window.showAlert('Server error', 'error');
+            }
+        });
+    }
+
+    if (sendInviteBtn) {
+        sendInviteBtn.addEventListener('click', async () => {
+            const identifier = document.getElementById('adminInviteEmail').value.trim();
+            if (!identifier) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/communities/${communityId}/invite`, {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ identifier })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    window.showAlert('Invite sent successfully!');
+                    document.getElementById('adminInviteEmail').value = '';
+                } else {
+                    window.showAlert(data.error || 'Failed to send invite', 'error');
+                }
+            } catch (err) {
+                window.showAlert('Server error', 'error');
+            }
+        });
+    }
+
+    if (deleteCommBtn) {
+        deleteCommBtn.addEventListener('click', async () => {
+            if (!confirm('Are you absolutely sure you want to delete this community? This action is irreversible.')) return;
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch(`/api/communities/${communityId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    window.showAlert('Community deleted successfully!');
+                    window.location.href = 'communities.html';
+                } else {
+                    const data = await res.json();
+                    window.showAlert(data.error || 'Failed to delete community', 'error');
+                }
+            } catch (err) {
+                window.showAlert('Server error', 'error');
+            }
+        });
+    }
 });
