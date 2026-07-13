@@ -75,7 +75,7 @@ async function loadUsers() {
         tbody.innerHTML = users.map(u => `
             <tr data-id="${u.id}">
                 <td>
-                    <a href="user_View.html?id=${u.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${u.name} 🔗</a>
+                    <a href="user_View.html?id=${u.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${u.name}</a>
                     ${u.is_site_admin ? '<span class="badge badge-admin" style="margin-left:0.4rem;">Admin</span>' : ''}
                     <br><small class="muted">@${u.username || '—'}</small>
                 </td>
@@ -83,7 +83,7 @@ async function loadUsers() {
                 <td><span class="badge ${u.plan_type === 'Pro' ? 'badge-pro' : 'badge-free'}">${u.plan_type || 'Free'}</span></td>
                 <td><span class="badge badge-ok">${u.item_count}</span></td>
                 <td><span class="badge badge-ok">${u.community_count}</span></td>
-                <td>${u.is_verified ? '✅' : '❌'}</td>
+                <td>${u.is_verified ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}</td>
                 <td>${fmt(u.created_at)}</td>
                 <td>
                     <button class="btn-view" onclick="viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')">View</button>
@@ -97,7 +97,7 @@ async function loadUsers() {
 }
 
 async function viewUser(id, name) {
-    document.getElementById('modalUserName').textContent = '👤 ' + name;
+    document.getElementById('modalUserName').textContent = '' + name;
     document.getElementById('modalContent').innerHTML = `
         <div style="text-align: center; padding: 2rem;">
             <p class="muted">Loading user details...</p>
@@ -232,7 +232,7 @@ async function loadItems() {
 
         tbody.innerHTML = items.map(i => `
             <tr>
-                <td><a href="item_View.html?id=${i.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${i.name} 🔗</a>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
+                <td><a href="item_View.html?id=${i.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${i.name}</a>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
                 <td>${i.owner_name}<br><small class="muted">${i.owner_email}</small></td>
                 <td><span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status || '—'}</span></td>
                 <td>${i.brand || '—'}</td>
@@ -262,13 +262,13 @@ async function loadCommunities() {
         tbody.innerHTML = communities.map(c => `
             <tr>
                 <td>
-                    <a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name} 🔗</a>
+                    <a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name}</a>
                     ${c.chat_enabled ? '<span class="badge badge-ok" style="margin-left:0.4rem;">Chat</span>' : ''}
                     <br><small class="muted">${c.description ? c.description.slice(0,50) + (c.description.length > 50 ? '…' : '') : 'No description'}</small>
                 </td>
                 <td>${c.admin_name || '—'}<br><small class="muted">${c.admin_email || ''}</small></td>
                 <td><span class="badge badge-ok">${c.member_count} / ${c.max_limit}</span></td>
-                <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '🔒 Private' : '🌐 Public'}</span></td>
+                <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Private' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Public'}</span></td>
                 <td>${[c.city, c.state, c.country].filter(Boolean).join(', ') || '—'}</td>
                 <td>${fmt(c.created_at)}</td>
                 <td><button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}', 'community', loadCommunities)">Delete</button></td>
