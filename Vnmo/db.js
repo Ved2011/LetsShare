@@ -200,6 +200,7 @@ const createTables = async () => {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture BYTEA;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_site_admin BOOLEAN DEFAULT FALSE;
 
       CREATE TABLE IF NOT EXISTS user_devices (
         id SERIAL PRIMARY KEY,

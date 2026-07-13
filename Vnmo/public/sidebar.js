@@ -159,6 +159,10 @@ function injectSidebar() {
             <a href="Complains.html" class="nav-item ${window.location.pathname.includes('Complains') ? 'active' : ''}">
                 <i data-lucide="triangle-alert"></i> <span class="nav-text">Complaints</span>
             </a>
+            ${user && user.is_site_admin ? `
+            <a href="admin_Panel.html" class="nav-item ${window.location.pathname.includes('admin_Panel') ? 'active' : ''}" style="color: #f59e0b;">
+                <i data-lucide="shield-check"></i> <span class="nav-text">Admin Panel</span>
+            </a>` : ''}
             <div class="sidebar-footer">
                 <a href="${isLoggedIn ? 'user_Profile.html' : 'login.html'}" class="nav-item ${window.location.pathname.includes('Profile') ? 'active' : ''}" style="gap: 0.875rem;">
                     <div class="header-avatar" style="width: 28px; height: 28px; font-size: 0.65rem; flex-shrink: 0;">${user?.name?.charAt(0).toUpperCase() || '?'}</div>
