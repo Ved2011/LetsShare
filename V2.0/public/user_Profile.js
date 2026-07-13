@@ -106,6 +106,16 @@ async function loadUserProfile() {
       }
       if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
 
+      const displayLocality = document.getElementById('displayLocality');
+      const displayCity = document.getElementById('displayCity');
+      const displayState = document.getElementById('displayState');
+      const displayCountry = document.getElementById('displayCountry');
+      
+      if (displayLocality) displayLocality.textContent = user.locality || 'Not provided';
+      if (displayCity) displayCity.textContent = user.city || 'Not provided';
+      if (displayState) displayState.textContent = user.state || 'Not provided';
+      if (displayCountry) displayCountry.textContent = user.country || 'Not provided';
+
       const missingFields = [];
       if (!user.username) missingFields.push('Username');
       if (!user.phone) missingFields.push('Phone Number');
@@ -135,6 +145,10 @@ async function loadUserProfile() {
     const editPhone = document.getElementById('editPhone');
     const editDob = document.getElementById('editDob');
     const editAddress = document.getElementById('editAddress');
+    const editLocality = document.getElementById('editLocality');
+    const editCity = document.getElementById('editCity');
+    const editState = document.getElementById('editState');
+    const editCountry = document.getElementById('editCountry');
     const editBio = document.getElementById('editBio');
     const twoFactorToggle = document.getElementById('twoFactorToggle');
 
@@ -144,6 +158,10 @@ async function loadUserProfile() {
     if (editPhone) editPhone.value = user.phone || '';
     if (editDob && user.dob) editDob.value = user.dob.split('T')[0];
     if (editAddress) editAddress.value = user.address || '';
+    if (editLocality) editLocality.value = user.locality || '';
+    if (editCity) editCity.value = user.city || '';
+    if (editState) editState.value = user.state || '';
+    if (editCountry) editCountry.value = user.country || '';
     if (editBio) editBio.value = user.bio || '';
       if (twoFactorToggle) {
         twoFactorToggle.checked = user.two_factor_enabled;
@@ -317,6 +335,10 @@ if (profileUpdateForm) {
     formData.append('phone', document.getElementById('editPhone').value || '');
     formData.append('dob', document.getElementById('editDob').value || '');
     formData.append('address', document.getElementById('editAddress').value || '');
+    formData.append('locality', document.getElementById('editLocality').value || '');
+    formData.append('city', document.getElementById('editCity').value || '');
+    formData.append('state', document.getElementById('editState').value || '');
+    formData.append('country', document.getElementById('editCountry').value || '');
     formData.append('bio', document.getElementById('editBio').value || '');
     
     const oldPass = document.getElementById('oldPassword').value;

@@ -115,6 +115,16 @@ async function loadUserProfile() {
         displayAddress.textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Not provided';
       }
 
+      const displayLocality = document.getElementById('displayLocality');
+      const displayCity = document.getElementById('displayCity');
+      const displayState = document.getElementById('displayState');
+      const displayCountry = document.getElementById('displayCountry');
+      
+      if (displayLocality) displayLocality.textContent = user.locality || 'Not provided';
+      if (displayCity) displayCity.textContent = user.city || 'Not provided';
+      if (displayState) displayState.textContent = user.state || 'Not provided';
+      if (displayCountry) displayCountry.textContent = user.country || 'Not provided';
+
       const missingFields = [];
       if (!user.username) missingFields.push('Username');
       if (!user.phone) missingFields.push('Phone Number');
