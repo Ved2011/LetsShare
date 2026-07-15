@@ -280,6 +280,7 @@ async function loadDashboard() {
   let user = JSON.parse(localStorage.getItem('user') || 'null');
 
   if (!token) {
+    document.body.classList.add('page-ready');
     window.location.href = 'login.html';
     return;
   }
@@ -324,6 +325,9 @@ async function loadDashboard() {
       }
     }
     
+    // Reveal page elegantly after data is loaded
+    document.body.classList.add('page-ready');
+
     // Add Reveal Animations
     document.querySelectorAll('.card').forEach(card => card.classList.add('reveal'));
     const revealOnScroll = () => {
@@ -341,6 +345,7 @@ async function loadDashboard() {
     loadWarnings();
   } catch (error) {
     console.error('Error loading dashboard:', error);
+    document.body.classList.add('page-ready'); // Still reveal on error
   }
 }
 

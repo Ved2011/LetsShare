@@ -113,16 +113,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchCommunities() {
     const token = localStorage.getItem('token');
-    const res = await fetch('/api/communities', { headers: { 'Authorization': `Bearer ${token}` } });
-    if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = 'login.html';
-        return;
-    }
-    if (res.ok) {
-        communities = await res.json();
-        renderCommunities();
+    try {
+        const res = await fetch('/api/communities', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.status === 401 || res.status === 403) {
+            document.body.classList.add('page-ready');
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+            return;
+        }
+        if (res.ok) {
+            communities = await res.json();
+            renderCommunities();
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        document.body.classList.add('page-ready');
     }
 }
 

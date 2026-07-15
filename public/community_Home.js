@@ -54,11 +54,15 @@ async function loadCommunityDetails() {
                 if (chatSectionHome) chatSectionHome.style.display = 'none';
                 if (contentWrapper) contentWrapper.style.gridTemplateColumns = '1fr';
             }
+            // Reveal page now that data is ready
+            document.body.classList.add('page-ready');
         } else {
+            document.body.classList.add('page-ready');
             window.location.href = 'user_Dashboard.html';
         }
     } catch (err) {
         console.error('Error loading community details:', err);
+        document.body.classList.add('page-ready');
     }
 }
 

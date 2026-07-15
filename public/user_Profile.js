@@ -29,6 +29,7 @@ function toggleTheme() {
 async function loadUserProfile() {
   const token = localStorage.getItem('token');
   if (!token) {
+    document.body.classList.add('page-ready');
     window.location.href = 'login.html';
     return;
   }
@@ -179,10 +180,6 @@ async function loadUserProfile() {
         twoFactorToggle.onchange = async () => {
           const isEnabled = twoFactorToggle.checked;
           const formData = new FormData();
-          // We need to send all required fields or update the backend to support partial updates
-          // But since the backend expects everything in the PUT /me route, we'll use a simpler approach if possible
-          // or just reuse the save logic.
-          // For now, let's just trigger a click on the save button if it exists, or fetch the API directly.
           
           try {
             const updateRes = await fetch('/api/users/me', {
@@ -213,12 +210,15 @@ async function loadUserProfile() {
       if (headerAvatar && !user.profilePictureBase64) headerAvatar.textContent = user.name.charAt(0).toUpperCase();
 
     } else if (response.status === 401 || response.status === 403) {
+      document.body.classList.add('page-ready');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = 'login.html';
     }
   } catch (error) {
     console.error('Error loading profile:', error);
+  } finally {
+    document.body.classList.add('page-ready');
   }
 }
 

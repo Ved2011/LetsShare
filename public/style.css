@@ -58,6 +58,57 @@ html, body {
     line-height: 1.5;
 }
 
+/* ─── Elegant Page Load System ─────────────────────────────────────────────── */
+/* Body starts invisible — JS adds .page-ready to trigger the reveal */
+body {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+}
+body.page-ready {
+    opacity: 1;
+}
+
+/* Skeleton shimmer — use on placeholder elements while data loads */
+@keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position:  600px 0; }
+}
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--border) 25%,
+        color-mix(in srgb, var(--border) 60%, var(--bg-main)) 50%,
+        var(--border) 75%
+    );
+    background-size: 600px 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+    border-radius: 8px;
+    color: transparent !important;
+    pointer-events: none;
+    user-select: none;
+}
+.skeleton * { visibility: hidden; }
+
+/* Skeleton row presets */
+.skel-line       { height: 14px; border-radius: 6px; margin-bottom: 0.5rem; }
+.skel-line.short { width: 40%; }
+.skel-line.med   { width: 65%; }
+.skel-line.full  { width: 100%; }
+.skel-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.skel-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+}
+/* ────────────────────────────────────────────────────────────────────────────── */
+
 /* Layout System */
 .app-container {
     display: flex;

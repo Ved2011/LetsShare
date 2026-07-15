@@ -539,4 +539,11 @@ function injectSidebar() {
     });
     observer.observe(document.documentElement, { attributes: true });
 
-document.addEventListener('DOMContentLoaded', injectSidebar);
+document.addEventListener('DOMContentLoaded', () => {
+    injectSidebar();
+    // Fallback: reveal the page after 800ms if no page-specific JS has done so yet
+    // (fast pages like login/welcome will reveal instantly, data pages will reveal earlier)
+    setTimeout(() => {
+        document.body.classList.add('page-ready');
+    }, 800);
+});
