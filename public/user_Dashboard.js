@@ -410,7 +410,12 @@ async function loadJoinedCommunities() {
     if (res.ok) {
       const communities = await res.json();
       const user = JSON.parse(localStorage.getItem('user'));
-      const joined = communities.filter(c => c.is_member || c.admin_id === user.id);
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const joined = communities.filter(c => {
+        const isMember = c.is_member === true || c.is_member === 'true';
+        const isAdmin = user && user.id && Number(c.admin_id) === Number(user.id);
+        return isMember || isAdmin;
+      });
       displayJoinedCommunities(joined);
     }
   } catch (err) {
@@ -437,7 +442,7 @@ function renderCommunityCard(c) {
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--muted);">
           <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> ${c.member_count} members</span>
-          ${c.admin_id === user.id ? '<span style="color: #10b981; font-weight: bold; font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px;">Admin</span>' : ''}
+          ${user && user.id && Number(c.admin_id) === Number(user.id) ? '<span style="color: #10b981; font-weight: bold; font-size: 0.75rem; background: rgba(16, 185, 129, 0.1); padding: 0.15rem 0.4rem; border-radius: 4px;">Admin</span>' : ''}
       </div>
     </div>
   `;
