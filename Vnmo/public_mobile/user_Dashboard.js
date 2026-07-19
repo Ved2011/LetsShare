@@ -331,7 +331,6 @@ async function loadJoinedCommunities() {
     const res = await fetch('/api/communities', { headers: { 'Authorization': `Bearer ${token}` } });
     if (res.ok) {
       const communities = await res.json();
-      const user = JSON.parse(localStorage.getItem('user'));
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const joined = communities.filter(c => {
         const isMember = c.is_member === true || c.is_member === 'true';
