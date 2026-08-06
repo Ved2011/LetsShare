@@ -25,7 +25,9 @@ async function loadCommunityDetails() {
         });
         if (res.ok) {
             currentCommunity = await res.json();
-            const elName = document.getElementById('communityName'); if (elName) elName.textContent = currentCommunity.name;
+            const elName = document.getElementById('communityName'); 
+            console.log('DEBUG: elName element found:', elName, 'currentCommunity.name:', currentCommunity?.name);
+            if (elName) elName.textContent = currentCommunity.name;
             const elHeroName = document.getElementById('heroCommName'); if (elHeroName) elHeroName.textContent = currentCommunity.name;
             const elAddress = document.getElementById('heroCommAddress'); if (elAddress) elAddress.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${currentCommunity.address}`;
             const elMemCount = document.getElementById('memberCount'); if (elMemCount) elMemCount.textContent = currentCommunity.member_count;
