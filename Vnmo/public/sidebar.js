@@ -212,14 +212,23 @@ function injectSidebar() {
         
         if (header && !isWelcomePage) {
             let pageTitle = "LetsShare";
+            let pageTitleId = "";
 
             const existingSpan = header.querySelector('span[style*="font-weight: 600"]');
             const existingH2 = header.querySelector('h2');
             const existingH1 = header.querySelector('h1');
-            if (existingSpan) pageTitle = existingSpan.textContent;
-            else if (existingH2) pageTitle = existingH2.textContent;
-            else if (existingH1) pageTitle = existingH1.textContent;
-            else if (document.title.includes(' - ')) pageTitle = document.title.split(' - ')[0];
+            if (existingSpan) {
+                pageTitle = existingSpan.textContent;
+                pageTitleId = existingSpan.id || "";
+            } else if (existingH2) {
+                pageTitle = existingH2.textContent;
+                pageTitleId = existingH2.id || "";
+            } else if (existingH1) {
+                pageTitle = existingH1.textContent;
+                pageTitleId = existingH1.id || "";
+            } else if (document.title.includes(' - ')) {
+                pageTitle = document.title.split(' - ')[0];
+            }
 
             const isNotifPage = window.location.pathname.toLowerCase().includes('notifications');
             
@@ -251,8 +260,7 @@ function injectSidebar() {
                     </a>
                 </div>
                 <div class="header-center" style="flex:1; text-align:center; padding:0; min-width:0; pointer-events:none;">
-
-                    <h1 class="page-title" style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare' || pageTitle.toLowerCase() === 'no communities') ? '' : pageTitle}</h1>
+                    <h1 class="page-title" ${pageTitleId ? `id="${pageTitleId}"` : ''} style="margin:0; font-size:1.1rem; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:auto;">${(pageTitle === 'LetsShare' || pageTitle.toLowerCase() === 'no communities') ? '' : pageTitle}</h1>
                 </div>
                 <div class="header-right" style="display:flex; align-items:center; justify-content:flex-end; flex-shrink:0;">
                     ${uniformRight}
