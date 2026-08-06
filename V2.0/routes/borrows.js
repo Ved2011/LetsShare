@@ -95,6 +95,30 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Get all active/returned borrows and lends for user
+router.get('/all', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(`
+      SELECT b.id, b.borrow_id, b.status, b.due_date,
+             i.name as item_name,
+             u_owner.name as owner_name, u_owner.email as owner_email,
+             u_borrower.name as borrower_name, u_borrower.email as borrower_email,
+             i.owner_id as owner_id, b.borrower_id as borrower_id
+      FROM borrows b
+      JOIN items i ON b.item_id = i.id
+      JOIN users u_owner ON i.owner_id = u_owner.id
+      JOIN users u_borrower ON b.borrower_id = u_borrower.id
+      WHERE (i.owner_id = $1 OR b.borrower_id = $1)
+      ORDER BY b.id DESC
+    `, [userId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('All borrows error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get borrow requests for items owned by the current user
 router.get('/requests', authenticateToken, async (req, res) => {
   const userId = req.user.id;

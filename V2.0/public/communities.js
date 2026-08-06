@@ -359,24 +359,25 @@ async function leaveCommunity(communityId) {
 }
 
 async function deleteCommunity(communityId) {
-    if (!confirm('CRITICAL: This will permanently delete the community and all its data. Are you sure?')) return;
-    const token = localStorage.getItem('token');
-    try {
-        const res = await fetch(`/api/communities/${communityId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            window.showAlert('Community deleted successfully.');
-            document.getElementById('viewCommunityModal').classList.remove('active');
-            fetchCommunities();
-        } else {
-            const data = await res.json();
-            window.showAlert(data.error, 'error');
+    window.showConfirm('CRITICAL: This will permanently delete the community and all its data. Are you sure?', async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/communities/${communityId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                window.showAlert('Community deleted successfully.');
+                document.getElementById('viewCommunityModal').classList.remove('active');
+                fetchCommunities();
+            } else {
+                const data = await res.json();
+                window.showAlert(data.error, 'error');
+            }
+        } catch (err) {
+            window.showAlert('Error deleting community', 'error');
         }
-    } catch (err) {
-        window.showAlert('Error deleting community', 'error');
-    }
+    });
 }
 
 async function toggleAdmin(communityId, userId, isAdmin) {
@@ -453,29 +454,29 @@ async function sendChatMessage() {
 }
 
 async function removeMember(communityId, userId) {
-    if (!confirm('Are you sure you want to remove this member?')) return;
-    
-    const token = localStorage.getItem('token');
-    try {
-        const res = await fetch(`/api/communities/${communityId}/members/${userId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok) {
-            window.showAlert('Member removed successfully');
-            // Refresh current community view
-            const resComm = await fetch('/api/communities', { headers: { 'Authorization': `Bearer ${token}` } });
-            if (resComm.ok) {
-                const comms = await resComm.json();
-                const updatedComm = comms.find(c => c.id === communityId);
-                if (updatedComm) openCommunity(updatedComm);
-                fetchCommunities(); // refresh main list
+    window.showConfirm('Are you sure you want to remove this member?', async () => {
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(`/api/communities/${communityId}/members/${userId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                window.showAlert('Member removed successfully');
+                // Refresh current community view
+                const resComm = await fetch('/api/communities', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (resComm.ok) {
+                    const comms = await resComm.json();
+                    const updatedComm = comms.find(c => c.id === communityId);
+                    if (updatedComm) openCommunity(updatedComm);
+                    fetchCommunities(); // refresh main list
+                }
+            } else {
+                window.showAlert(data.error, 'error');
             }
-        } else {
-            window.showAlert(data.error, 'error');
+        } catch (err) {
+            window.showAlert('Error removing member', 'error');
         }
-    } catch (err) {
-        window.showAlert('Error removing member', 'error');
-    }
+    });
 }

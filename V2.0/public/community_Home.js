@@ -277,24 +277,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (deleteCommBtn) {
-        deleteCommBtn.addEventListener('click', async () => {
-            if (!confirm('Are you absolutely sure you want to delete this community? This action is irreversible.')) return;
-            const token = localStorage.getItem('token');
-            try {
-                const res = await fetch(`/api/communities/${communityId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    window.showAlert('Community deleted successfully!');
-                    window.location.href = 'communities.html';
-                } else {
-                    const data = await res.json();
-                    window.showAlert(data.error || 'Failed to delete community', 'error');
+        deleteCommBtn.addEventListener('click', () => {
+            window.showConfirm('Are you absolutely sure you want to delete this community? This action is irreversible.', async () => {
+                const token = localStorage.getItem('token');
+                try {
+                    const res = await fetch(`/api/communities/${communityId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        window.showAlert('Community deleted successfully!');
+                        window.location.href = 'communities.html';
+                    } else {
+                        const data = await res.json();
+                        window.showAlert(data.error || 'Failed to delete community', 'error');
+                    }
+                } catch (err) {
+                    window.showAlert('Server error', 'error');
                 }
-            } catch (err) {
-                window.showAlert('Server error', 'error');
-            }
+            });
         });
     }
 });

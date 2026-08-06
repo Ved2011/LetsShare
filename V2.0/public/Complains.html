@@ -38,19 +38,29 @@
 
             <form id="issueForm">
 
-                <div class="form-group">
-                    <label for="borrowId">Borrow ID</label>
-                    <input type="text" id="borrowId" required>
+                <div class="form-group" id="transactionSelectGroup">
+                    <label for="transactionSelect">Select Transaction</label>
+                    <select id="transactionSelect">
+                        <option value="">-- Choose a recent transaction or select Manual --</option>
+                        <option value="manual">Enter details manually</option>
+                    </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="itemName">Item Name</label>
-                    <input type="text" id="itemName" required>
-                </div>
+                <div id="manualDetailsContainer" style="display: none; border-left: 3px solid var(--accent); padding-left: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="borrowId">Borrow ID</label>
+                        <input type="text" id="borrowId" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="borrowerName">Borrower Name</label>
-                    <input type="text" id="borrowerName" required>
+                    <div class="form-group">
+                        <label for="itemName">Item Name</label>
+                        <input type="text" id="itemName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="borrowerName">Borrower/Lender Name</label>
+                        <input type="text" id="borrowerName" required>
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">

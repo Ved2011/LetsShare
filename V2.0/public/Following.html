@@ -37,6 +37,7 @@
         </section>
     </div>
 
+    <script src="notifications.js"></script>
     <script src="sidebar.js"></script>
     <script>
         async function loadFollowingData() {
@@ -110,17 +111,18 @@
         }
 
         async function unfollowUser(id) {
-            if (!confirm('Stop following this user?')) return;
-            const token = localStorage.getItem('token');
-            try {
-                const res = await fetch(`/api/users/${id}/follow`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) loadFollowingData();
-            } catch (err) {
-                console.error('Unfollow error:', err);
-            }
+            window.showConfirm('Stop following this user?', async () => {
+                const token = localStorage.getItem('token');
+                try {
+                    const res = await fetch(`/api/users/${id}/follow`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (res.ok) loadFollowingData();
+                } catch (err) {
+                    console.error('Unfollow error:', err);
+                }
+            });
         }
 
         document.addEventListener('DOMContentLoaded', loadFollowingData);

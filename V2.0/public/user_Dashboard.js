@@ -220,23 +220,108 @@ function displayWarnings(warnings) {
   const warningsList = document.getElementById('warningsList');
   if (!warningsSection || !warningsList) return;
 
-  if (warnings.length === 0) {
+  // Filter out acknowledged warnings from localStorage
+  const acknowledgedWarnings = JSON.parse(localStorage.getItem('acknowledgedWarnings') || '[]');
+  const unacknowledged = warnings.filter(w => !acknowledgedWarnings.includes(w.id));
+
+  if (unacknowledged.length === 0) {
     warningsSection.style.display = 'none';
     return;
   }
 
   warningsSection.style.display = 'block';
-  warningsList.innerHTML = warnings.map(w => `
-    <div class="item-card" style="background: #fff; border: 1px solid rgba(220, 53, 69, 0.2); padding: 1rem; border-radius: 8px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <span class="badge" style="background: rgba(220,53,69,0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.5rem; font-weight: bold; border-radius: 4px;">${w.category}</span>
-        <span style="font-size: 0.8rem; color: var(--muted);">${new Date(w.created_at).toLocaleDateString()}</span>
+  const badge = document.getElementById('warningCountBadge');
+  if (badge) badge.textContent = unacknowledged.length === 1 ? '1 Warning' : `${unacknowledged.length} Warnings`;
+
+  // Category-specific next steps
+  const categoryActions = {
+    'Terms of Service': 'Review our <a href="welcome.html" style="color:#dc3545; font-weight:600;">Terms of Service</a> and ensure your account activity complies.',
+    'Inappropriate Content': 'Remove or edit any content flagged as inappropriate. Future violations may lead to account suspension.',
+    'Spam': 'Avoid sending repeated or unsolicited messages/requests. Spamming other members violates our community guidelines.',
+    'Harassment': 'Maintain respectful communication with all community members. Harassment is taken very seriously.',
+    'Other': 'Please review the warning message carefully and take corrective action as described.'
+  };
+
+  warningsList.innerHTML = unacknowledged.map(w => {
+    const nextStep = categoryActions[w.category] || categoryActions['Other'];
+    const dateStr = new Date(w.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    return `
+      <div class="item-card" id="warning-card-${w.id}" style="background: var(--card-bg); border: 1px solid rgba(220, 53, 69, 0.25); border-radius: 10px; padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+
+        <!-- Top row: category badge + date -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <span style="background: rgba(220,53,69,0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.6rem; font-weight: 700; border-radius: 4px; letter-spacing: 0.03em; text-transform: uppercase;">
+            ⚠️ ${w.category}
+          </span>
+          <span style="font-size: 0.78rem; color: var(--muted);">Issued ${dateStr} by ${w.admin_name || 'LetsShare Admin'}</span>
+        </div>
+
+        <!-- Warning message -->
+        <p style="font-size: 0.9rem; font-style: italic; color: var(--text); margin: 0; line-height: 1.55; border-left: 3px solid rgba(220,53,69,0.4); padding-left: 0.75rem;">"${w.message}"</p>
+
+        <!-- What to do section -->
+        <div style="background: rgba(220,53,69,0.04); border-radius: 7px; padding: 0.75rem 1rem; font-size: 0.83rem; color: var(--text); line-height: 1.55;">
+          <strong style="display: block; margin-bottom: 0.3rem; color: #b91c1c; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em;">What you should do:</strong>
+          <ol style="margin: 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.3rem;">
+            <li>${nextStep}</li>
+            <li>If you believe this warning was issued in error, contact our support team to appeal.</li>
+            <li style="color: var(--muted);">Repeated warnings may result in temporary or permanent account suspension.</li>
+          </ol>
+        </div>
+
+        <!-- Actions -->
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.25rem;">
+          <button
+            onclick="acknowledgeWarning(${w.id})"
+            style="padding: 0.4rem 1rem; background: rgba(220,53,69,0.1); color: #dc3545; border: 1px solid rgba(220,53,69,0.3); border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 600; transition: all 0.15s;"
+            onmouseover="this.style.background='#dc3545'; this.style.color='#fff';"
+            onmouseout="this.style.background='rgba(220,53,69,0.1)'; this.style.color='#dc3545';"
+          >
+            ✓ I Understand & Acknowledge
+          </button>
+          <a href="mailto:support@letshare.app?subject=Warning Appeal - ${encodeURIComponent(w.category)}&body=Warning ID: ${w.id}%0ACategory: ${encodeURIComponent(w.category)}%0A%0APlease describe why you believe this warning was issued in error:"
+            style="padding: 0.4rem 1rem; background: none; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem; transition: all 0.15s;"
+            onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';"
+            onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--muted)';">
+            📩 Appeal This Warning
+          </a>
+        </div>
       </div>
-      <p style="font-size: 0.9rem; font-style: italic; color: var(--text); margin: 0.25rem 0;">"${w.message}"</p>
-      <small style="color: var(--muted); font-size: 0.75rem;">Issued by: ${w.admin_name || 'System'}</small>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
+
+window.acknowledgeWarning = function(warningId) {
+  const acknowledged = JSON.parse(localStorage.getItem('acknowledgedWarnings') || '[]');
+  if (!acknowledged.includes(warningId)) {
+    acknowledged.push(warningId);
+    localStorage.setItem('acknowledgedWarnings', JSON.stringify(acknowledged));
+  }
+
+  const card = document.getElementById(`warning-card-${warningId}`);
+  if (card) {
+    card.style.transition = 'all 0.4s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(-10px)';
+    card.style.maxHeight = card.offsetHeight + 'px';
+    setTimeout(() => {
+      card.style.maxHeight = '0';
+      card.style.padding = '0';
+      card.style.margin = '0';
+      card.style.overflow = 'hidden';
+      setTimeout(() => {
+        card.remove();
+        // Hide the whole section if no cards remain
+        const list = document.getElementById('warningsList');
+        if (list && list.children.length === 0) {
+          const section = document.getElementById('warningsSection');
+          if (section) section.style.display = 'none';
+        }
+      }, 400);
+    }, 50);
+  }
+  window.showAlert('Warning acknowledged. Please take corrective action to keep your account in good standing.', 'success');
+};
 
 function initDashboard() {
   loadCounts();

@@ -45,18 +45,19 @@ function filterTable(tableId, query) {
 }
 
 async function adminDelete(endpoint, label, reloadFn) {
-    if (!confirm(`Are you sure you want to delete this ${label}? This cannot be undone.`)) return;
-    try {
-        const res = await fetch(endpoint, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (res.ok) { reloadFn(); }
-        else { alert(data.error || `Failed to delete ${label}.`); }
-    } catch (err) {
-        alert('Network error. Please try again.');
-    }
+    window.showConfirm(`Are you sure you want to delete this ${label}? This cannot be undone.`, async () => {
+        try {
+            const res = await fetch(endpoint, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (res.ok) { reloadFn(); }
+            else { alert(data.error || `Failed to delete ${label}.`); }
+        } catch (err) {
+            alert('Network error. Please try again.');
+        }
+    });
 }
 
 // ── USERS ─────────────────────────────────────────────────────────────────────
@@ -180,7 +181,7 @@ async function viewUser(id, name) {
                             <textarea id="warnMessage-${u.id}" rows="3" placeholder="Describe the warning message..." style="width: 100%; padding: 0.4rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem; font-family: inherit; background: var(--card-bg); color: var(--text); resize: vertical;"></textarea>
                         </div>
                         <div style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 0.25rem;">
-                            <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="background: none; border: 1px solid var(--border); color: var(--text);">Cancel</button>
+                            <button class="btn-view" onclick="toggleWarningForm(${u.id})" style="background: none; border: 1px solid var(--border); color: #dc3545;">Cancel</button>
                             <button class="btn-del" onclick="submitWarning(${u.id}, '${u.name.replace(/'/g, "\\'")}')" style="background: #dc3545; color: white; border: none;">Submit Warning</button>
                         </div>
                     </div>
@@ -354,18 +355,19 @@ function getSeverityBadgeClass(severity) {
 }
 
 async function resolveComplaint(id) {
-    if (!confirm('Mark this complaint as resolved?')) return;
-    try {
-        const res = await fetch(`/api/admin/complaints/${id}/status`, {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'resolved' })
-        });
-        if (res.ok) { loadComplaints(); }
-        else { alert('Failed to resolve complaint.'); }
-    } catch (err) {
-        alert('Network error.');
-    }
+    window.showConfirm('Mark this complaint as resolved?', async () => {
+        try {
+            const res = await fetch(`/api/admin/complaints/${id}/status`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'resolved' })
+            });
+            if (res.ok) { loadComplaints(); }
+            else { alert('Failed to resolve complaint.'); }
+        } catch (err) {
+            alert('Network error.');
+        }
+    });
 }
 
 function toggleWarningForm(userId) {
@@ -384,29 +386,27 @@ async function submitWarning(userId, userName) {
         return;
     }
 
-    if (!confirm(`Are you sure you want to issue this warning to ${userName}?`)) {
-        return;
-    }
+    window.showConfirm(`Are you sure you want to issue this warning to ${userName}?`, async () => {
+        try {
+            const res = await fetch(`/api/admin/users/${userId}/warn`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ category, message })
+            });
 
-    try {
-        const res = await fetch(`/api/admin/users/${userId}/warn`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ category, message })
-        });
-
-        if (res.ok) {
-            alert('Warning issued successfully.');
-            viewUser(userId, userName);
-        } else {
-            const data = await res.json();
-            alert(`Failed to issue warning: ${data.error || 'Unknown error'}`);
+            if (res.ok) {
+                alert('Warning issued successfully.');
+                viewUser(userId, userName);
+            } else {
+                const data = await res.json();
+                alert(`Failed to issue warning: ${data.error || 'Unknown error'}`);
+            }
+        } catch (err) {
+            console.error('[Admin] Error submitting warning:', err);
+            alert('Network error.');
         }
-    } catch (err) {
-        console.error('[Admin] Error submitting warning:', err);
-        alert('Network error.');
-    }
+    });
 }
