@@ -16,6 +16,17 @@ window.showAlert = function(message, type = 'success') {
     toast.style.animation = 'slideIn 0.3s ease-out';
     toast.textContent = message;
 
+    // Apply custom inline styles for info/warning if not fully styled in css
+    if (type === 'info') {
+        toast.style.background = 'rgba(59, 130, 246, 0.16)';
+        toast.style.color = '#1e3a8a';
+        toast.style.border = '1px solid rgba(59, 130, 246, 0.35)';
+    } else if (type === 'warning') {
+        toast.style.background = 'rgba(245, 158, 11, 0.16)';
+        toast.style.color = '#78350f';
+        toast.style.border = '1px solid rgba(245, 158, 11, 0.35)';
+    }
+
     document.body.appendChild(toast);
 
     setTimeout(() => {
@@ -24,6 +35,11 @@ window.showAlert = function(message, type = 'success') {
         toast.style.transition = 'all 0.3s ease';
         setTimeout(() => toast.remove(), 300);
     }, 4000);
+};
+
+// Override default window.alert
+window.alert = function(message) {
+    window.showAlert(message, 'info');
 };
 
 window.showConfirm = function(message, onConfirm) {
@@ -37,6 +53,8 @@ window.showConfirm = function(message, onConfirm) {
     overlay.style.alignItems = 'center';
     overlay.style.justifyContent = 'center';
     overlay.style.zIndex = '10001';
+    overlay.style.background = 'rgba(0,0,0,0.4)';
+    overlay.style.backdropFilter = 'blur(4px)';
 
     const card = document.createElement('div');
     card.className = 'card';
@@ -47,11 +65,11 @@ window.showConfirm = function(message, onConfirm) {
     card.style.animation = 'modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
     card.innerHTML = `
-        <h3 style="margin-top: 0;">Confirmation</h3>
-        <p style="color: var(--muted); margin-bottom: 2rem;">${message}</p>
+        <h3 style="margin-top: 0; font-size: 1.25rem; font-weight: 700;">Confirmation</h3>
+        <p style="color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5;">${message}</p>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <button id="globalConfirmYes" class="btn primary" style="width: 100%;">Yes</button>
-            <button id="globalConfirmNo" class="btn outline" style="width: 100%;">Cancel</button>
+            <button id="globalConfirmNo" class="btn outline" style="width: 100%; color: var(--muted); border-color: var(--border);">Cancel</button>
         </div>
     `;
 
