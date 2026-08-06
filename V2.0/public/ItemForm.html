@@ -40,10 +40,7 @@
             <div class="form-group">
                 <label for="itemImage">Item Image (optional)</label>
                 <input type="file" id="itemImage" name="itemImage" accept="image/*">
-            </div>
-
-            <div id="imagePreview" class="image-preview" style="margin-top: 1rem;">
-                <img id="preview" src="" alt="Image preview" style="max-width: 300px; max-height: 300px; border: 1px solid #ccc; border-radius: 8px; display: none;">
+                <!-- drop zone injected by dragDrop.js -->
             </div>
 
             <div class="form-group">
@@ -143,6 +140,12 @@
 
     <script src="notifications.js"></script>
     <script src="sidebar.js"></script>
+    <script src="dragDrop.js"></script>
     <script src="itemForm.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        makeDragDrop('itemImage', { label: 'Drag & drop item photo here, or <u>click to browse</u>' });
+      });
+    </script>
 </body>
 </html>

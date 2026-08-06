@@ -196,8 +196,8 @@ function initializePage() {
   confirmationMessage = document.getElementById('confirmationMessage');
   errorMessage = document.getElementById('errorMessage');
   itemDetails = document.getElementById('itemDetails');
-  imagePreviewContainer = document.getElementById('imagePreview');
-  previewImage = document.getElementById('preview');
+  imagePreviewContainer = null; // handled by dragDrop.js
+  previewImage = null;          // handled by dragDrop.js
 
   const priceBreakdown = document.getElementById('priceBreakdown');
   const platformFee = document.getElementById('platformFee');
@@ -221,19 +221,7 @@ function initializePage() {
   if (themeToggle) themeToggle.addEventListener('click', safeToggleTheme);
   if (clearButton) clearButton.addEventListener('click', () => { window.location.reload(); });
   
-  if (itemImageInput) {
-    itemImageInput.addEventListener('change', () => {
-      const file = itemImageInput.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          previewImage.src = e.target.result;
-          imagePreviewContainer.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
+  // Image preview is now handled by dragDrop.js — no extra listener needed here.
 
   initializeTheme();
   recoverSession().then(() => {

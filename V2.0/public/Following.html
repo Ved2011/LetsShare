@@ -70,16 +70,10 @@
                     itemsGrid.innerHTML = '<p class="empty-state">No recent uploads from people you follow.</p>';
                 } else {
                     itemsGrid.innerHTML = items.map(item => `
-                        <div class="item-card">
-                            <div style="height: 150px; background: #eee; border-radius: 8px; overflow: hidden; margin-bottom: 1rem;">
-                                ${item.imageBase64 ? `<img src="${item.imageBase64}" style="width: 100%; height: 100%; object-fit: cover;">` : '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #aaa;">No Image</div>'}
-                            </div>
-                            <h4>${item.name}</h4>
-                            <p style="font-size: 0.8rem; color: var(--muted);">By ${item.owner_name}</p>
-                            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                                <span class="status-pill ${item.status}">${item.status}</span>
-                                <a href="item_View.html?id=${item.id}" class="btn small">View</a>
-                            </div>
+                        <div class="item-square" onclick="window.location.href='item_View.html?id=${item.id}'" style="cursor: pointer;">
+                            <img src="${item.imageBase64 || 'assets/untitled.png'}" class="item-image" alt="${item.name}" loading="lazy">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-category" style="font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem;">By ${item.owner_name}</div>
                         </div>
                     `).join('');
                 }

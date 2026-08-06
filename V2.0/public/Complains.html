@@ -94,11 +94,13 @@
                 <div class="form-group">
                     <label for="beforeImage">Before (when given)</label>
                     <input type="file" id="beforeImage" accept="image/*">
+                    <!-- drop zone injected by dragDrop.js -->
                 </div>
 
                 <div class="form-group">
                     <label for="afterImage">After (current condition)</label>
                     <input type="file" id="afterImage" accept="image/*" required>
+                    <!-- drop zone injected by dragDrop.js -->
                 </div>
 
                 <div class="form-actions">
@@ -112,7 +114,14 @@
 
     <script src="notifications.js"></script>
     <script src="sidebar.js"></script>
+    <script src="dragDrop.js"></script>
     <script src="Complains.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        makeDragDrop('beforeImage', { label: 'Drag & drop <b>before</b> photo, or <u>click to browse</u>' });
+        makeDragDrop('afterImage',  { label: 'Drag & drop <b>after</b> photo, or <u>click to browse</u>' });
+      });
+    </script>
 </body>
 
 </html>
