@@ -50,8 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await res.json();
                 if (res.ok) {
                     window.showAlert('Community created successfully!');
-                    const modal = document.getElementById('createCommunityModal');
-                    if (modal) modal.classList.remove('active');
+                    document.getElementById('createCommunityModal').classList.remove('active');
                     fetchCommunities();
                 } else {
                     const errorData = await res.json();
@@ -94,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
     
     document.getElementById('chatSettingsBtn').addEventListener('click', async () => {
-        const newStatus = !currentCommunity.chat_enabled;
+        const newStatus = !(currentCommunity.chat_enabled !== false); // treat null as true
         try {
             const res = await fetch(`/api/communities/${currentCommunity.id}/chat`, {
                 method: 'PUT',
@@ -114,6 +113,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    document.getElementById('communitySearch').addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        renderCommunities(query);
+    });
 
 });
 
@@ -129,6 +132,9 @@ async function fetchCommunities() {
     if (res.ok) {
         communities = await res.json();
         renderCommunities();
+    } else {
+        const errorData = await res.json();
+        console.error('Communities Fetch Error:', errorData);
     }
 }
 
@@ -177,21 +183,26 @@ async function acceptInvite(inviteId) {
     }
 }
 
-function renderCommunities() {
+function renderCommunities(filter = '') {
     const grid = document.getElementById('communitiesList');
     const myGrid = document.getElementById('myCommunitiesList');
     
     if (communities.length === 0) {
-        grid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">No communities around you yet.</p>';
-        myGrid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">You haven\'t joined any communities yet.</p>';
+        if (grid) grid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">No communities around you yet.</p>';
+        if (myGrid) myGrid.innerHTML = '<p class="empty-state" style="grid-column: 1/-1;">You haven\'t joined any communities yet.</p>';
         return;
     }
+
+    const filteredComms = communities.filter(c => 
+        c.name.toLowerCase().includes(filter) || 
+        (c.address && c.address.toLowerCase().includes(filter))
+    );
 
     const user = JSON.parse(localStorage.getItem('user'));
     const myId = user.id;
 
-    const myComms = communities.filter(c => c.is_member || c.admin_id === myId);
-    const otherComms = communities.filter(c => !c.is_member && c.admin_id !== myId);
+    const myComms = filteredComms.filter(c => c.is_member || c.admin_id === myId);
+    const otherComms = filteredComms.filter(c => !c.is_member && c.admin_id !== myId);
 
     const cardHtml = c => `
         <div class="community-card" onclick="window.location.href='community_Home.html?id=${c.id}'">
@@ -213,8 +224,8 @@ function renderCommunities() {
         </div>
     `;
 
-    myGrid.innerHTML = myComms.length ? myComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">You haven\'t joined any communities yet.</p>';
-    grid.innerHTML = otherComms.length ? otherComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">No other communities found nearby.</p>';
+    if (myGrid) myGrid.innerHTML = myComms.length ? myComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">No communities found.</p>';
+    if (grid) grid.innerHTML = otherComms.length ? otherComms.map(cardHtml).join('') : '<p class="empty-state" style="grid-column: 1/-1;">No other communities found.</p>';
 }
 
 async function openCommunity(c) {
@@ -309,7 +320,7 @@ async function openCommunity(c) {
     }
 
     if (c.is_member || c.is_current_user_admin) {
-        if (c.chat_enabled) {
+        if (c.chat_enabled !== false) { // treat null/undefined as enabled
             chatSection.style.display = 'block';
             loadChatMessages();
         }
@@ -329,7 +340,7 @@ async function leaveCommunity(communityId) {
         <h3 style="margin-top:0;">Leave Community?</h3>
         <p style="color:var(--muted);margin-bottom:1.5rem;">Are you sure you want to leave this community?</p>
         <div style="display:flex;gap:1rem;justify-content:center;">
-            <button id="cancelLeaveBtn" class="btn outline">Cancel</button>
+            <button id="cancelLeaveBtn" class="btn outline" style="color: #9ca3af; border-color: #d1d5db; background: transparent;">Cancel</button>
             <button id="confirmLeaveBtn" class="btn primary" style="background:#dc3545;border-color:#dc3545;">Leave</button>
         </div>
     `;
@@ -360,8 +371,8 @@ async function leaveCommunity(communityId) {
 }
 
 async function deleteCommunity(communityId) {
-    if (!confirm('CRITICAL: This will permanently delete the community and all its data. Are you sure?')) return;
-    const token = localStorage.getItem('token');
+    window.showConfirm('CRITICAL: This will permanently delete the community and all its data. Are you sure?', async () => {
+        const token = localStorage.getItem('token');
     try {
         const res = await fetch(`/api/communities/${communityId}`, {
             method: 'DELETE',
@@ -375,9 +386,10 @@ async function deleteCommunity(communityId) {
             const data = await res.json();
             window.showAlert(data.error, 'error');
         }
-    } catch (err) {
-        window.showAlert('Error deleting community', 'error');
-    }
+        } catch (err) {
+            window.showAlert('Error deleting community', 'error');
+        }
+    });
 }
 
 async function toggleAdmin(communityId, userId, isAdmin) {

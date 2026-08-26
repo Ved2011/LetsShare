@@ -1,7 +1,6 @@
 const html = document.documentElement;
 let themeToggle;
 let dashboardItems;
-let dashboardUsers;
 let dashboardBorrows;
 let dashboardMyItems;
 let recentItemsContainer;
@@ -103,6 +102,7 @@ function displayOverdueItems(items) {
     card.className = 'item-card';
     card.style.background = '#fff';
     card.style.border = '1px solid rgba(220, 53, 69, 0.2)';
+    card.style.border = '1px solid rgba(220, 53, 69, 0.2)'; // Corrected border color
     
     card.innerHTML = `
       <div class="card-info">
@@ -226,16 +226,102 @@ function displayWarnings(warnings) {
   }
 
   warningsSection.style.display = 'block';
-  warningsList.innerHTML = warnings.map(w => `
-    <div class="item-card" style="background: #fff; border: 1px solid rgba(220, 53, 69, 0.2); padding: 1rem; border-radius: 8px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-        <span class="badge" style="background: rgba(220,53,69,0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.5rem; font-weight: bold; border-radius: 4px;">${w.category}</span>
-        <span style="font-size: 0.8rem; color: var(--muted);">${new Date(w.created_at).toLocaleDateString()}</span>
+  warningsList.innerHTML = warnings.map(w => {
+    const isAck = w.acknowledged;
+    return `
+      <div class="item-card clickable-warning" data-warning-json='${JSON.stringify(w).replace(/'/g, "&apos;")}' style="background: ${isAck ? 'var(--bg-main)' : '#fff'}; opacity: ${isAck ? '0.7' : '1'}; border: 1px solid ${isAck ? 'var(--border)' : 'rgba(220, 53, 69, 0.2)'}; padding: 1rem; border-radius: 8px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span class="badge" style="background: ${isAck ? 'rgba(107,114,128,0.1)' : 'rgba(220,53,69,0.1)'}; color: ${isAck ? '#6b7280' : '#dc3545'}; font-size: 0.75rem; padding: 0.25rem 0.5rem; font-weight: bold; border-radius: 4px;">
+            ${w.category} ${isAck ? '(Acknowledged)' : ''}
+          </span>
+          <span style="font-size: 0.8rem; color: var(--muted);">${new Date(w.created_at).toLocaleDateString()}</span>
+        </div>
+        <p style="font-size: 0.9rem; font-style: italic; color: var(--text); margin: 0.25rem 0;">"${w.message}"</p>
+        <small style="color: var(--muted); font-size: 0.75rem;">Issued by: ${w.admin_name || 'System'} <span style="float: right; color: var(--accent); font-weight: 600;">View Details &rarr;</span></small>
       </div>
-      <p style="font-size: 0.9rem; font-style: italic; color: var(--text); margin: 0.25rem 0;">"${w.message}"</p>
-      <small style="color: var(--muted); font-size: 0.75rem;">Issued by: ${w.admin_name || 'System'}</small>
-    </div>
-  `).join('');
+    `;
+  }).join('');
+
+  // Wire click to open modal
+  document.querySelectorAll('.clickable-warning').forEach(card => {
+    card.addEventListener('click', () => {
+      const w = JSON.parse(card.getAttribute('data-warning-json'));
+      openWarningModal(w);
+    });
+  });
+
+  // Automatically pop up the first UNACKNOWLEDGED warning on dashboard load
+  const firstUnack = warnings.find(w => !w.acknowledged);
+  if (firstUnack) {
+    const sessionKey = `warning_shown_${firstUnack.id}`;
+    if (!sessionStorage.getItem(sessionKey)) {
+      sessionStorage.setItem(sessionKey, 'true');
+      openWarningModal(firstUnack);
+    }
+  }
+}
+
+function openWarningModal(w) {
+  const modal = document.getElementById('warningModalOverlay');
+  const cat = document.getElementById('warningModalCategory');
+  const date = document.getElementById('warningModalDate');
+  const msg = document.getElementById('warningModalMessage');
+  const admin = document.getElementById('warningModalAdmin');
+  
+  if (!modal) return;
+
+  cat.textContent = w.category;
+  date.textContent = new Date(w.created_at).toLocaleDateString();
+  msg.textContent = `"${w.message}"`;
+  admin.textContent = w.admin_name || 'System';
+
+  modal.style.display = 'flex';
+
+  const ackBtn = document.getElementById('acknowledgeWarningBtn');
+  const closeBtn = document.getElementById('closeWarningModalBtn');
+
+  // Hide accept button if already acknowledged
+  if (w.acknowledged) {
+    ackBtn.style.display = 'none';
+    closeBtn.textContent = 'Close';
+    closeBtn.style.color = 'var(--text)';
+    closeBtn.style.borderColor = 'var(--border)';
+  } else {
+    ackBtn.style.display = 'inline-block';
+    closeBtn.textContent = 'Cancel';
+    closeBtn.style.color = '#9ca3af';
+    closeBtn.style.borderColor = '#d1d5db';
+  }
+
+  // Remove previous event listeners
+  const newAckBtn = ackBtn.cloneNode(true);
+  const newCloseBtn = closeBtn.cloneNode(true);
+  ackBtn.parentNode.replaceChild(newAckBtn, ackBtn);
+  closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+  newCloseBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  newAckBtn.addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/users/warnings/${w.id}/acknowledge`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        modal.style.display = 'none';
+        window.showAlert('Warning acknowledged.', 'success');
+        loadWarnings(); // reload dashboard warnings list
+      } else {
+        window.showAlert('Failed to acknowledge warning', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showAlert('Connection error', 'error');
+    }
+  });
 }
 
 function initDashboard() {
@@ -263,7 +349,6 @@ async function loadDashboard() {
     if (statsResponse.ok) {
       const stats = await statsResponse.json();
       if (dashboardItems) dashboardItems.textContent = stats.total_items || 0;
-      if (dashboardUsers) dashboardUsers.textContent = stats.total_users || 0;
     }
 
     const itemsResponse = await fetch('/api/items');
@@ -696,7 +781,7 @@ async function declineRequest(requestId) {
 document.addEventListener('DOMContentLoaded', () => {
   themeToggle = document.getElementById('themeToggle');
   dashboardItems = document.getElementById('dashboardItems');
-  dashboardUsers = document.getElementById('dashboardUsers');
+
   dashboardBorrows = document.getElementById('dashboardBorrows');
   dashboardMyItems = document.getElementById('dashboardMyItems');
   joinedCommunitiesContainer = document.getElementById('joinedCommunitiesGrid');
