@@ -387,9 +387,13 @@ const yOffsetRange = document.getElementById('yOffsetRange');
 const yOffsetVal = document.getElementById('yOffsetVal');
 const resetRepositionBtn = document.getElementById('resetRepositionBtn');
 
+const zoomRange = document.getElementById('zoomRange');
+const zoomVal = document.getElementById('zoomVal');
+
 let activeDrag = false;
 let startY = 0;
 let currentTopPercent = 50;
+let currentZoom = 1.0;
 
 if (fileInput) {
   fileInput.addEventListener('change', function(e) {
@@ -399,9 +403,10 @@ if (fileInput) {
       reader.onload = function(event) {
         cropPreviewImg.src = event.target.result;
         cropPreviewContainer.style.display = 'block';
-        // Reset default position on new file load
         currentTopPercent = 50;
-        updateRepositionUI(currentTopPercent);
+        currentZoom = 1.0;
+        if (zoomRange) zoomRange.value = 100;
+        updateRepositionUI(currentTopPercent, currentZoom);
       };
       reader.readAsDataURL(file);
     } else {
@@ -410,24 +415,34 @@ if (fileInput) {
   });
 }
 
-function updateRepositionUI(percent) {
+function updateRepositionUI(percent, zoom = currentZoom) {
   yOffsetRange.value = percent;
   yOffsetVal.textContent = percent;
   
-  // Transform percentage offset into alignment or object-position
-  // Map range [0, 100] to CSS top offset [-50px to 50px] or translateY 
-  const yShift = (percent - 50) * 0.8; // scaling factor
-  cropPreviewImg.style.transform = `translateY(${yShift}px)`;
+  if (zoomRange) {
+    zoomRange.value = Math.round(zoom * 100);
+  }
+  if (zoomVal) {
+    zoomVal.textContent = zoom.toFixed(1);
+  }
   
-  // We can attach a dataset attribute to store value for upload if needed,
-  // or simply style the original profile image directly.
+  const yShift = (percent - 50) * 0.8;
+  cropPreviewImg.style.transform = `scale(${zoom}) translateY(${yShift}px)`;
   cropPreviewContainer.dataset.yOffset = percent;
+  cropPreviewContainer.dataset.zoom = zoom;
 }
 
 if (yOffsetRange) {
   yOffsetRange.addEventListener('input', function() {
     currentTopPercent = parseInt(this.value);
-    updateRepositionUI(currentTopPercent);
+    updateRepositionUI(currentTopPercent, currentZoom);
+  });
+}
+
+if (zoomRange) {
+  zoomRange.addEventListener('input', function() {
+    currentZoom = parseInt(this.value) / 100;
+    updateRepositionUI(currentTopPercent, currentZoom);
   });
 }
 
@@ -442,10 +457,8 @@ if (repositionCircle) {
     if (!activeDrag) return;
     const deltaY = e.clientY - startY;
     startY = e.clientY;
-    
-    // Scale motion down slightly
     currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
-    updateRepositionUI(currentTopPercent);
+    updateRepositionUI(currentTopPercent, currentZoom);
   });
 
   document.addEventListener('mouseup', function() {
@@ -455,7 +468,6 @@ if (repositionCircle) {
     }
   });
 
-  // Touch support
   repositionCircle.addEventListener('touchstart', function(e) {
     activeDrag = true;
     startY = e.touches[0].clientY;
@@ -466,7 +478,7 @@ if (repositionCircle) {
     const deltaY = e.touches[0].clientY - startY;
     startY = e.touches[0].clientY;
     currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
-    updateRepositionUI(currentTopPercent);
+    updateRepositionUI(currentTopPercent, currentZoom);
   });
 
   repositionCircle.addEventListener('touchend', function() {
@@ -477,7 +489,8 @@ if (repositionCircle) {
 if (resetRepositionBtn) {
   resetRepositionBtn.addEventListener('click', function() {
     currentTopPercent = 50;
-    updateRepositionUI(currentTopPercent);
+    currentZoom = 1.0;
+    updateRepositionUI(currentTopPercent, currentZoom);
   });
 }
 

@@ -212,7 +212,7 @@ router.get('/me', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user's own warnings
+// Get user's own warnings (both active and acknowledged)
 router.get('/warnings', authenticateToken, async (req, res) => {
   const userId = req.user.id;
   try {
@@ -220,8 +220,8 @@ router.get('/warnings', authenticateToken, async (req, res) => {
       `SELECT w.*, u.name as admin_name
        FROM user_warnings w
        LEFT JOIN users u ON w.admin_id = u.id
-       WHERE w.user_id = $1 AND w.acknowledged = false
-       ORDER BY w.created_at DESC`,
+       WHERE w.user_id = $1
+       ORDER BY w.acknowledged ASC, w.created_at DESC`,
       [userId]
     );
     res.json(result.rows);
@@ -236,15 +236,27 @@ router.put('/warnings/:id/acknowledge', authenticateToken, async (req, res) => {
   const userId = req.user.id;
   const warningId = req.params.id;
   try {
+    await pool.query('BEGIN');
     const result = await pool.query(
       'UPDATE user_warnings SET acknowledged = true WHERE id = $1 AND user_id = $2 RETURNING *',
       [warningId, userId]
     );
     if (result.rows.length === 0) {
+      await pool.query('ROLLBACK');
       return res.status(404).json({ error: 'Warning not found or not authorized' });
     }
-    res.json({ message: 'Warning acknowledged successfully', warning: result.rows[0] });
+    const warning = result.rows[0];
+    
+    // Mark warning notifications as read where message matches warning message
+    await pool.query(
+      "UPDATE notifications SET is_read = true WHERE user_id = $1 AND (type = 'warning' OR message ILIKE $2)",
+      [userId, `%${warning.message}%`]
+    );
+
+    await pool.query('COMMIT');
+    res.json({ message: 'Warning acknowledged successfully', warning });
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error('Error acknowledging warning:', err);
     res.status(500).json({ error: 'Server error' });
   }
