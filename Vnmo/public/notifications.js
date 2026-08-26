@@ -69,7 +69,7 @@ window.showConfirm = function(message, onConfirm) {
         <p style="color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5;">${message}</p>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <button id="globalConfirmYes" class="btn primary" style="width: 100%;">Yes</button>
-            <button id="globalConfirmNo" class="btn outline" style="width: 100%; color: var(--muted); border-color: var(--border);">Cancel</button>
+            <button id="globalConfirmNo" class="btn outline" style="width: 100%; color: #9ca3af; border-color: #d1d5db; background: transparent;">Cancel</button>
         </div>
     `;
 

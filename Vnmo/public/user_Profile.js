@@ -379,6 +379,108 @@ if (profileUpdateForm) {
 }
 
 // Logic for Options
+const fileInput = document.getElementById('editProfilePic');
+const cropPreviewContainer = document.getElementById('cropPreviewContainer');
+const cropPreviewImg = document.getElementById('cropPreviewImg');
+const repositionCircle = document.getElementById('repositionCircle');
+const yOffsetRange = document.getElementById('yOffsetRange');
+const yOffsetVal = document.getElementById('yOffsetVal');
+const resetRepositionBtn = document.getElementById('resetRepositionBtn');
+
+let activeDrag = false;
+let startY = 0;
+let currentTopPercent = 50;
+
+if (fileInput) {
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        cropPreviewImg.src = event.target.result;
+        cropPreviewContainer.style.display = 'block';
+        // Reset default position on new file load
+        currentTopPercent = 50;
+        updateRepositionUI(currentTopPercent);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      cropPreviewContainer.style.display = 'none';
+    }
+  });
+}
+
+function updateRepositionUI(percent) {
+  yOffsetRange.value = percent;
+  yOffsetVal.textContent = percent;
+  
+  // Transform percentage offset into alignment or object-position
+  // Map range [0, 100] to CSS top offset [-50px to 50px] or translateY 
+  const yShift = (percent - 50) * 0.8; // scaling factor
+  cropPreviewImg.style.transform = `translateY(${yShift}px)`;
+  
+  // We can attach a dataset attribute to store value for upload if needed,
+  // or simply style the original profile image directly.
+  cropPreviewContainer.dataset.yOffset = percent;
+}
+
+if (yOffsetRange) {
+  yOffsetRange.addEventListener('input', function() {
+    currentTopPercent = parseInt(this.value);
+    updateRepositionUI(currentTopPercent);
+  });
+}
+
+if (repositionCircle) {
+  repositionCircle.addEventListener('mousedown', function(e) {
+    activeDrag = true;
+    startY = e.clientY;
+    repositionCircle.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!activeDrag) return;
+    const deltaY = e.clientY - startY;
+    startY = e.clientY;
+    
+    // Scale motion down slightly
+    currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
+    updateRepositionUI(currentTopPercent);
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (activeDrag) {
+      activeDrag = false;
+      repositionCircle.style.cursor = 'grab';
+    }
+  });
+
+  // Touch support
+  repositionCircle.addEventListener('touchstart', function(e) {
+    activeDrag = true;
+    startY = e.touches[0].clientY;
+  });
+
+  repositionCircle.addEventListener('touchmove', function(e) {
+    if (!activeDrag) return;
+    const deltaY = e.touches[0].clientY - startY;
+    startY = e.touches[0].clientY;
+    currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
+    updateRepositionUI(currentTopPercent);
+  });
+
+  repositionCircle.addEventListener('touchend', function() {
+    activeDrag = false;
+  });
+}
+
+if (resetRepositionBtn) {
+  resetRepositionBtn.addEventListener('click', function() {
+    currentTopPercent = 50;
+    updateRepositionUI(currentTopPercent);
+  });
+}
+
 if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
 }

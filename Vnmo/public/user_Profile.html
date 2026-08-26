@@ -123,9 +123,27 @@
                 <form id="profileUpdateForm">
                     <div class="option-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
                         <strong>Profile Picture</strong>
-                        <div style="display: flex; gap: 1rem; align-items: center;">
-                            <input type="file" id="editProfilePic" accept="image/*" class="input-minimal" style="width: auto;">
-                            <span style="font-size: 0.85rem; color: var(--muted);">Square image recommended</span>
+                        <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="file" id="editProfilePic" accept="image/*" class="input-minimal" style="width: auto;">
+                                <span style="font-size: 0.85rem; color: var(--muted);">Choose file to adjust crop alignment</span>
+                            </div>
+                            
+                            <!-- Drag reposition preview container -->
+                            <div id="cropPreviewContainer" style="display: none; margin-top: 0.5rem; border: 1px dashed var(--border); padding: 1rem; border-radius: 8px; background: var(--bg-main);">
+                                <p style="font-size: 0.85rem; margin-top: 0; color: var(--muted); font-weight: 500;">Drag the image inside the circle to adjust its vertical position:</p>
+                                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                                    <!-- Reposition Circle -->
+                                    <div id="repositionCircle" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 3px solid var(--accent); position: relative; cursor: grab; user-select: none; background: #eee;">
+                                        <img id="cropPreviewImg" src="" style="width: 100%; height: auto; position: absolute; left: 0; top: 0; pointer-events: none;">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Vertical Position Offset: <span id="yOffsetVal">0</span>%</label>
+                                        <input type="range" id="yOffsetRange" min="0" max="100" value="50" style="width: 100%; cursor: pointer;">
+                                        <button type="button" id="resetRepositionBtn" class="btn outline small" style="margin-top: 0.5rem; font-size: 0.75rem; padding: 0.25rem 0.5rem;">Reset Position</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="option-row">

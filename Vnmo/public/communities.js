@@ -340,7 +340,7 @@ async function leaveCommunity(communityId) {
         <h3 style="margin-top:0;">Leave Community?</h3>
         <p style="color:var(--muted);margin-bottom:1.5rem;">Are you sure you want to leave this community?</p>
         <div style="display:flex;gap:1rem;justify-content:center;">
-            <button id="cancelLeaveBtn" class="btn outline">Cancel</button>
+            <button id="cancelLeaveBtn" class="btn outline" style="color: #9ca3af; border-color: #d1d5db; background: transparent;">Cancel</button>
             <button id="confirmLeaveBtn" class="btn primary" style="background:#dc3545;border-color:#dc3545;">Leave</button>
         </div>
     `;
@@ -371,8 +371,8 @@ async function leaveCommunity(communityId) {
 }
 
 async function deleteCommunity(communityId) {
-    if (!confirm('CRITICAL: This will permanently delete the community and all its data. Are you sure?')) return;
-    const token = localStorage.getItem('token');
+    window.showConfirm('CRITICAL: This will permanently delete the community and all its data. Are you sure?', async () => {
+        const token = localStorage.getItem('token');
     try {
         const res = await fetch(`/api/communities/${communityId}`, {
             method: 'DELETE',
