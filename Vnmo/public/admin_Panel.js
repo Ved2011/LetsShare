@@ -116,13 +116,32 @@ async function viewUser(id, name) {
             throw new Error('User not found in details response');
         }
 
+        // Check user status
+        let statusBadge = '<span class="badge badge-ok">Active</span>';
+        let actionBtn = '';
+        
+        // Fetch is_suspended status from detail endpoint
+        if (data.user.is_deactivated) {
+            statusBadge = '<span class="badge badge-warn" style="background:#ef4444;color:white;">DEACTIVATED</span>';
+            actionBtn = `<button class="btn-view" onclick="unsuspendUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" style="background:#22c55e;color:white;border:none;margin-left:0.5rem;">Reactivate Account</button>`;
+        } else if (data.user.is_suspended) {
+            statusBadge = '<span class="badge badge-warn" style="background:#f59e0b;color:white;">SUSPENDED</span>';
+            actionBtn = `<button class="btn-view" onclick="unsuspendUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" style="background:#22c55e;color:white;border:none;margin-left:0.5rem;">Reactivate Account</button>`;
+        }
+
         document.getElementById('modalContent').innerHTML = `
             <div class="detail-section">
-                <h4>Profile</h4>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <h4 style="margin:0;">Profile</h4>
+                    <div>
+                        Status: ${statusBadge}
+                        ${actionBtn}
+                    </div>
+                </div>
                 <table class="admin-table">
                     <tr><td><strong>Email</strong></td><td>${u.email}</td><td><strong>Plan</strong></td><td>${u.plan_type || 'Free'}</td></tr>
                     <tr><td><strong>Location</strong></td><td>${[u.locality, u.city, u.state, u.country].filter(Boolean).join(', ') || '—'}</td><td><strong>Joined</strong></td><td>${fmt(u.created_at)}</td></tr>
-                    <tr><td><strong>Last Login</strong></td><td>${fmt(u.last_login)}</td><td><strong>Verified</strong></td><td>${u.is_verified ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Yes' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> No'}</td></tr>
+                    <tr><td><strong>Last Login</strong></td><td>${fmt(u.last_login)}</td><td><strong>Suspension Count</strong></td><td>${data.user.suspension_count || 0}</td></tr>
                 </table>
             </div>
             <div class="detail-section">
@@ -399,14 +418,41 @@ async function submitWarning(userId, userName) {
         });
 
         if (res.ok) {
-            alert('Warning issued successfully.');
+            const data = await res.json();
+            alert(`Warning issued successfully.\nUser has ${data.warnings_left} warnings left before account suspension.`);
             viewUser(userId, userName);
+            loadUsers();
         } else {
             const data = await res.json();
             alert(`Failed to issue warning: ${data.error || 'Unknown error'}`);
         }
     } catch (err) {
         console.error('[Admin] Error submitting warning:', err);
+        alert('Network error.');
+    }
+}
+
+async function unsuspendUser(userId, userName) {
+    if (!confirm(`Are you sure you want to reactivate the account of ${userName}?`)) {
+        return;
+    }
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/unsuspend`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (res.ok) {
+            alert('User account has been reactivated.');
+            viewUser(userId, userName);
+            loadUsers();
+        } else {
+            const data = await res.json();
+            alert(`Failed to reactivate user: ${data.error || 'Unknown error'}`);
+        }
+    } catch (err) {
+        console.error('[Admin] Error unsuspending user:', err);
         alert('Network error.');
     }
 }

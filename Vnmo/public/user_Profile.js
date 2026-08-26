@@ -390,8 +390,13 @@ const resetRepositionBtn = document.getElementById('resetRepositionBtn');
 const zoomRange = document.getElementById('zoomRange');
 const zoomVal = document.getElementById('zoomVal');
 
+const xOffsetRange = document.getElementById('xOffsetRange');
+const xOffsetVal = document.getElementById('xOffsetVal');
+
 let activeDrag = false;
+let startX = 0;
 let startY = 0;
+let currentLeftPercent = 50;
 let currentTopPercent = 50;
 let currentZoom = 1.0;
 
@@ -404,9 +409,10 @@ if (fileInput) {
         cropPreviewImg.src = event.target.result;
         cropPreviewContainer.style.display = 'block';
         currentTopPercent = 50;
+        currentLeftPercent = 50;
         currentZoom = 1.0;
         if (zoomRange) zoomRange.value = 100;
-        updateRepositionUI(currentTopPercent, currentZoom);
+        updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
       };
       reader.readAsDataURL(file);
     } else {
@@ -415,9 +421,16 @@ if (fileInput) {
   });
 }
 
-function updateRepositionUI(percent, zoom = currentZoom) {
-  yOffsetRange.value = percent;
-  yOffsetVal.textContent = percent;
+function updateRepositionUI(xPercent = currentLeftPercent, yPercent = currentTopPercent, zoom = currentZoom) {
+  yOffsetRange.value = yPercent;
+  yOffsetVal.textContent = yPercent;
+  
+  if (xOffsetRange) {
+    xOffsetRange.value = xPercent;
+  }
+  if (xOffsetVal) {
+    xOffsetVal.textContent = xPercent;
+  }
   
   if (zoomRange) {
     zoomRange.value = Math.round(zoom * 100);
@@ -426,39 +439,52 @@ function updateRepositionUI(percent, zoom = currentZoom) {
     zoomVal.textContent = zoom.toFixed(1);
   }
   
-  const yShift = (percent - 50) * 0.8;
-  cropPreviewImg.style.transform = `scale(${zoom}) translateY(${yShift}px)`;
-  cropPreviewContainer.dataset.yOffset = percent;
+  const xShift = (xPercent - 50) * 0.8;
+  const yShift = (yPercent - 50) * 0.8;
+  cropPreviewImg.style.transform = `scale(${zoom}) translate(${xShift}px, ${yShift}px)`;
+  cropPreviewContainer.dataset.xOffset = xPercent;
+  cropPreviewContainer.dataset.yOffset = yPercent;
   cropPreviewContainer.dataset.zoom = zoom;
 }
 
 if (yOffsetRange) {
   yOffsetRange.addEventListener('input', function() {
     currentTopPercent = parseInt(this.value);
-    updateRepositionUI(currentTopPercent, currentZoom);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+  });
+}
+
+if (xOffsetRange) {
+  xOffsetRange.addEventListener('input', function() {
+    currentLeftPercent = parseInt(this.value);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
   });
 }
 
 if (zoomRange) {
   zoomRange.addEventListener('input', function() {
     currentZoom = parseInt(this.value) / 100;
-    updateRepositionUI(currentTopPercent, currentZoom);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
   });
 }
 
 if (repositionCircle) {
   repositionCircle.addEventListener('mousedown', function(e) {
     activeDrag = true;
+    startX = e.clientX;
     startY = e.clientY;
     repositionCircle.style.cursor = 'grabbing';
   });
 
   document.addEventListener('mousemove', function(e) {
     if (!activeDrag) return;
+    const deltaX = e.clientX - startX;
     const deltaY = e.clientY - startY;
+    startX = e.clientX;
     startY = e.clientY;
+    currentLeftPercent = Math.max(0, Math.min(100, currentLeftPercent + deltaX * 0.5));
     currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
-    updateRepositionUI(currentTopPercent, currentZoom);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
   });
 
   document.addEventListener('mouseup', function() {
@@ -470,15 +496,19 @@ if (repositionCircle) {
 
   repositionCircle.addEventListener('touchstart', function(e) {
     activeDrag = true;
+    startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
   });
 
   repositionCircle.addEventListener('touchmove', function(e) {
     if (!activeDrag) return;
+    const deltaX = e.touches[0].clientX - startX;
     const deltaY = e.touches[0].clientY - startY;
+    startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
+    currentLeftPercent = Math.max(0, Math.min(100, currentLeftPercent + deltaX * 0.5));
     currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
-    updateRepositionUI(currentTopPercent, currentZoom);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
   });
 
   repositionCircle.addEventListener('touchend', function() {
@@ -489,8 +519,9 @@ if (repositionCircle) {
 if (resetRepositionBtn) {
   resetRepositionBtn.addEventListener('click', function() {
     currentTopPercent = 50;
+    currentLeftPercent = 50;
     currentZoom = 1.0;
-    updateRepositionUI(currentTopPercent, currentZoom);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
   });
 }
 

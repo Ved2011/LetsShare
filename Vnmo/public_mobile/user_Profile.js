@@ -89,24 +89,59 @@ async function loadUserProfile() {
         }
       }
       if (displayAddress) displayAddress.textContent = user.address || 'Not provided';
+      
+      const displayLocality = document.getElementById('displayLocality');
+      const displayCity = document.getElementById('displayCity');
+      const displayState = document.getElementById('displayState');
+      const displayCountry = document.getElementById('displayCountry');
+      
+      if (displayLocality) displayLocality.textContent = user.locality || 'Not provided';
+      if (displayCity) displayCity.textContent = user.city || 'Not provided';
+      if (displayState) displayState.textContent = user.state || 'Not provided';
+      if (displayCountry) displayCountry.textContent = user.country || 'Not provided';
 
+      const missingFields = [];
+      if (!user.username) missingFields.push('Username');
+      if (!user.phone) missingFields.push('Phone Number');
+      if (!user.dob) missingFields.push('Date of Birth');
+      if (!user.address) missingFields.push('Address');
 
+      if (missingFields.length > 0) {
+        const msg = `${missingFields.join(', ')} is not filled and you must fill it!`;
+        setTimeout(() => {
+          if (window.showAlert) window.showAlert(msg, 'warning');
+          else alert(msg);
+        }, 300);
+      }
 
-      // Pre-fill edit form
-      const editName = document.getElementById('editName');
-      const editUsername = document.getElementById('editUsername');
-      const editEmail = document.getElementById('editEmail');
-      const editPhone = document.getElementById('editPhone');
-      const editDob = document.getElementById('editDob');
-      const editAddress = document.getElementById('editAddress');
-      const twoFactorToggle = document.getElementById('twoFactorToggle');
+      const displayBio = document.getElementById('displayBio');
+    if (displayBio) displayBio.textContent = user.bio || 'Sharing is caring! Looking forward to connecting with the community.';
 
-      if (editName) editName.value = user.name || '';
-      if (editUsername) editUsername.value = user.username || '';
-      if (editEmail) editEmail.value = user.email || '';
-      if (editPhone) editPhone.value = user.phone || '';
-      if (editDob && user.dob) editDob.value = user.dob.split('T')[0];
-      if (editAddress) editAddress.value = user.address || '';
+    // Pre-fill edit form
+    const editName = document.getElementById('editName');
+    const editUsername = document.getElementById('editUsername');
+    const editEmail = document.getElementById('editEmail');
+    const editPhone = document.getElementById('editPhone');
+    const editDob = document.getElementById('editDob');
+    const editAddress = document.getElementById('editAddress');
+    const editLocality = document.getElementById('editLocality');
+    const editCity = document.getElementById('editCity');
+    const editState = document.getElementById('editState');
+    const editCountry = document.getElementById('editCountry');
+    const editBio = document.getElementById('editBio');
+    const twoFactorToggle = document.getElementById('twoFactorToggle');
+
+    if (editName) editName.value = user.name || '';
+    if (editUsername) editUsername.value = user.username || '';
+    if (editEmail) editEmail.value = user.email || '';
+    if (editPhone) editPhone.value = user.phone || '';
+    if (editDob && user.dob) editDob.value = user.dob.split('T')[0];
+    if (editAddress) editAddress.value = user.address || '';
+    if (editLocality) editLocality.value = user.locality || '';
+    if (editCity) editCity.value = user.city || '';
+    if (editState) editState.value = user.state || '';
+    if (editCountry) editCountry.value = user.country || '';
+    if (editBio) editBio.value = user.bio || '';
       if (twoFactorToggle) {
         twoFactorToggle.checked = user.two_factor_enabled;
         
@@ -279,6 +314,11 @@ if (profileUpdateForm) {
     formData.append('phone', document.getElementById('editPhone').value || '');
     formData.append('dob', document.getElementById('editDob').value || '');
     formData.append('address', document.getElementById('editAddress').value || '');
+    formData.append('locality', document.getElementById('editLocality').value || '');
+    formData.append('city', document.getElementById('editCity').value || '');
+    formData.append('state', document.getElementById('editState').value || '');
+    formData.append('country', document.getElementById('editCountry').value || '');
+    formData.append('bio', document.getElementById('editBio').value || '');
     
     const oldPass = document.getElementById('oldPassword').value;
     const newPass = document.getElementById('newPassword').value;
@@ -339,6 +379,152 @@ if (profileUpdateForm) {
 }
 
 // Logic for Options
+const fileInput = document.getElementById('editProfilePic');
+const cropPreviewContainer = document.getElementById('cropPreviewContainer');
+const cropPreviewImg = document.getElementById('cropPreviewImg');
+const repositionCircle = document.getElementById('repositionCircle');
+const yOffsetRange = document.getElementById('yOffsetRange');
+const yOffsetVal = document.getElementById('yOffsetVal');
+const resetRepositionBtn = document.getElementById('resetRepositionBtn');
+
+const zoomRange = document.getElementById('zoomRange');
+const zoomVal = document.getElementById('zoomVal');
+
+const xOffsetRange = document.getElementById('xOffsetRange');
+const xOffsetVal = document.getElementById('xOffsetVal');
+
+let activeDrag = false;
+let startX = 0;
+let startY = 0;
+let currentLeftPercent = 50;
+let currentTopPercent = 50;
+let currentZoom = 1.0;
+
+if (fileInput) {
+  fileInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        cropPreviewImg.src = event.target.result;
+        cropPreviewContainer.style.display = 'block';
+        currentTopPercent = 50;
+        currentLeftPercent = 50;
+        currentZoom = 1.0;
+        if (zoomRange) zoomRange.value = 100;
+        updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      cropPreviewContainer.style.display = 'none';
+    }
+  });
+}
+
+function updateRepositionUI(xPercent = currentLeftPercent, yPercent = currentTopPercent, zoom = currentZoom) {
+  yOffsetRange.value = yPercent;
+  yOffsetVal.textContent = yPercent;
+  
+  if (xOffsetRange) {
+    xOffsetRange.value = xPercent;
+  }
+  if (xOffsetVal) {
+    xOffsetVal.textContent = xPercent;
+  }
+  
+  if (zoomRange) {
+    zoomRange.value = Math.round(zoom * 100);
+  }
+  if (zoomVal) {
+    zoomVal.textContent = zoom.toFixed(1);
+  }
+  
+  const xShift = (xPercent - 50) * 0.8;
+  const yShift = (yPercent - 50) * 0.8;
+  cropPreviewImg.style.transform = `scale(${zoom}) translate(${xShift}px, ${yShift}px)`;
+  cropPreviewContainer.dataset.xOffset = xPercent;
+  cropPreviewContainer.dataset.yOffset = yPercent;
+  cropPreviewContainer.dataset.zoom = zoom;
+}
+
+if (yOffsetRange) {
+  yOffsetRange.addEventListener('input', function() {
+    currentTopPercent = parseInt(this.value);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+  });
+}
+
+if (xOffsetRange) {
+  xOffsetRange.addEventListener('input', function() {
+    currentLeftPercent = parseInt(this.value);
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+  });
+}
+
+if (zoomRange) {
+  zoomRange.addEventListener('input', function() {
+    currentZoom = parseInt(this.value) / 100;
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+  });
+}
+
+if (repositionCircle) {
+  repositionCircle.addEventListener('mousedown', function(e) {
+    activeDrag = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    repositionCircle.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!activeDrag) return;
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+    startX = e.clientX;
+    startY = e.clientY;
+    currentLeftPercent = Math.max(0, Math.min(100, currentLeftPercent + deltaX * 0.5));
+    currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (activeDrag) {
+      activeDrag = false;
+      repositionCircle.style.cursor = 'grab';
+    }
+  });
+
+  repositionCircle.addEventListener('touchstart', function(e) {
+    activeDrag = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  });
+
+  repositionCircle.addEventListener('touchmove', function(e) {
+    if (!activeDrag) return;
+    const deltaX = e.touches[0].clientX - startX;
+    const deltaY = e.touches[0].clientY - startY;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    currentLeftPercent = Math.max(0, Math.min(100, currentLeftPercent + deltaX * 0.5));
+    currentTopPercent = Math.max(0, Math.min(100, currentTopPercent + deltaY * 0.5));
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+  });
+
+  repositionCircle.addEventListener('touchend', function() {
+    activeDrag = false;
+  });
+}
+
+if (resetRepositionBtn) {
+  resetRepositionBtn.addEventListener('click', function() {
+    currentTopPercent = 50;
+    currentLeftPercent = 50;
+    currentZoom = 1.0;
+    updateRepositionUI(currentLeftPercent, currentTopPercent, currentZoom);
+  });
+}
+
 if (themeToggle) {
   themeToggle.addEventListener('click', toggleTheme);
 }
@@ -367,7 +553,6 @@ function displayItems(container, items, isMyItems = false) {
     <div class="item-card" onclick="window.location.href='item_View.html?id=${item.id}'">
       <img src="${item.imageBase64 || 'assets/untitled.png'}" alt="${item.name}">
       <div class="item-info">
-      <div class="item-info"> 
         <h3>${item.name}</h3>
         <span class="status ${item.status}">${item.status}</span>
         ${isMyItems ? `<button onclick="event.stopPropagation(); window.location.href='ItemForm.html?id=${item.id}'" class="btn outline" style="width:100%; margin-top:0.5rem; padding: 0.5rem;">Edit Item</button>` : ''}

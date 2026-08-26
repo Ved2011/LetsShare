@@ -12,6 +12,7 @@
         <title>Profile - LetsShare</title>
         <link rel="icon" href="assets/Light_Logo1.png" type="image/jpeg">
         <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="style.css"> 
     </head> 
 
 <body>
@@ -35,8 +36,6 @@
                     <p style="color: var(--accent); font-weight: 600; margin-bottom: 0.25rem;">@<span id="displayUsernameMain">username</span></p>
                     <p class="muted" id="userEmail">no email</p>
                 </div>
-                </div>
-            </div>
             </div>
         </div>
 
@@ -46,6 +45,13 @@
                 <h3 style="margin: 0;">Personal Details</h3>
                 <button id="toggleProfileEditBtn" class="btn primary small"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Manage Profile</button>
             </div>
+            
+            <!-- Bio Section -->
+            <div class="bio-display-container" style="background: var(--bg-main); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">About Me</h4>
+                <p id="displayBio" style="margin: 0; line-height: 1.6; font-size: 1.05rem;">Sharing is caring! Looking forward to connecting with the community.</p>
+            </div>
+
             <div class="options-card" style="padding: 1.5rem;">
                 <div class="option-row" style="border: none; padding: 0 0 1rem 0;">
                     <div class="option-info">
@@ -77,10 +83,34 @@
                         <p id="displayDob" class="muted">Not provided</p>
                     </div>
                 </div>
-                <div class="option-row" style="border: none; padding: 0;">
+                <div class="option-row" style="border: none; padding: 0 0 1rem 0;">
                     <div class="option-info">
                         <strong>Address</strong>
                         <p id="displayAddress" class="muted">Not provided</p>
+                    </div>
+                </div>
+                <div class="option-row" style="border: none; padding: 0 0 1rem 0;">
+                    <div class="option-info">
+                        <strong>Locality</strong>
+                        <p id="displayLocality" class="muted">Not provided</p>
+                    </div>
+                </div>
+                <div class="option-row" style="border: none; padding: 0 0 1rem 0;">
+                    <div class="option-info">
+                        <strong>City</strong>
+                        <p id="displayCity" class="muted">Not provided</p>
+                    </div>
+                </div>
+                <div class="option-row" style="border: none; padding: 0 0 1rem 0;">
+                    <div class="option-info">
+                        <strong>State</strong>
+                        <p id="displayState" class="muted">Not provided</p>
+                    </div>
+                </div>
+                <div class="option-row" style="border: none; padding: 0;">
+                    <div class="option-info">
+                        <strong>Country</strong>
+                        <p id="displayCountry" class="muted">Not provided</p>
                     </div>
                 </div>
             </div>
@@ -93,9 +123,37 @@
                 <form id="profileUpdateForm">
                     <div class="option-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
                         <strong>Profile Picture</strong>
-                        <div style="display: flex; gap: 1rem; align-items: center;">
-                            <input type="file" id="editProfilePic" accept="image/*" class="input-minimal" style="width: auto;">
-                            <span style="font-size: 0.85rem; color: var(--muted);">Square image recommended</span>
+                        <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <input type="file" id="editProfilePic" accept="image/*" class="input-minimal" style="width: auto;">
+                                <span style="font-size: 0.85rem; color: var(--muted);">Choose file to adjust crop alignment</span>
+                            </div>
+                            
+                            <!-- Drag reposition preview container -->
+                            <div id="cropPreviewContainer" style="display: none; margin-top: 0.5rem; border: 1px dashed var(--border); padding: 1rem; border-radius: 8px; background: var(--bg-main);">
+                                <p style="font-size: 0.85rem; margin-top: 0; color: var(--muted); font-weight: 500;">Drag the image inside the circle to adjust its vertical position:</p>
+                                <div style="display: flex; align-items: center; gap: 1.5rem;">
+                                    <!-- Reposition Circle -->
+                                    <div id="repositionCircle" style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 3px solid var(--accent); position: relative; cursor: grab; user-select: none; background: #eee;">
+                                        <img id="cropPreviewImg" src="" style="width: 100%; height: auto; position: absolute; left: 0; top: 0; pointer-events: none;">
+                                    </div>
+                                    <div style="flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <div>
+                                            <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Vertical Position Offset: <span id="yOffsetVal">0</span>%</label>
+                                            <input type="range" id="yOffsetRange" min="0" max="100" value="50" style="width: 100%; cursor: pointer;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Horizontal Position Offset: <span id="xOffsetVal">0</span>%</label>
+                                            <input type="range" id="xOffsetRange" min="0" max="100" value="50" style="width: 100%; cursor: pointer;">
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Zoom Scale: <span id="zoomVal">1.0</span>x</label>
+                                            <input type="range" id="zoomRange" min="100" max="300" value="100" style="width: 100%; cursor: pointer;">
+                                        </div>
+                                        <button type="button" id="resetRepositionBtn" class="btn outline small" style="margin-top: 0.25rem; font-size: 0.75rem; padding: 0.25rem 0.5rem; align-self: flex-start;">Reset View</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="option-row">
@@ -103,6 +161,10 @@
                             <strong>Public Username</strong>
                             <input type="text" id="editUsername" class="input-minimal" placeholder="Unique username">
                         </div>
+                    </div>
+                    <div class="option-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem;">
+                        <strong>About Me</strong>
+                        <textarea id="editBio" class="input-minimal" style="width: 100%; min-height: 100px; padding: 1rem;" placeholder="Tell the community something about yourself..."></textarea>
                     </div>
                     <div class="option-row">
                         <div class="option-info">
@@ -132,6 +194,30 @@
                         <div class="option-info">
                             <strong>Address</strong>
                             <input type="text" id="editAddress" class="input-minimal" placeholder="Your current address">
+                        </div>
+                    </div>
+                    <div class="option-row">
+                        <div class="option-info">
+                            <strong>Locality</strong>
+                            <input type="text" id="editLocality" class="input-minimal" placeholder="Your locality">
+                        </div>
+                    </div>
+                    <div class="option-row">
+                        <div class="option-info">
+                            <strong>City</strong>
+                            <input type="text" id="editCity" class="input-minimal" placeholder="Your city">
+                        </div>
+                    </div>
+                    <div class="option-row">
+                        <div class="option-info">
+                            <strong>State</strong>
+                            <input type="text" id="editState" class="input-minimal" placeholder="Your state">
+                        </div>
+                    </div>
+                    <div class="option-row">
+                        <div class="option-info">
+                            <strong>Country</strong>
+                            <input type="text" id="editCountry" class="input-minimal" placeholder="Your country">
                         </div>
                     </div>
                     <div id="passwordFieldsContainer" style="display: none; background: rgba(0,0,0,0.02); border-radius: 8px; padding: 1.5rem; flex-direction: column; align-items: stretch; gap: 1rem; margin-top: 1rem;">

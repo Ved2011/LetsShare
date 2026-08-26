@@ -1,8 +1,10 @@
 const token = localStorage.getItem('token');
 
+// ── AUTH GUARD ───────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
     if (!token) { window.location.href = 'login.html'; return; }
 
+    // Verify admin access
     const check = await fetch('/api/admin/complaints', { headers: { 'Authorization': `Bearer ${token}` } });
     if (check.status === 403) {
         document.querySelector('.container').innerHTML = `
@@ -13,12 +15,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Load everything
     loadUsers();
     loadItems();
     loadCommunities();
     loadComplaints();
 });
 
+// ── TABS ─────────────────────────────────────────────────────────────────────
 function switchTab(name, btn) {
     document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -26,6 +30,7 @@ function switchTab(name, btn) {
     btn.classList.add('active');
 }
 
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 function fmt(dateStr) {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -40,7 +45,7 @@ function filterTable(tableId, query) {
 }
 
 async function adminDelete(endpoint, label, reloadFn) {
-    if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+    if (!confirm(`Are you sure you want to delete this ${label}? This cannot be undone.`)) return;
     try {
         const res = await fetch(endpoint, {
             method: 'DELETE',
@@ -54,6 +59,7 @@ async function adminDelete(endpoint, label, reloadFn) {
     }
 }
 
+// ── USERS ─────────────────────────────────────────────────────────────────────
 async function loadUsers() {
     try {
         const res = await fetch('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } });
@@ -61,28 +67,32 @@ async function loadUsers() {
         document.getElementById('statUsers').textContent = users.length;
 
         const tbody = document.getElementById('usersBody');
-        if (!users.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-admin">No users found.</td></tr>'; return; }
+        if (!users.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-admin">No users found.</td></tr>';
+            return;
+        }
 
         tbody.innerHTML = users.map(u => `
-            <tr>
+            <tr data-id="${u.id}">
                 <td>
                     <a href="user_View.html?id=${u.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${u.name}</a>
-                    ${u.is_site_admin ? '<span class="badge badge-admin">Admin</span>' : ''}
-                    <br><small class="muted">${u.username ? '@' + u.username : ''}</small>
+                    ${u.is_site_admin ? '<span class="badge badge-admin" style="margin-left:0.4rem;">Admin</span>' : ''}
+                    <br><small class="muted">@${u.username || '—'}</small>
                 </td>
-                <td class="hide-xs" style="font-size:0.78rem">${u.email}</td>
+                <td>${u.email}</td>
                 <td><span class="badge ${u.plan_type === 'Pro' ? 'badge-pro' : 'badge-free'}">${u.plan_type || 'Free'}</span></td>
-                <td class="hide-xs">${u.item_count}</td>
-                <td class="hide-xs">${u.community_count}</td>
+                <td><span class="badge badge-ok">${u.item_count}</span></td>
+                <td><span class="badge badge-ok">${u.community_count}</span></td>
                 <td>${u.is_verified ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}</td>
+                <td>${fmt(u.created_at)}</td>
                 <td>
                     <button class="btn-view" onclick="viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')">View</button>
-                    ${!u.is_site_admin ? `<button class="btn-del" onclick="adminDelete('/api/admin/users/${u.id}', 'user', loadUsers)">Delete</button>` : ''}
+                    ${!u.is_site_admin ? `<button class="btn-del" onclick="adminDelete('/api/admin/users/${u.id}', 'user', loadUsers)">Delete</button>` : '<span class="muted" style="font-size:0.75rem;">Protected</span>'}
                 </td>
             </tr>
         `).join('');
     } catch (err) {
-        document.getElementById('usersBody').innerHTML = '<tr><td colspan="7" class="empty-admin">Failed to load users.</td></tr>';
+        document.getElementById('usersBody').innerHTML = '<tr><td colspan="8" class="empty-admin">Failed to load users.</td></tr>';
     }
 }
 
@@ -106,42 +116,64 @@ async function viewUser(id, name) {
             throw new Error('User not found in details response');
         }
 
+        // Check user status
+        let statusBadge = '<span class="badge badge-ok">Active</span>';
+        let actionBtn = '';
+        
+        // Fetch is_suspended status from detail endpoint
+        if (data.user.is_deactivated) {
+            statusBadge = '<span class="badge badge-warn" style="background:#ef4444;color:white;">DEACTIVATED</span>';
+            actionBtn = `<button class="btn-view" onclick="unsuspendUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" style="background:#22c55e;color:white;border:none;margin-left:0.5rem;">Reactivate Account</button>`;
+        } else if (data.user.is_suspended) {
+            statusBadge = '<span class="badge badge-warn" style="background:#f59e0b;color:white;">SUSPENDED</span>';
+            actionBtn = `<button class="btn-view" onclick="unsuspendUser(${u.id}, '${u.name.replace(/'/g, "\\'")}')" style="background:#22c55e;color:white;border:none;margin-left:0.5rem;">Reactivate Account</button>`;
+        }
+
         document.getElementById('modalContent').innerHTML = `
             <div class="detail-section">
-                <h4>Profile</h4>
-                <p style="font-size:0.82rem;line-height:1.8">
-                    <strong>Email:</strong> ${u.email}<br>
-                    <strong>Plan:</strong> ${u.plan_type || 'Free'} &nbsp;|&nbsp; <strong>Verified:</strong> ${u.is_verified ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'}<br>
-                    <strong>Location:</strong> ${[u.city, u.state, u.country].filter(Boolean).join(', ') || '—'}<br>
-                    <strong>Joined:</strong> ${fmt(u.created_at)} &nbsp;|&nbsp; <strong>Last Login:</strong> ${fmt(u.last_login)}
-                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <h4 style="margin:0;">Profile</h4>
+                    <div>
+                        Status: ${statusBadge}
+                        ${actionBtn}
+                    </div>
+                </div>
+                <table class="admin-table">
+                    <tr><td><strong>Email</strong></td><td>${u.email}</td><td><strong>Plan</strong></td><td>${u.plan_type || 'Free'}</td></tr>
+                    <tr><td><strong>Location</strong></td><td>${[u.locality, u.city, u.state, u.country].filter(Boolean).join(', ') || '—'}</td><td><strong>Joined</strong></td><td>${fmt(u.created_at)}</td></tr>
+                    <tr><td><strong>Last Login</strong></td><td>${fmt(u.last_login)}</td><td><strong>Suspension Count</strong></td><td>${data.user.suspension_count || 0}</td></tr>
+                </table>
             </div>
             <div class="detail-section">
-                <h4>Owned Items (${data.items.length})</h4>
-                ${data.items.length ? data.items.map(i => `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-                        <span style="font-size:0.82rem"><strong>${i.name}</strong> <span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status}</span></span>
-                        <div>
-                            <a href="item_View.html?id=${i.id}" class="btn-view" style="text-decoration:none;font-size:0.7rem;padding:0.25rem 0.5rem">View</a>
-                            <button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Delete</button>
-                        </div>
-                    </div>`).join('') : '<p class="empty-admin">No items listed.</p>'}
-            </div>
-            <div class="detail-section">
-                <h4>Borrowed Items (${data.borrowed.length})</h4>
-                ${data.borrowed.length ? data.borrowed.map(b => `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-                        <span style="font-size:0.82rem"><strong>${b.name}</strong> <span class="badge ${b.borrow_status === 'approved' ? 'badge-ok' : 'badge-warn'}">${b.borrow_status}</span></span>
-                        <a href="item_View.html?id=${b.id}" class="btn-view" style="text-decoration:none;font-size:0.7rem;padding:0.25rem 0.5rem">View</a>
-                    </div>`).join('') : '<p class="empty-admin">No items borrowed.</p>'}
+                <h4>Items (${data.items.length})</h4>
+                ${data.items.length ? `
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Status</th><th>Condition</th><th>Listed</th><th></th></tr></thead>
+                    <tbody>${data.items.map(i => `
+                        <tr>
+                            <td>${i.name}</td>
+                            <td><span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status}</span></td>
+                            <td>${i.condition || '—'}</td>
+                            <td>${fmt(i.created_at)}</td>
+                            <td><button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Delete</button></td>
+                        </tr>
+                    `).join('')}</tbody>
+                </table>` : '<p class="empty-admin">No items listed.</p>'}
             </div>
             <div class="detail-section">
                 <h4>Communities (${data.communities.length})</h4>
-                ${data.communities.length ? data.communities.map(c => `
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border)">
-                        <span style="font-size:0.82rem"><a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name}</a> <span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? 'Private' : 'Public'}</span></span>
-                        <button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}/members/${u.id}', 'member', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Remove</button>
-                    </div>`).join('') : '<p class="empty-admin">No communities.</p>'}
+                ${data.communities.length ? `
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Privacy</th><th>Joined</th><th></th></tr></thead>
+                    <tbody>${data.communities.map(c => `
+                        <tr>
+                            <td>${c.name}</td>
+                            <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? 'Private' : 'Public'}</span></td>
+                            <td>${fmt(c.joined_at)}</td>
+                            <td><button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}/members/${u.id}', 'member', () => viewUser(${u.id}, '${u.name.replace(/'/g, "\\'")}'))">Remove</button></td>
+                        </tr>
+                    `).join('')}</tbody>
+                </table>` : '<p class="empty-admin">Not in any communities.</p>'}
             </div>
             <div class="detail-section">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; margin-bottom: 0.6rem;">
@@ -173,16 +205,18 @@ async function viewUser(id, name) {
                     </div>
                 </div>
 
-                ${data.warnings && data.warnings.length ? data.warnings.map(w => `
-                    <div style="padding: 0.5rem 0; border-bottom: 1px solid var(--border)">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="badge badge-warn">${w.category}</span>
-                            <span style="font-size: 0.7rem; color: var(--muted)">${fmt(w.created_at)}</span>
-                        </div>
-                        <p style="font-size: 0.8rem; font-style: italic; margin: 0.25rem 0 0 0; color: var(--muted)">"${w.message}"</p>
-                        <small style="font-size: 0.7rem; color: var(--muted)">Issued by: ${w.admin_name || 'System'}</small>
-                    </div>
-                `).join('') : '<p class="empty-admin">No warning history.</p>'}
+                ${data.warnings && data.warnings.length ? `
+                <table class="admin-table">
+                    <thead><tr><th>Category</th><th>Message</th><th>Issued By</th><th>Date</th></tr></thead>
+                    <tbody>${data.warnings.map(w => `
+                        <tr>
+                            <td><span class="badge badge-warn">${w.category}</span></td>
+                            <td style="max-width:250px;word-break:break-word;font-style:italic;color:var(--muted)">"${w.message}"</td>
+                            <td>${w.admin_name || 'System'}</td>
+                            <td>${fmt(w.created_at)}</td>
+                        </tr>
+                    `).join('')}</tbody>
+                </table>` : '<p class="empty-admin">No warning history for this user.</p>'}
             </div>
         `;
     } catch (err) {
@@ -198,11 +232,11 @@ async function viewUser(id, name) {
 function closeModal() {
     document.getElementById('userModal').classList.remove('active');
 }
-document.addEventListener('click', (e) => {
-    const modal = document.getElementById('userModal');
-    if (e.target === modal) closeModal();
+document.getElementById('userModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('userModal')) closeModal();
 });
 
+// ── ITEMS ─────────────────────────────────────────────────────────────────────
 async function loadItems() {
     try {
         const res = await fetch('/api/admin/items', { headers: { 'Authorization': `Bearer ${token}` } });
@@ -210,23 +244,28 @@ async function loadItems() {
         document.getElementById('statItems').textContent = items.length;
 
         const tbody = document.getElementById('itemsBody');
-        if (!items.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-admin">No items found.</td></tr>'; return; }
+        if (!items.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-admin">No items found.</td></tr>';
+            return;
+        }
 
         tbody.innerHTML = items.map(i => `
             <tr>
                 <td><a href="item_View.html?id=${i.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${i.name}</a>${i.brand ? `<br><small class="muted">${i.brand}</small>` : ''}</td>
-                <td class="hide-xs" style="font-size:0.78rem">${i.owner_name}</td>
+                <td>${i.owner_name}<br><small class="muted">${i.owner_email}</small></td>
                 <td><span class="badge ${i.status === 'available' ? 'badge-ok' : 'badge-warn'}">${i.status || '—'}</span></td>
-                <td class="hide-xs">${i.condition || '—'}</td>
-                <td class="hide-xs">${fmt(i.created_at)}</td>
+                <td>${i.brand || '—'}</td>
+                <td>${i.condition || '—'}</td>
+                <td>${fmt(i.created_at)}</td>
                 <td><button class="btn-del" onclick="adminDelete('/api/admin/items/${i.id}', 'item', loadItems)">Delete</button></td>
             </tr>
         `).join('');
     } catch (err) {
-        document.getElementById('itemsBody').innerHTML = '<tr><td colspan="6" class="empty-admin">Failed to load items.</td></tr>';
+        document.getElementById('itemsBody').innerHTML = '<tr><td colspan="7" class="empty-admin">Failed to load items.</td></tr>';
     }
 }
 
+// ── COMMUNITIES ───────────────────────────────────────────────────────────────
 async function loadCommunities() {
     try {
         const res = await fetch('/api/admin/communities', { headers: { 'Authorization': `Bearer ${token}` } });
@@ -234,23 +273,32 @@ async function loadCommunities() {
         document.getElementById('statCommunities').textContent = communities.length;
 
         const tbody = document.getElementById('communitiesBody');
-        if (!communities.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-admin">No communities found.</td></tr>'; return; }
+        if (!communities.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-admin">No communities found.</td></tr>';
+            return;
+        }
 
         tbody.innerHTML = communities.map(c => `
             <tr>
-                <td><a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name}</a><br><small class="muted">${(c.description || '').slice(0,40)}${c.description?.length > 40 ? '…' : ''}</small></td>
-                <td class="hide-xs" style="font-size:0.78rem">${c.admin_name || '—'}</td>
-                <td>${c.member_count}/${c.max_limit}</td>
-                <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'}</span></td>
-                <td class="hide-xs">${fmt(c.created_at)}</td>
+                <td>
+                    <a href="community_Home.html?id=${c.id}" target="_blank" style="color:var(--accent); text-decoration:none; font-weight:700;">${c.name}</a>
+                    ${c.chat_enabled ? '<span class="badge badge-ok" style="margin-left:0.4rem;">Chat</span>' : ''}
+                    <br><small class="muted">${c.description ? c.description.slice(0,50) + (c.description.length > 50 ? '…' : '') : 'No description'}</small>
+                </td>
+                <td>${c.admin_name || '—'}<br><small class="muted">${c.admin_email || ''}</small></td>
+                <td><span class="badge badge-ok">${c.member_count} / ${c.max_limit}</span></td>
+                <td><span class="badge ${c.is_private ? 'badge-private' : 'badge-public'}">${c.is_private ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Private' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Public'}</span></td>
+                <td>${[c.city, c.state, c.country].filter(Boolean).join(', ') || '—'}</td>
+                <td>${fmt(c.created_at)}</td>
                 <td><button class="btn-del" onclick="adminDelete('/api/admin/communities/${c.id}', 'community', loadCommunities)">Delete</button></td>
             </tr>
         `).join('');
     } catch (err) {
-        document.getElementById('communitiesBody').innerHTML = '<tr><td colspan="6" class="empty-admin">Failed to load communities.</td></tr>';
+        document.getElementById('communitiesBody').innerHTML = '<tr><td colspan="7" class="empty-admin">Failed to load communities.</td></tr>';
     }
 }
 
+// ── COMPLAINTS ────────────────────────────────────────────────────────────────
 let allComplaints = [];
 
 async function loadComplaints() {
@@ -267,7 +315,7 @@ async function loadComplaints() {
         if (categoryFilter) {
             const currentSelected = categoryFilter.value;
             const categories = [...new Set(allComplaints.map(c => c.issue_type || 'General'))];
-            categoryFilter.innerHTML = '<option value="">All</option>' + 
+            categoryFilter.innerHTML = '<option value="">All Categories</option>' + 
                 categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
             categoryFilter.value = currentSelected;
         }
@@ -275,7 +323,7 @@ async function loadComplaints() {
         filterComplaints();
     } catch (err) {
         console.error('[Admin] Error loading complaints:', err);
-        document.getElementById('complaintsBody').innerHTML = '<tr><td colspan="7" class="empty-admin">Failed to load complaints.</td></tr>';
+        document.getElementById('complaintsBody').innerHTML = '<tr><td colspan="8" class="empty-admin">Failed to load complaints.</td></tr>';
     }
 }
 
@@ -297,7 +345,7 @@ function filterComplaints() {
 function renderComplaintsTable(complaintsList) {
     const tbody = document.getElementById('complaintsBody');
     if (!complaintsList.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="empty-admin">No matching complaints.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-admin">No complaints found matching filters.</td></tr>';
         return;
     }
 
@@ -305,11 +353,14 @@ function renderComplaintsTable(complaintsList) {
         <tr>
             <td><strong>${c.issue_type || 'General'}</strong></td>
             <td><span class="badge ${getSeverityBadgeClass(c.severity)}">${(c.severity || 'low').toUpperCase()}</span></td>
-            <td class="hide-xs">${c.actual_item_name || '—'}</td>
+            <td>${c.actual_item_name || '—'}</td>
             <td>${c.complainant_name}</td>
-            <td class="hide-xs">${c.accused_name}</td>
+            <td>${c.accused_name}</td>
+            <td style="max-width:200px;word-break:break-word;font-style:italic;color:var(--muted)">"${c.description || '—'}"</td>
             <td><span class="badge ${c.status === 'open' ? 'badge-warn' : 'badge-ok'}">${c.status.toUpperCase()}</span></td>
-            <td>${c.status === 'open' ? `<button class="btn-view" onclick="resolveComplaint(${c.id})">Resolve</button>` : ''}</td>
+            <td>
+                ${c.status === 'open' ? `<button class="btn-view" onclick="resolveComplaint(${c.id})">Resolve</button>` : ''}
+            </td>
         </tr>
     `).join('');
 }
@@ -331,7 +382,9 @@ async function resolveComplaint(id) {
         });
         if (res.ok) { loadComplaints(); }
         else { alert('Failed to resolve complaint.'); }
-    } catch (err) { alert('Network error.'); }
+    } catch (err) {
+        alert('Network error.');
+    }
 }
 
 function toggleWarningForm(userId) {
@@ -365,14 +418,41 @@ async function submitWarning(userId, userName) {
         });
 
         if (res.ok) {
-            alert('Warning issued successfully.');
+            const data = await res.json();
+            alert(`Warning issued successfully.\nUser has ${data.warnings_left} warnings left before account suspension.`);
             viewUser(userId, userName);
+            loadUsers();
         } else {
             const data = await res.json();
             alert(`Failed to issue warning: ${data.error || 'Unknown error'}`);
         }
     } catch (err) {
         console.error('[Admin] Error submitting warning:', err);
+        alert('Network error.');
+    }
+}
+
+async function unsuspendUser(userId, userName) {
+    if (!confirm(`Are you sure you want to reactivate the account of ${userName}?`)) {
+        return;
+    }
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/unsuspend`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (res.ok) {
+            alert('User account has been reactivated.');
+            viewUser(userId, userName);
+            loadUsers();
+        } else {
+            const data = await res.json();
+            alert(`Failed to reactivate user: ${data.error || 'Unknown error'}`);
+        }
+    } catch (err) {
+        console.error('[Admin] Error unsuspending user:', err);
         alert('Network error.');
     }
 }

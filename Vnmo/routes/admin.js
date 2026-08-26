@@ -137,13 +137,64 @@ router.post('/users/:id/warn', authenticateToken, requireSiteAdmin, async (req, 
   }
 
   try {
-    const result = await pool.query(`
+    await pool.query('BEGIN');
+
+    // 1. Insert the warning
+    const warningResult = await pool.query(`
       INSERT INTO user_warnings (user_id, admin_id, category, message)
       VALUES ($1, $2, $3, $4)
       RETURNING *
     `, [id, adminId, category, message]);
-    res.status(201).json({ message: 'Warning saved.', warning: result.rows[0] });
+
+    const newWarning = warningResult.rows[0];
+
+    // 2. Count current unacknowledged / total warnings for user
+    const warnCountResult = await pool.query('SELECT COUNT(*) FROM user_warnings WHERE user_id = $1', [id]);
+    const totalWarnings = parseInt(warnCountResult.rows[0].count, 10);
+
+    // Get current user details
+    const userResult = await pool.query('SELECT name, email, is_suspended, is_deactivated, suspension_count FROM users WHERE id = $1', [id]);
+    const targetUser = userResult.rows[0];
+
+    let actionTakenText = 'Warning issued successfully.';
+    let remainingWarnings = 5 - (totalWarnings % 5);
+    if (remainingWarnings === 0) remainingWarnings = 5;
+
+    // 3. Check suspension threshold (happens every 5 warnings)
+    if (totalWarnings > 0 && totalWarnings % 5 === 0) {
+      const newSuspensionCount = targetUser.suspension_count + 1;
+      
+      if (newSuspensionCount >= 2) {
+        // Deactivate permanently on 2nd suspension
+        await pool.query('UPDATE users SET is_deactivated = true, is_suspended = true, suspension_count = $1 WHERE id = $2', [newSuspensionCount, id]);
+        actionTakenText = 'User has received 5 warnings for the 2nd time and is now PERMANENTLY DEACTIVATED.';
+      } else {
+        // Suspend until manual admin reactivation
+        await pool.query('UPDATE users SET is_suspended = true, suspension_count = $1 WHERE id = $2', [newSuspensionCount, id]);
+        actionTakenText = 'User has received 5 warnings and is now SUSPENDED until reactivated by an Admin.';
+      }
+    }
+
+    // Insert warning system alert into notifications table
+    let noticeMessage = `Notice: You have received a warning (${category}). You have ${remainingWarnings} warnings remaining before automatic account suspension.`;
+    if (totalWarnings % 5 === 0) {
+      noticeMessage = `CRITICAL: Your account has been suspended due to receiving ${totalWarnings} warnings.`;
+    }
+    
+    await pool.query(
+      "INSERT INTO notifications (user_id, type, message) VALUES ($1, 'warning', $2)",
+      [id, noticeMessage]
+    );
+
+    await pool.query('COMMIT');
+    res.status(201).json({ 
+      message: actionTakenText, 
+      warning: newWarning,
+      total_warnings: totalWarnings,
+      warnings_left: remainingWarnings
+    });
   } catch (err) {
+    await pool.query('ROLLBACK');
     console.error('Error warning user:', err);
     res.status(500).json({ error: 'Server error saving warning.' });
   }
@@ -241,6 +292,24 @@ router.delete('/communities/:communityId/members/:userId', authenticateToken, re
   } catch (err) {
     console.error('Error removing member:', err);
     res.status(500).json({ error: 'Server error removing member' });
+  }
+});
+
+// Reactivate / Unsuspend a user account manually
+router.put('/users/:id/unsuspend', authenticateToken, requireSiteAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      'UPDATE users SET is_suspended = false, is_deactivated = false WHERE id = $1 RETURNING id, name, email',
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ message: 'User account has been successfully reactivated.', user: result.rows[0] });
+  } catch (err) {
+    console.error('Error unsuspending user:', err);
+    res.status(500).json({ error: 'Server error reactivating user' });
   }
 });
 

@@ -120,6 +120,13 @@ router.post('/login', async (req, res) => {
 
     const user = result.rows[0];
     
+    if (user.is_deactivated) {
+      return res.status(403).json({ error: 'Your account has been permanently deactivated due to policy violations.' });
+    }
+    if (user.is_suspended) {
+      return res.status(403).json({ error: 'Your account is suspended. Please contact an administrator for reactivation.' });
+    }
+    
     if (!user.is_verified) {
       return res.status(403).json({ 
         error: 'Please verify your email before logging in.', 
