@@ -295,6 +295,14 @@
 
     <script src="notifications.js"></script>
     <script src="sidebar.js"></script>
+    <script src="location_service.js"></script>
     <script src="user_Profile.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof setupLocationChain === 'function') {
+                setupLocationChain('editCountry', 'editState', 'editCity');
+            }
+        });
+    </script>
 </body>
 </html>

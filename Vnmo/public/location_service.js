@@ -1,12 +1,15 @@
 const LocationService = {
     async getCountries() {
+        const fallbacks = ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Japan', 'China', 'Brazil', 'Singapore', 'United Arab Emirates'];
         try {
             const res = await fetch('https://restcountries.com/v3.1/all?fields=name');
+            if (!res.ok) return fallbacks;
             const data = await res.json();
-            return data.map(c => c.name.common).sort();
+            if (!Array.isArray(data)) return fallbacks;
+            return data.map(c => c.name ? c.name.common : '').filter(Boolean).sort();
         } catch (err) {
-            console.error('Error fetching countries:', err);
-            return ['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Japan', 'China', 'Brazil'];
+            console.warn('Network error fetching countries, using fallback list:', err);
+            return fallbacks;
         }
     },
 
@@ -17,11 +20,12 @@ const LocationService = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ country })
             });
+            if (!res.ok) return [];
             const data = await res.json();
-            if (!data.data || !data.data.states) return [];
-            return data.data.states.map(s => s.name).sort();
+            if (!data || !data.data || !data.data.states) return [];
+            return data.data.states.map(s => s.name).filter(Boolean).sort();
         } catch (err) {
-            console.error('Error fetching states:', err);
+            console.warn('Network error fetching states:', err);
             return [];
         }
     },
@@ -33,15 +37,12 @@ const LocationService = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ country, state })
             });
+            if (!res.ok) return [];
             const data = await res.json();
-            if (res.status !== 200) {
-                console.error('CountriesNow Error:', data);
-                return [];
-            }
-            if (!data.data) return [];
-            return data.data.sort();
+            if (!data || !data.data) return [];
+            return data.data.filter(Boolean).sort();
         } catch (err) {
-            console.error('Error fetching cities:', err);
+            console.warn('Network error fetching cities:', err);
             return [];
         }
     }
