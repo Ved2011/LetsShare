@@ -6,10 +6,8 @@ const upload = multer();
 
 const router = express.Router();
 
-router.use((req, res, next) => {
-  console.log('User Router Request:', req.method, req.path);
-  next();
-});
+
+
 
 // Search users and items
 router.get('/search', authenticateToken, async (req, res) => {
@@ -35,10 +33,11 @@ router.get('/search', authenticateToken, async (req, res) => {
     );
 
     const itemsResult = await pool.query(
-      `SELECT i.id, i.name, i.description, i.status, i.owner_id, u.name AS owner_name
+      `SELECT i.id, i.name, d.description, i.status, i.owner_id, u.name AS owner_name
        FROM items i
        JOIN users u ON i.owner_id = u.id
-       WHERE i.name ILIKE $1 OR i.description ILIKE $1 OR u.name ILIKE $1
+       LEFT JOIN item_details d ON i.id = d.item_id
+       WHERE i.name ILIKE $1 OR d.description ILIKE $1 OR d.category ILIKE $1 OR u.name ILIKE $1
        ORDER BY i.created_at DESC
        LIMIT 20`,
       [searchTerm]
@@ -221,7 +220,7 @@ router.get('/warnings', authenticateToken, async (req, res) => {
       `SELECT w.*, u.name as admin_name
        FROM user_warnings w
        LEFT JOIN users u ON w.admin_id = u.id
-       WHERE w.user_id = $1
+       WHERE w.user_id = $1 AND w.acknowledged = false
        ORDER BY w.created_at DESC`,
       [userId]
     );
@@ -229,6 +228,25 @@ router.get('/warnings', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Error fetching user warnings:', err);
     res.status(500).json({ error: 'Server error fetching warnings' });
+  }
+});
+
+// Acknowledge a warning
+router.put('/warnings/:id/acknowledge', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const warningId = req.params.id;
+  try {
+    const result = await pool.query(
+      'UPDATE user_warnings SET acknowledged = true WHERE id = $1 AND user_id = $2 RETURNING *',
+      [warningId, userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Warning not found or not authorized' });
+    }
+    res.json({ message: 'Warning acknowledged successfully', warning: result.rows[0] });
+  } catch (err) {
+    console.error('Error acknowledging warning:', err);
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -430,21 +448,6 @@ router.put('/me', authenticateToken, upload.single('profilePicture'), async (req
     if (err.code === '23505') {
       return res.status(400).json({ error: 'Email already in use' });
     }
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// Get current user warnings
-router.get('/warnings', authenticateToken, async (req, res) => {
-  const userId = req.user.id;
-  try {
-    const result = await pool.query(
-      'SELECT id, reason, severity, created_at FROM warnings WHERE user_id = $1 ORDER BY created_at DESC',
-      [userId]
-    );
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Get warnings error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
     
     document.getElementById('chatSettingsBtn').addEventListener('click', async () => {
-        const newStatus = !currentCommunity.chat_enabled;
+        const newStatus = !(currentCommunity.chat_enabled !== false); // treat null as true
         try {
             const res = await fetch(`/api/communities/${currentCommunity.id}/chat`, {
                 method: 'PUT',
@@ -320,7 +320,7 @@ async function openCommunity(c) {
     }
 
     if (c.is_member || c.is_current_user_admin) {
-        if (c.chat_enabled) {
+        if (c.chat_enabled !== false) { // treat null/undefined as enabled
             chatSection.style.display = 'block';
             loadChatMessages();
         }

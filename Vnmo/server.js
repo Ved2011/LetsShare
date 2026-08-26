@@ -11,6 +11,7 @@ const complaintRoutes = require('./routes/complaints');
 const statsRoutes = require('./routes/stats');
 const communitiesRoutes = require('./routes/communities');
 const adminRoutes = require('./routes/admin');
+const chatRoutes = require('./routes/chat');
 const useragent = require('express-useragent');
 
 const app = express();
@@ -45,14 +46,7 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-// Request Logging
-app.use((req, res, next) => {
-  console.log('--- Incoming Request ---');
-  console.log('Method:', req.method);
-  console.log('Path:', req.path);
-  console.log('Headers:', req.headers.authorization ? 'Bearer [hidden]' : 'None');
-  next();
-});
+
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -63,6 +57,7 @@ app.use('/api/returns', returnRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/communities', communitiesRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/admin', adminRoutes);
 

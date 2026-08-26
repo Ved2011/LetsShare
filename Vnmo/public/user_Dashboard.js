@@ -227,15 +227,80 @@ function displayWarnings(warnings) {
 
   warningsSection.style.display = 'block';
   warningsList.innerHTML = warnings.map(w => `
-    <div class="item-card" style="background: #fff; border: 1px solid rgba(220, 53, 69, 0.2); padding: 1rem; border-radius: 8px;">
+    <div class="item-card clickable-warning" data-warning-json='${JSON.stringify(w).replace(/'/g, "&apos;")}' style="background: #fff; border: 1px solid rgba(220, 53, 69, 0.2); padding: 1rem; border-radius: 8px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
         <span class="badge" style="background: rgba(220,53,69,0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.5rem; font-weight: bold; border-radius: 4px;">${w.category}</span>
         <span style="font-size: 0.8rem; color: var(--muted);">${new Date(w.created_at).toLocaleDateString()}</span>
       </div>
       <p style="font-size: 0.9rem; font-style: italic; color: var(--text); margin: 0.25rem 0;">"${w.message}"</p>
-      <small style="color: var(--muted); font-size: 0.75rem;">Issued by: ${w.admin_name || 'System'}</small>
+      <small style="color: var(--muted); font-size: 0.75rem;">Issued by: ${w.admin_name || 'System'} <span style="float: right; color: var(--accent); font-weight: 600;">View Details &rarr;</span></small>
     </div>
   `).join('');
+
+  // Wire click to open modal
+  document.querySelectorAll('.clickable-warning').forEach(card => {
+    card.addEventListener('click', () => {
+      const w = JSON.parse(card.getAttribute('data-warning-json'));
+      openWarningModal(w);
+    });
+  });
+
+  // Automatically pop up the first unacknowledged warning on dashboard load
+  const sessionKey = `warning_shown_${warnings[0].id}`;
+  if (!sessionStorage.getItem(sessionKey)) {
+    sessionStorage.setItem(sessionKey, 'true');
+    openWarningModal(warnings[0]);
+  }
+}
+
+function openWarningModal(w) {
+  const modal = document.getElementById('warningModalOverlay');
+  const cat = document.getElementById('warningModalCategory');
+  const date = document.getElementById('warningModalDate');
+  const msg = document.getElementById('warningModalMessage');
+  const admin = document.getElementById('warningModalAdmin');
+  
+  if (!modal) return;
+
+  cat.textContent = w.category;
+  date.textContent = new Date(w.created_at).toLocaleDateString();
+  msg.textContent = `"${w.message}"`;
+  admin.textContent = w.admin_name || 'System';
+
+  modal.style.display = 'flex';
+
+  const ackBtn = document.getElementById('acknowledgeWarningBtn');
+  const closeBtn = document.getElementById('closeWarningModalBtn');
+
+  // Remove previous event listeners
+  const newAckBtn = ackBtn.cloneNode(true);
+  const newCloseBtn = closeBtn.cloneNode(true);
+  ackBtn.parentNode.replaceChild(newAckBtn, ackBtn);
+  closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+  newCloseBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  newAckBtn.addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/users/warnings/${w.id}/acknowledge`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        modal.style.display = 'none';
+        window.showAlert('Warning acknowledged.', 'success');
+        loadWarnings(); // reload dashboard warnings list
+      } else {
+        window.showAlert('Failed to acknowledge warning', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      window.showAlert('Connection error', 'error');
+    }
+  });
 }
 
 function initDashboard() {

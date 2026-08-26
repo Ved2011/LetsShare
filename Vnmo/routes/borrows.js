@@ -93,6 +93,43 @@ router.post('/', authenticateToken, async (req, res) => {
   }
 });
 
+// Get borrows available for filing a complaint (active + returned, as borrower or owner)
+router.get('/for-complaint', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const result = await pool.query(`
+      SELECT
+        b.id,
+        b.borrow_id,
+        b.status,
+        b.issue_date,
+        b.due_date,
+        b.borrower_id,
+        b.item_id,
+        i.name         AS item_name,
+        i.owner_id,
+        owner.name     AS owner_name,
+        owner.email    AS owner_email,
+        borrower.name  AS borrower_name,
+        borrower.email AS borrower_email,
+        CASE WHEN b.borrower_id = $1 THEN 'borrower' ELSE 'owner' END AS my_role,
+        CASE WHEN b.borrower_id = $1 THEN owner.name ELSE borrower.name END AS other_party_name
+      FROM borrows b
+      JOIN items    i        ON b.item_id    = i.id
+      JOIN users    owner    ON i.owner_id   = owner.id
+      JOIN users    borrower ON b.borrower_id = borrower.id
+      WHERE (b.borrower_id = $1 OR i.owner_id = $1)
+        AND b.status IN ('active', 'returned')
+      ORDER BY b.created_at DESC
+      LIMIT 50
+    `, [userId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('For-complaint borrows error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get borrow requests for items owned by the current user
 router.get('/requests', authenticateToken, async (req, res) => {
   const userId = req.user.id;
@@ -110,6 +147,7 @@ router.get('/requests', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
 
 // Get borrows for user
 router.get('/', authenticateToken, async (req, res) => {

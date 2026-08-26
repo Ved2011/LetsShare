@@ -6,7 +6,7 @@ const pool = new Pool({
   port: process.env.DB_PORT,
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
-  password: 'abc123',
+  password: process.env.DB_PASSWORD,
 });
 
 const createTables = async () => {
@@ -184,6 +184,12 @@ const createTables = async () => {
         is_read BOOLEAN DEFAULT false,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      CREATE TABLE IF NOT EXISTS blacklisted_emails (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     await client.query(`
@@ -275,6 +281,9 @@ const createTables = async () => {
       ALTER TABLE community_members ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false;
 
       ALTER TABLE items ADD COLUMN IF NOT EXISTS exclusive_community_id INTEGER REFERENCES communities(id) ON DELETE SET NULL;
+
+      -- Data migrations: backfill any NULL values from before defaults were added
+      UPDATE communities SET chat_enabled = true WHERE chat_enabled IS NULL;
     `);
 
     console.log('Tables created successfully');

@@ -56,7 +56,7 @@ router.post('/invite', authenticateToken, async (req, res) => {
     const senderName = senderResult.rows[0] ? senderResult.rows[0].name : 'A member';
     
     await pool.query(
-      'INSERT INTO notifications (user_id, message, category, related_id) VALUES ($1, $2, $3, $4)',
+      'INSERT INTO notifications (user_id, message, type, related_id) VALUES ($1, $2, $3, $4)',
       [receiver_id, `${senderName} sent you a chat invite!`, 'chat_invite', senderId]
     );
 
@@ -115,7 +115,7 @@ router.post('/invite/:id/respond', authenticateToken, async (req, res) => {
       const receiverName = receiverResult.rows[0] ? receiverResult.rows[0].name : 'A member';
 
       await pool.query(
-        'INSERT INTO notifications (user_id, message, category, related_id) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO notifications (user_id, message, type, related_id) VALUES ($1, $2, $3, $4)',
         [invite.sender_id, `${receiverName} accepted your chat invite!`, 'chat_accepted', userId]
       );
     }

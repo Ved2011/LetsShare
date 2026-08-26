@@ -45,7 +45,7 @@ async function loadCommunityDetails() {
                 if (adminPanelBtn) adminPanelBtn.style.display = 'none';
             }
 
-            if (currentCommunity.chat_enabled && currentCommunity.is_member) {
+            if (currentCommunity.chat_enabled !== false && currentCommunity.is_member) {
                 if (chatSectionHome) chatSectionHome.style.display = 'block';
                 if (contentWrapper) contentWrapper.style.gridTemplateColumns = '1.2fr 0.8fr';
                 loadChatMessages();

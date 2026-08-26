@@ -273,7 +273,7 @@ router.post('/:id/invite', authenticateToken, async (req, res) => {
           <h2>Community Invitation</h2>
           <p><strong>${inviterName}</strong> has invited you to join the community <strong>"${community.name}"</strong> on LetsShare.</p>
           <p>Join now to start sharing and borrowing items with your community!</p>
-          <a href="http://localhost:4000/login.html" style="display: inline-block; padding: 10px 20px; background-color: #4f7cde; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">Login to Accept</a>
+          <a href="${process.env.APP_URL || 'http://localhost:4000'}/login.html" style="display: inline-block; padding: 10px 20px; background-color: #4f7cde; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">Login to Accept</a>
         </div>`
       );
     } catch (mailErr) {

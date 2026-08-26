@@ -12,21 +12,36 @@ router.post('/', authenticateToken, upload.fields([{ name: 'beforeImage' }, { na
   const complainantId = req.user.id;
 
   try {
-    // Get borrow details
+    // Get borrow details and item owner
     let borrowResult;
     if (isNaN(borrowId)) {
-      borrowResult = await pool.query('SELECT * FROM borrows WHERE borrow_id = $1', [borrowId]);
+      borrowResult = await pool.query(`
+        SELECT b.*, i.owner_id 
+        FROM borrows b
+        JOIN items i ON b.item_id = i.id
+        WHERE b.borrow_id = $1
+      `, [borrowId]);
     } else {
-      borrowResult = await pool.query('SELECT * FROM borrows WHERE id = $1', [borrowId]);
+      borrowResult = await pool.query(`
+        SELECT b.*, i.owner_id 
+        FROM borrows b
+        JOIN items i ON b.item_id = i.id
+        WHERE b.id = $1
+      `, [parseInt(borrowId, 10)]);
     }
     if (borrowResult.rows.length === 0) {
       return res.status(400).json({ error: 'Borrow not found' });
     }
     const borrow = borrowResult.rows[0];
 
+    // Determine accused_id: if borrower complains, accused is owner, else borrower
+    const accusedId = (complainantId === borrow.borrower_id) ? borrow.owner_id : borrow.borrower_id;
+
+    const beforeImage = req.files?.beforeImage?.[0]?.buffer || null;
+    const afterImage = req.files?.afterImage?.[0]?.buffer || null;
     const result = await pool.query(
       'INSERT INTO complaints (borrow_id, complainant_id, accused_id, item_name, borrower_name, issue_type, severity, description, before_image, after_image) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id',
-      [borrow.id, complainantId, borrow.borrower_id, itemName || null, borrowerName || null, issueType || null, severity || null, issueDescription || null, req.files.beforeImage ? req.files.beforeImage[0].buffer : null, req.files.afterImage ? req.files.afterImage[0].buffer : null]
+      [borrow.id, complainantId, accusedId, itemName || null, borrowerName || null, issueType || null, severity || null, issueDescription || null, beforeImage, afterImage]
     );
     res.status(201).json({ message: 'Complaint submitted successfully', complaintId: result.rows[0].id });
   } catch (err) {
