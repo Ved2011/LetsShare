@@ -580,9 +580,82 @@ function displayBorrowedItems(container, borrows) {
   `).join('');
 }
 
+// === Geolocation Auto-fill ===
+function initGeolocationBtn() {
+  const btn = document.getElementById('geolocateBtn');
+  const statusEl = document.getElementById('geolocateStatus');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      if (window.showAlert) window.showAlert('Geolocation is not supported by your browser.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '📡 Locating...';
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Requesting GPS permission...'; }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        if (statusEl) statusEl.textContent = `Got coords (${latitude.toFixed(4)}, ${longitude.toFixed(4)}). Reverse geocoding...`;
+
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&addressdetails=1`,
+            { headers: { 'Accept-Language': 'en', 'User-Agent': 'LetsShareApp/1.0' } }
+          );
+          const data = await res.json();
+          const addr = data.address || {};
+
+          const road = addr.road || addr.footway || addr.pedestrian || '';
+          const houseNumber = addr.house_number || '';
+          const fullAddress = [houseNumber, road].filter(Boolean).join(', ');
+          const locality = addr.neighbourhood || addr.suburb || addr.hamlet || addr.village || '';
+          const city = addr.city || addr.town || addr.district || addr.county || '';
+          const state = addr.state || '';
+          const country = addr.country || '';
+
+          const editAddress = document.getElementById('editAddress');
+          const editLocality = document.getElementById('editLocality');
+          const editCity = document.getElementById('editCity');
+          const editState = document.getElementById('editState');
+          const editCountry = document.getElementById('editCountry');
+
+          if (editAddress && fullAddress) editAddress.value = fullAddress;
+          if (editLocality && locality) editLocality.value = locality;
+          if (editCity && city) editCity.value = city;
+          if (editState && state) editState.value = state;
+          if (editCountry && country) editCountry.value = country;
+
+          if (statusEl) { statusEl.textContent = '✅ Location detected! Review the fields below and adjust if needed.'; statusEl.style.color = 'var(--accent)'; }
+          if (window.showAlert) window.showAlert('Location auto-filled! Please review and save.', 'success');
+        } catch (err) {
+          console.error('Reverse geocoding error:', err);
+          if (statusEl) statusEl.textContent = '❌ Could not detect location details. Please fill in manually.';
+          if (window.showAlert) window.showAlert('Could not auto-detect location. Try filling in manually.', 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Use My Location`;
+      },
+      (err) => {
+        console.error('Geolocation error:', err);
+        if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = '❌ Location access denied. Please fill in manually.'; }
+        if (window.showAlert) window.showAlert('Location access denied.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg> Use My Location`;
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  });
+}
+
 initializeTheme();
 loadUserProfile();
 loadNewItems();
 loadMyItems();
 loadBorrowedItems();
 loadRequests();
+initGeolocationBtn();

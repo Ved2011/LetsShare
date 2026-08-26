@@ -267,6 +267,8 @@ function openWarningModal(w) {
   const date = document.getElementById('warningModalDate');
   const msg = document.getElementById('warningModalMessage');
   const admin = document.getElementById('warningModalAdmin');
+  const counterLine = document.getElementById('warningCounterLine');
+  const remainingCountEl = document.getElementById('warningsRemainingCount');
   
   if (!modal) return;
 
@@ -276,6 +278,19 @@ function openWarningModal(w) {
   admin.textContent = w.admin_name || 'System';
 
   modal.style.display = 'flex';
+
+  // Compute warnings remaining from all loaded warnings (total count modulo 5)
+  const allCards = document.querySelectorAll('.clickable-warning');
+  const totalWarnings = allCards.length;
+  const cyclePosition = totalWarnings % 5;
+  const remaining = cyclePosition === 0 ? (totalWarnings > 0 ? 0 : 5) : (5 - cyclePosition);
+  
+  if (counterLine && remainingCountEl && !w.acknowledged) {
+    remainingCountEl.textContent = remaining;
+    counterLine.style.display = 'block';
+  } else if (counterLine) {
+    counterLine.style.display = 'none';
+  }
 
   const ackBtn = document.getElementById('acknowledgeWarningBtn');
   const closeBtn = document.getElementById('closeWarningModalBtn');
@@ -288,7 +303,7 @@ function openWarningModal(w) {
     closeBtn.style.borderColor = 'var(--border)';
   } else {
     ackBtn.style.display = 'inline-block';
-    closeBtn.textContent = 'Cancel';
+    closeBtn.textContent = 'Dismiss for Now';
     closeBtn.style.color = '#9ca3af';
     closeBtn.style.borderColor = '#d1d5db';
   }
