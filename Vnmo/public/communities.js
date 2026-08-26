@@ -386,9 +386,10 @@ async function deleteCommunity(communityId) {
             const data = await res.json();
             window.showAlert(data.error, 'error');
         }
-    } catch (err) {
-        window.showAlert('Error deleting community', 'error');
-    }
+        } catch (err) {
+            window.showAlert('Error deleting community', 'error');
+        }
+    });
 }
 
 async function toggleAdmin(communityId, userId, isAdmin) {

@@ -44,9 +44,7 @@ router.get('/', authenticateTokenOptional, async (req, res) => {
 
     query += ` ORDER BY c.created_at DESC`;
     
-    console.log('Fetching communities with:', params);
     const result = await pool.query(query, params);
-    
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching communities:', err);
@@ -79,7 +77,6 @@ router.get('/invites', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   const communityId = req.params.id;
   const userId = req.user.id;
-  console.log('Fetching community details. ID:', communityId, 'User:', userId);
   try {
     const result = await pool.query(`
       SELECT c.*, 
@@ -93,9 +90,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       WHERE c.id = $1
     `, [communityId, userId]);
     
-    console.log('DB Result rows:', result.rows.length);
     if (result.rows.length === 0) {
-        console.log('Community not found in DB for ID:', communityId);
         return res.status(404).json({ error: 'Community not found' });
     }
     
@@ -121,8 +116,6 @@ router.post('/', authenticateToken, async (req, res) => {
     if (!name) return res.status(400).json({ error: 'Community name is required' });
 
     try {
-      const colCheck = await pool.query("SELECT column_name FROM information_schema.columns WHERE table_name = 'communities'");
-      console.log('Server-side Communities columns:', colCheck.rows.map(r => r.column_name));
       await pool.query('BEGIN');
       
       // Community creation is free in Early Bird phase.
