@@ -112,9 +112,10 @@ class CustomDropdown {
         this.menu.innerHTML = '';
         if (this.filteredOptions.length === 0) {
             const li = document.createElement('li');
-            li.textContent = 'No results found';
+            li.textContent = 'No matching options (Custom value allowed)';
             li.style.color = 'var(--muted)';
             li.style.padding = '0.5rem 1rem';
+            li.style.fontStyle = 'italic';
             this.menu.appendChild(li);
             return;
         }
@@ -153,11 +154,10 @@ function setupLocationChain(countryId, stateId, cityId) {
         
         if (country) {
             const states = await LocationService.getStates(country);
-            if (states.length === 0) {
-                stateDropdown.updateOptions(['Not Applicable / No States Found']);
-                cityDropdown.updateOptions(['Not Applicable / No Cities Found']);
-            } else {
+            if (states.length > 0) {
                 stateDropdown.updateOptions(states);
+            } else {
+                stateDropdown.updateOptions([]);
             }
         }
     });
@@ -167,20 +167,14 @@ function setupLocationChain(countryId, stateId, cityId) {
         const state = e.target.value;
         const cityInput = document.getElementById(cityId);
 
-        cityInput.value = '';
-        if (state === 'Not Applicable / No States Found') {
-            cityDropdown.updateOptions(['Not Applicable / No Cities Found']);
-            return;
-        }
-
         cityDropdown.updateOptions(['Loading cities...']);
 
         if (country && state) {
             const cities = await LocationService.getCities(country, state);
-            if (cities.length === 0) {
-                cityDropdown.updateOptions(['Not Applicable / No Cities Found']);
-            } else {
+            if (cities.length > 0) {
                 cityDropdown.updateOptions(cities);
+            } else {
+                cityDropdown.updateOptions([]);
             }
         }
     });

@@ -421,8 +421,11 @@ router.put('/me', authenticateToken, upload.single('profilePicture'), async (req
     const userResult = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
+    // Format date of birth to null if empty string
+    const formattedDob = (dob && dob.trim() !== '') ? dob : null;
+
     let updateQuery = 'UPDATE users SET name = $1, email = $2, phone = $3, dob = $4, address = $5, two_factor_enabled = $6, username = $7, bio = $8, locality = $9, city = $10, state = $11, country = $12';
-    let values = [name, email, phone, dob, address, two_factor_enabled === 'true', username, bio, locality, city, state, country];
+    let values = [name, email, phone, formattedDob, address, two_factor_enabled === 'true' || two_factor_enabled === true, username, bio, locality, city, state, country];
     let paramIndex = 13;
 
     if (newPassword && newPassword.trim() !== '') {
