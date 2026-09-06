@@ -210,8 +210,8 @@ async function fetchComplaints() {
     const res        = await fetch('/api/complaints', { headers: { 'Authorization': `Bearer ${token}` } });
     if (!res.ok) throw new Error('Failed to load complaints');
     const complaints = await res.json();
-    renderComplaintList(reportedList, complaints.filter(c => Number(c.complainant_id) === userId && c.status !== 'resolved'), 'No unresolved complaints reported by you.');
-    renderComplaintList(againstList,  complaints.filter(c => Number(c.accused_id)     === userId), 'No complaints filed against you.');
+    renderComplaintList(reportedList, complaints.filter(c => Number(c.complainant_id) === userId && c.status !== 'resolved'), 'No Active Reports', 'Disputes you file regarding borrowed or lent items will show up here.');
+    renderComplaintList(againstList,  complaints.filter(c => Number(c.accused_id)     === userId), 'Clean Record', 'You have no complaints or disputes filed against you.');
   } catch (err) {
     console.error('Error fetching complaints:', err);
     if (reportedList) reportedList.innerHTML = '<div class="empty-state">Error loading complaints.</div>';
@@ -219,9 +219,19 @@ async function fetchComplaints() {
   }
 }
 
-function renderComplaintList(container, list, emptyMessage) {
+function renderComplaintList(container, list, emptyTitle, emptyDesc) {
   if (!container) return;
-  if (list.length === 0) { container.innerHTML = `<div class="empty-state">${emptyMessage}</div>`; return; }
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state-card" style="padding: 2rem 1rem; border: none; background: transparent;">
+        <div class="empty-icon-wrap" style="width: 48px; height: 48px; margin-bottom: 0.75rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h4 style="font-size: 1rem;">${emptyTitle}</h4>
+        <p style="font-size: 0.82rem; margin-bottom: 0;">${emptyDesc}</p>
+      </div>`;
+    return;
+  }
   container.innerHTML = list.map(c => `
     <div class="complaint-item">
       <div class="complaint-header">

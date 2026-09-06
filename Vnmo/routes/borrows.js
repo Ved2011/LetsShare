@@ -15,23 +15,36 @@ router.post('/', authenticateToken, async (req, res) => {
 
   try {
     // Check community constraint
-    const itemOwnerResult = await pool.query('SELECT owner_id FROM items WHERE id = $1', [itemId]);
+    const itemOwnerResult = await pool.query('SELECT owner_id, exclusive_community_id FROM items WHERE id = $1', [itemId]);
     if (itemOwnerResult.rows.length === 0) return res.status(404).json({ error: 'Item not found' });
-    const ownerId = itemOwnerResult.rows[0].owner_id;
+    const item = itemOwnerResult.rows[0];
+    const ownerId = item.owner_id;
 
     // Get borrower details
     const borrowerResult = await pool.query('SELECT plan_type, free_credits, last_credit_added, is_site_admin FROM users WHERE id = $1', [borrowerId]);
     let borrower = borrowerResult.rows[0];
 
     if (ownerId !== borrowerId && !borrower.is_site_admin) {
-      const shareCommunityResult = await pool.query(`
-        SELECT 1 FROM community_members cm1 
-        JOIN community_members cm2 ON cm1.community_id = cm2.community_id 
-        WHERE cm1.user_id = $1 AND cm2.user_id = $2
-      `, [borrowerId, ownerId]);
-      
-      if (shareCommunityResult.rows.length === 0) {
-        return res.status(403).json({ error: 'You can only borrow from people in your communities.' });
+      if (item.exclusive_community_id) {
+        // Must be a member of the exclusive community
+        const exclMemberResult = await pool.query(
+          'SELECT 1 FROM community_members WHERE community_id = $1 AND user_id = $2',
+          [item.exclusive_community_id, borrowerId]
+        );
+        if (exclMemberResult.rows.length === 0) {
+          return res.status(403).json({ error: 'You must join the community this item belongs to before borrowing it.' });
+        }
+      } else {
+        // Must share at least one community with owner
+        const shareCommunityResult = await pool.query(`
+          SELECT 1 FROM community_members cm1 
+          JOIN community_members cm2 ON cm1.community_id = cm2.community_id 
+          WHERE cm1.user_id = $1 AND cm2.user_id = $2
+        `, [borrowerId, ownerId]);
+        
+        if (shareCommunityResult.rows.length === 0) {
+          return res.status(403).json({ error: 'You can only borrow items from members of communities you have joined. Join a shared community first!' });
+        }
       }
     }
 

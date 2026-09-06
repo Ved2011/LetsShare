@@ -38,7 +38,15 @@ function displayMyItems(items) {
   myItemsListContainer.innerHTML = '';
   
   if (!items.length) {
-    myItemsListContainer.innerHTML = '<p class="empty-state" style="grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--muted);">You haven\'t uploaded any items yet.</p>';
+    myItemsListContainer.innerHTML = `
+      <div class="empty-state-card">
+        <div class="empty-icon-wrap">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <h4>No items listed yet</h4>
+        <p>Start sharing your items with members of your communities!</p>
+        <a href="ItemForm.html" class="btn primary">+ List New Item</a>
+      </div>`;
     return;
   }
 

@@ -34,6 +34,36 @@ async function loadCommunityDetails() {
             const contentWrapper = document.querySelector('.community-content-wrapper');
             
             const adminPanelBtn = document.getElementById('adminPanelBtn');
+            const joinHeroCommBtn = document.getElementById('joinHeroCommBtn');
+
+            if (currentCommunity.is_member) {
+                if (joinHeroCommBtn) joinHeroCommBtn.style.display = 'none';
+            } else if (!currentCommunity.is_private) {
+                if (joinHeroCommBtn) {
+                    joinHeroCommBtn.style.display = 'inline-flex';
+                    joinHeroCommBtn.onclick = async () => {
+                        try {
+                            const joinRes = await fetch(`/api/communities/${currentCommunity.id}/join`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            const data = await joinRes.json();
+                            if (joinRes.ok) {
+                                window.showAlert('Successfully joined community!');
+                                loadCommunityDetails();
+                                loadCommunityItems();
+                            } else {
+                                window.showAlert(data.error || 'Failed to join community', 'error');
+                            }
+                        } catch (err) {
+                            window.showAlert('Error joining community', 'error');
+                        }
+                    };
+                }
+            } else {
+                if (joinHeroCommBtn) joinHeroCommBtn.style.display = 'none';
+            }
+
             if (currentCommunity.is_current_user_admin) {
                 if (adminPanelBtn) {
                     adminPanelBtn.style.display = 'inline-flex';
